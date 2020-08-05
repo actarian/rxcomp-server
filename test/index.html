@@ -1,0 +1,24 @@
+<!-- @@master = ./templates/layout.html { "class": "page--test", "title": "RxCompServer" } -->
+<!-- @@block = main-->
+<!-- main app-component -->
+<main class="app" app-component>
+	<div class="app__inner">
+		<!-- @@include ./templates/shared/header.html -->
+		<div class="container">
+			<ul class="list">
+				<li class="list__item" *for="let item of items" [class]="{ done: item.done }" (click)="onClick(item)">
+					<div class="title" [innerhtml]="item.name"></div>
+					{{item.done}}
+				</li>
+			</ul>
+			<div *if="flag">flag</div>
+			<div *if="active">active</div>
+			<div *if="!active">inactive</div>
+		</div>
+	</div>
+</main>
+<!-- /end main app-component -->
+<!-- @@close-->
+<!-- @@block = js-->
+<script src="/rxcomp-server/js/main.js"></script>
+<!-- @@close-->

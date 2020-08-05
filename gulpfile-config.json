@@ -1,0 +1,105 @@
+﻿{
+	"targets": {
+		"browser": {
+			"compile": [
+				{
+					"input": "test/*.html",
+					"output": "docs/",
+					"minify": false
+        },
+				{
+					"input": "test/css/main.scss",
+					"output": "docs/css/main.css",
+					"minify": true
+        },
+				{
+					"input": "test/js/main.browser.ts",
+					"output": {
+						"file": "docs/js/main.js",
+						"format": "iife"
+					},
+					"globals": {
+						"rxjs": "rxjs",
+						"rxjs/operators": "rxjs.operators",
+						"rxcomp": "rxcomp"
+					},
+					"minify": true
+        },
+				{
+					"input": "test/js/main.server.ts",
+					"output": {
+						"file": "server/main.js",
+						"format": "cjs"
+					},
+					"minify": true
+        }
+      ],
+			"bundle": [
+				{
+					"input": "../rxcomp/dist/iife/rxcomp.js",
+					"output": "docs/js/rxcomp.js",
+					"minify": false
+        },
+				{
+					"input": "node_modules/rxcomp/dist/rxcomp-dark.css",
+					"output": "docs/css/rxcomp-dark.css",
+					"minify": true
+        }
+      ]
+		},
+		"dist": {
+			"compile": [
+				{
+					"input": "src/rxcomp-server.ts",
+					"output": [
+						{
+							"file": "dist/cjs/",
+							"format": "cjs"
+            },
+						{
+							"file": "dist/esm/",
+							"format": "esm"
+            },
+						{
+							"file": "dist/umd/rxcomp-server.js",
+							"format": "umd",
+							"minify": true
+            },
+						{
+							"file": "dist/iife/rxcomp-server.js",
+							"format": "iife",
+							"minify": true
+            }
+          ],
+					"globals": {
+						"immer": "immer",
+						"rxjs": "rxjs",
+						"rxjs/operators": "rxjs.operators",
+						"rxcomp": "rxcomp"
+					},
+					"name": "rxcomp.server"
+        }
+      ]
+		},
+		"server": {
+			"compile": [
+				{
+					"input": "test/js/server.ts",
+					"output": {
+						"file": "server/server.js",
+						"format": "cjs"
+					},
+					"minify": false
+        }
+      ]
+		}
+	},
+	"server": {
+		"src": "./docs",
+		"path": "/rxcomp-server/",
+		"host": "localhost",
+		"port": 40993,
+		"log": false
+	},
+	"tfs": false
+}
