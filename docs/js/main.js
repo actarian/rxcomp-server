@@ -4,900 +4,1881 @@
  * License: MIT
  */
 
-(function(rxcomp,operators,rxjs,immer){'use strict';function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
+(function (rxcomp, operators, Stream, http, Url, https, zlib, rxjs) {
+  'use strict';
 
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  return Constructor;
-}
+  Stream = Stream && Object.prototype.hasOwnProperty.call(Stream, 'default') ? Stream['default'] : Stream;
+  http = http && Object.prototype.hasOwnProperty.call(http, 'default') ? http['default'] : http;
+  Url = Url && Object.prototype.hasOwnProperty.call(Url, 'default') ? Url['default'] : Url;
+  https = https && Object.prototype.hasOwnProperty.call(https, 'default') ? https['default'] : https;
+  zlib = zlib && Object.prototype.hasOwnProperty.call(zlib, 'default') ? zlib['default'] : zlib;
 
-function _inheritsLoose(subClass, superClass) {
-  subClass.prototype = Object.create(superClass.prototype);
-  subClass.prototype.constructor = subClass;
-  subClass.__proto__ = superClass;
-}var StorageService = function () {
-  function StorageService() {}
-
-  StorageService.encode = function encode(value) {
-    var encodedJson = null;
-
-    try {
-      var cache = new Map();
-      var json = JSON.stringify(value, function (key, value) {
-        if (typeof value === 'object' && value != null) {
-          if (cache.has(value)) {
-            return;
-          }
-
-          cache.set(value, true);
-        }
-
-        return value;
-      });
-      encodedJson = btoa(encodeURIComponent(json));
-    } catch (error) {
-      console.warn('StorageService.encode.error', value, error);
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
     }
+  }
 
-    return encodedJson;
-  };
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
 
-  StorageService.decode = function decode(encodedJson) {
-    var value;
+  function _inheritsLoose(subClass, superClass) {
+    subClass.prototype = Object.create(superClass.prototype);
+    subClass.prototype.constructor = subClass;
+    subClass.__proto__ = superClass;
+  }
 
-    if (encodedJson) {
-      try {
-        value = JSON.parse(decodeURIComponent(atob(encodedJson)));
-      } catch (error) {
-        value = encodedJson;
+  function createCommonjsModule(fn, basedir, module) {
+  	return module = {
+  	  path: basedir,
+  	  exports: {},
+  	  require: function (path, base) {
+        return commonjsRequire(path, (base === undefined || base === null) ? module.path : base);
       }
-    }
-
-    return value;
-  };
-
-  StorageService.isSupported = function isSupported(type) {
-    var flag = false;
-    var storage;
-
-    try {
-      storage = window[type];
-      var x = '__storage_test__';
-      storage.setItem(x, x);
-      storage.removeItem(x);
-      flag = true;
-    } catch (error) {
-      flag = error instanceof DOMException && (error.code === 22 || error.code === 1014 || error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') && Boolean(storage && storage.length !== 0);
-    }
-
-    return flag;
-  };
-
-  return StorageService;
-}();
-StorageService.supported = false;var CookieStorageService = function (_StorageService) {
-  _inheritsLoose(CookieStorageService, _StorageService);
-
-  function CookieStorageService() {
-    return _StorageService.apply(this, arguments) || this;
+  	}, fn(module, module.exports), module.exports;
   }
 
-  CookieStorageService.clear = function clear() {
-    var _this = this;
-
-    this.toRawArray().forEach(function (x) {
-      _this.setter(x.name, '', -1);
-    });
-  };
-
-  CookieStorageService.delete = function _delete(name) {
-    this.setter(name, '', -1);
-  };
-
-  CookieStorageService.exist = function exist(name) {
-    return document.cookie.indexOf(';' + name + '=') !== -1 || document.cookie.indexOf(name + '=') === 0;
-  };
-
-  CookieStorageService.get = function get(name) {
-    return this.decode(this.getRaw(name));
-  };
-
-  CookieStorageService.set = function set(name, value, days) {
-    this.setter(name, this.encode(value), days);
-  };
-
-  CookieStorageService.getRaw = function getRaw(name) {
-    var value = null;
-    var cookies = this.toRawArray();
-    var cookie = cookies.find(function (x) {
-      return x.name === name;
-    });
-
-    if (cookie) {
-      value = cookie.value;
-    }
-
-    return value;
-  };
-
-  CookieStorageService.setRaw = function setRaw(name, value, days) {
-    this.setter(name, value, days);
-  };
-
-  CookieStorageService.toArray = function toArray() {
-    var _this2 = this;
-
-    return this.toRawArray().map(function (x) {
-      x.value = _this2.decode(x.value);
-      return x;
-    });
-  };
-
-  CookieStorageService.toRawArray = function toRawArray() {
-    return document.cookie.split(';').map(function (x) {
-      var items = x.split('=');
-      return {
-        name: items[0].trim(),
-        value: items[1] ? items[1].trim() : null
-      };
-    }).filter(function (x) {
-      return x.name !== '';
-    });
-  };
-
-  CookieStorageService.setter = function setter(name, value, days) {
-    var expires;
-
-    if (days) {
-      var date = new Date();
-      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-      expires = '; expires=' + date.toUTCString();
-    } else {
-      expires = '';
-    }
-
-    document.cookie = name + '=' + value + expires + '; path=/';
-    this.items$.next(this.toArray());
-  };
-
-  CookieStorageService.isSupported = function isSupported() {
-    var isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
-    return isBrowser;
-  };
-
-  return CookieStorageService;
-}(StorageService);
-CookieStorageService.items$ = new rxjs.ReplaySubject(1);var CookieStorageComponent = function (_Component) {
-  _inheritsLoose(CookieStorageComponent, _Component);
-
-  function CookieStorageComponent() {
-    var _this;
-
-    _this = _Component.apply(this, arguments) || this;
-    _this.active = false;
-    _this.items = [];
-    return _this;
+  function getCjsExportFromNamespace (n) {
+  	return n && n['default'] || n;
   }
 
-  var _proto = CookieStorageComponent.prototype;
-
-  _proto.onInit = function onInit() {
-    var _this2 = this;
-
-    this.items = CookieStorageService.toArray();
-    CookieStorageService.items$.pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (items) {
-      _this2.items = items;
-
-      _this2.pushChanges();
-    });
-  };
-
-  _proto.onToggle = function onToggle() {
-    this.active = !this.active;
-    this.pushChanges();
-  };
-
-  _proto.onClear = function onClear() {
-    CookieStorageService.clear();
-  };
-
-  _proto.onRemove = function onRemove(item) {
-    CookieStorageService.delete(item.name);
-  };
-
-  return CookieStorageComponent;
-}(rxcomp.Component);
-CookieStorageComponent.meta = {
-  selector: 'cookie-storage-component',
-  template: "\n\t\t<div class=\"rxc-block\">\n\t\t\t<div class=\"rxc-head\">\n\t\t\t\t<span class=\"rxc-head__title\" (click)=\"onToggle()\">\n\t\t\t\t\t<span *if=\"!active\">+ cookie</span>\n\t\t\t\t\t<span *if=\"active\">- cookie</span>\n\t\t\t\t\t<span [innerHTML]=\"' {' + items.length + ')'\"></span>\n\t\t\t\t</span>\n\t\t\t\t<span class=\"rxc-head__remove\" (click)=\"onClear()\">x</span>\n\t\t\t</div>\n\t\t\t<ul class=\"rxc-list\" *if=\"active\">\n\t\t\t\t<li class=\"rxc-list__item\" *for=\"let item of items\">\n\t\t\t\t\t<span class=\"rxc-list__name\" [innerHTML]=\"item.name\"></span>\n\t\t\t\t\t<span class=\"rxc-list__value\" [innerHTML]=\"item.value | json\"></span>\n\t\t\t\t\t<span class=\"rxc-list__remove\" (click)=\"onRemove(item)\">x</span>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>"
-};var LocalStorageService = function (_StorageService) {
-  _inheritsLoose(LocalStorageService, _StorageService);
-
-  function LocalStorageService() {
-    return _StorageService.apply(this, arguments) || this;
+  function commonjsRequire () {
+  	throw new Error('Dynamic requires are not currently supported by @rollup/plugin-commonjs');
   }
 
-  LocalStorageService.clear = function clear() {
-    if (this.isSupported()) {
-      localStorage.clear();
-      this.items$.next(this.toArray());
-    }
-  };
+  // Based on https://github.com/tmpvar/jsdom/blob/aa85b2abf07766ff7bf5c1f6daafb3726f2f2db5/lib/jsdom/living/blob.js
 
-  LocalStorageService.delete = function _delete(name) {
-    if (this.isSupported()) {
-      localStorage.removeItem(name);
-      this.items$.next(this.toArray());
-    }
-  };
+  // fix for "Readable" isn't a named export issue
+  const Readable = Stream.Readable;
 
-  LocalStorageService.exist = function exist(name) {
-    if (this.isSupported()) {
-      return localStorage.getItem(name) !== undefined;
-    } else {
-      return false;
-    }
-  };
+  const BUFFER = Symbol('buffer');
+  const TYPE = Symbol('type');
 
-  LocalStorageService.get = function get(name) {
-    return this.decode(this.getRaw(name));
-  };
+  class Blob {
+  	constructor() {
+  		this[TYPE] = '';
 
-  LocalStorageService.set = function set(name, value) {
-    this.setRaw(name, this.encode(value));
-  };
+  		const blobParts = arguments[0];
+  		const options = arguments[1];
 
-  LocalStorageService.getRaw = function getRaw(name) {
-    var value = null;
+  		const buffers = [];
+  		let size = 0;
 
-    if (this.isSupported()) {
-      value = localStorage.getItem(name);
-    }
+  		if (blobParts) {
+  			const a = blobParts;
+  			const length = Number(a.length);
+  			for (let i = 0; i < length; i++) {
+  				const element = a[i];
+  				let buffer;
+  				if (element instanceof Buffer) {
+  					buffer = element;
+  				} else if (ArrayBuffer.isView(element)) {
+  					buffer = Buffer.from(element.buffer, element.byteOffset, element.byteLength);
+  				} else if (element instanceof ArrayBuffer) {
+  					buffer = Buffer.from(element);
+  				} else if (element instanceof Blob) {
+  					buffer = element[BUFFER];
+  				} else {
+  					buffer = Buffer.from(typeof element === 'string' ? element : String(element));
+  				}
+  				size += buffer.length;
+  				buffers.push(buffer);
+  			}
+  		}
 
-    return value;
-  };
+  		this[BUFFER] = Buffer.concat(buffers);
 
-  LocalStorageService.setRaw = function setRaw(name, value) {
-    if (value && this.isSupported()) {
-      localStorage.setItem(name, value);
-      this.items$.next(this.toArray());
-    }
-  };
+  		let type = options && options.type !== undefined && String(options.type).toLowerCase();
+  		if (type && !/[^\u0020-\u007E]/.test(type)) {
+  			this[TYPE] = type;
+  		}
+  	}
+  	get size() {
+  		return this[BUFFER].length;
+  	}
+  	get type() {
+  		return this[TYPE];
+  	}
+  	text() {
+  		return Promise.resolve(this[BUFFER].toString());
+  	}
+  	arrayBuffer() {
+  		const buf = this[BUFFER];
+  		const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+  		return Promise.resolve(ab);
+  	}
+  	stream() {
+  		const readable = new Readable();
+  		readable._read = function () {};
+  		readable.push(this[BUFFER]);
+  		readable.push(null);
+  		return readable;
+  	}
+  	toString() {
+  		return '[object Blob]';
+  	}
+  	slice() {
+  		const size = this.size;
 
-  LocalStorageService.toArray = function toArray() {
-    var _this = this;
+  		const start = arguments[0];
+  		const end = arguments[1];
+  		let relativeStart, relativeEnd;
+  		if (start === undefined) {
+  			relativeStart = 0;
+  		} else if (start < 0) {
+  			relativeStart = Math.max(size + start, 0);
+  		} else {
+  			relativeStart = Math.min(start, size);
+  		}
+  		if (end === undefined) {
+  			relativeEnd = size;
+  		} else if (end < 0) {
+  			relativeEnd = Math.max(size + end, 0);
+  		} else {
+  			relativeEnd = Math.min(end, size);
+  		}
+  		const span = Math.max(relativeEnd - relativeStart, 0);
 
-    return this.toRawArray().map(function (x) {
-      x.value = _this.decode(x.value);
-      return x;
-    });
-  };
-
-  LocalStorageService.toRawArray = function toRawArray() {
-    var _this2 = this;
-
-    if (this.isSupported()) {
-      return Object.keys(localStorage).map(function (key) {
-        return {
-          name: key,
-          value: _this2.getRaw(key)
-        };
-      });
-    } else {
-      return [];
-    }
-  };
-
-  LocalStorageService.isSupported = function isSupported() {
-    if (this.supported) {
-      return true;
-    }
-
-    return StorageService.isSupported('localStorage');
-  };
-
-  return LocalStorageService;
-}(StorageService);
-LocalStorageService.items$ = new rxjs.ReplaySubject(1);var LocalStorageComponent = function (_Component) {
-  _inheritsLoose(LocalStorageComponent, _Component);
-
-  function LocalStorageComponent() {
-    var _this;
-
-    _this = _Component.apply(this, arguments) || this;
-    _this.active = false;
-    _this.items = [];
-    return _this;
+  		const buffer = this[BUFFER];
+  		const slicedBuffer = buffer.slice(relativeStart, relativeStart + span);
+  		const blob = new Blob([], { type: arguments[2] });
+  		blob[BUFFER] = slicedBuffer;
+  		return blob;
+  	}
   }
 
-  var _proto = LocalStorageComponent.prototype;
+  Object.defineProperties(Blob.prototype, {
+  	size: { enumerable: true },
+  	type: { enumerable: true },
+  	slice: { enumerable: true }
+  });
 
-  _proto.onInit = function onInit() {
-    var _this2 = this;
+  Object.defineProperty(Blob.prototype, Symbol.toStringTag, {
+  	value: 'Blob',
+  	writable: false,
+  	enumerable: false,
+  	configurable: true
+  });
 
-    this.items = LocalStorageService.toArray();
-    LocalStorageService.items$.pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (items) {
-      _this2.items = items;
+  /**
+   * fetch-error.js
+   *
+   * FetchError interface for operational errors
+   */
 
-      _this2.pushChanges();
-    });
-  };
+  /**
+   * Create FetchError instance
+   *
+   * @param   String      message      Error message for human
+   * @param   String      type         Error type for machine
+   * @param   String      systemError  For Node.js system error
+   * @return  FetchError
+   */
+  function FetchError(message, type, systemError) {
+    Error.call(this, message);
 
-  _proto.onToggle = function onToggle() {
-    this.active = !this.active;
-    this.pushChanges();
-  };
-
-  _proto.onClear = function onClear() {
-    LocalStorageService.clear();
-  };
-
-  _proto.onRemove = function onRemove(item) {
-    LocalStorageService.delete(item.name);
-  };
-
-  return LocalStorageComponent;
-}(rxcomp.Component);
-LocalStorageComponent.meta = {
-  selector: 'local-storage-component',
-  template: "\n\t\t<div class=\"rxc-block\">\n\t\t\t<div class=\"rxc-head\">\n\t\t\t\t<span class=\"rxc-head__title\" (click)=\"onToggle()\">\n\t\t\t\t\t<span *if=\"!active\">+ localStorage</span>\n\t\t\t\t\t<span *if=\"active\">- localStorage</span>\n\t\t\t\t\t<span [innerHTML]=\"' {' + items.length + ')'\"></span>\n\t\t\t\t</span>\n\t\t\t\t<span class=\"rxc-head__remove\" (click)=\"onClear()\">x</span>\n\t\t\t</div>\n\t\t\t<ul class=\"rxc-list\" *if=\"active\">\n\t\t\t\t<li class=\"rxc-list__item\" *for=\"let item of items\">\n\t\t\t\t\t<span class=\"rxc-list__name\" [innerHTML]=\"item.name\"></span>\n\t\t\t\t\t<span class=\"rxc-list__value\" [innerHTML]=\"item.value | json\"></span>\n\t\t\t\t\t<span class=\"rxc-list__remove\" (click)=\"onRemove(item)\">x</span>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>"
-};var SessionStorageService = function (_StorageService) {
-  _inheritsLoose(SessionStorageService, _StorageService);
-
-  function SessionStorageService() {
-    return _StorageService.apply(this, arguments) || this;
-  }
-
-  SessionStorageService.clear = function clear() {
-    if (this.isSupported()) {
-      sessionStorage.clear();
-      this.items$.next(this.toArray());
-    }
-  };
-
-  SessionStorageService.delete = function _delete(name) {
-    if (this.isSupported()) {
-      sessionStorage.removeItem(name);
-      this.items$.next(this.toArray());
-    }
-  };
-
-  SessionStorageService.exist = function exist(name) {
-    if (this.isSupported()) {
-      return sessionStorage.getItem(name) !== undefined;
-    } else {
-      return false;
-    }
-  };
-
-  SessionStorageService.get = function get(name) {
-    return this.decode(this.getRaw(name));
-  };
-
-  SessionStorageService.set = function set(name, value) {
-    this.setRaw(name, this.encode(value));
-  };
-
-  SessionStorageService.getRaw = function getRaw(name) {
-    var value = null;
-
-    if (this.isSupported()) {
-      value = sessionStorage.getItem(name);
-    }
-
-    return value;
-  };
-
-  SessionStorageService.setRaw = function setRaw(name, value) {
-    if (value && this.isSupported()) {
-      sessionStorage.setItem(name, value);
-      this.items$.next(this.toArray());
-    }
-  };
-
-  SessionStorageService.toArray = function toArray() {
-    var _this = this;
-
-    return this.toRawArray().map(function (x) {
-      x.value = _this.decode(x.value);
-      return x;
-    });
-  };
-
-  SessionStorageService.toRawArray = function toRawArray() {
-    var _this2 = this;
-
-    if (this.isSupported()) {
-      return Object.keys(sessionStorage).map(function (key) {
-        return {
-          name: key,
-          value: _this2.getRaw(key)
-        };
-      });
-    } else {
-      return [];
-    }
-  };
-
-  SessionStorageService.isSupported = function isSupported() {
-    if (this.supported) {
-      return true;
-    }
-
-    return StorageService.isSupported('sessionStorage');
-  };
-
-  return SessionStorageService;
-}(StorageService);
-SessionStorageService.items$ = new rxjs.ReplaySubject(1);var SessionStorageComponent = function (_Component) {
-  _inheritsLoose(SessionStorageComponent, _Component);
-
-  function SessionStorageComponent() {
-    var _this;
-
-    _this = _Component.apply(this, arguments) || this;
-    _this.active = false;
-    _this.items = [];
-    return _this;
-  }
-
-  var _proto = SessionStorageComponent.prototype;
-
-  _proto.onInit = function onInit() {
-    var _this2 = this;
-
-    this.items = SessionStorageService.toArray();
-    SessionStorageService.items$.pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (items) {
-      _this2.items = items;
-
-      _this2.pushChanges();
-    });
-  };
-
-  _proto.onToggle = function onToggle() {
-    this.active = !this.active;
-    this.pushChanges();
-  };
-
-  _proto.onClear = function onClear() {
-    SessionStorageService.clear();
-  };
-
-  _proto.onRemove = function onRemove(item) {
-    SessionStorageService.delete(item.name);
-  };
-
-  return SessionStorageComponent;
-}(rxcomp.Component);
-SessionStorageComponent.meta = {
-  selector: 'session-storage-component',
-  template: "\n\t\t<div class=\"rxc-block\">\n\t\t\t<div class=\"rxc-head\">\n\t\t\t\t<span class=\"rxc-head__title\" (click)=\"onToggle()\">\n\t\t\t\t\t<span *if=\"!active\">+ sessionStorage</span>\n\t\t\t\t\t<span *if=\"active\">- sessionStorage</span>\n\t\t\t\t\t<span [innerHTML]=\"' {' + items.length + ')'\"></span>\n\t\t\t\t</span>\n\t\t\t\t<span class=\"rxc-head__remove\" (click)=\"onClear()\">x</span>\n\t\t\t</div>\n\t\t\t<ul class=\"rxc-list\" *if=\"active\">\n\t\t\t\t<li class=\"rxc-list__item\" *for=\"let item of items\">\n\t\t\t\t\t<span class=\"rxc-list__name\" [innerHTML]=\"item.name\"></span>\n\t\t\t\t\t<span class=\"rxc-list__value\" [innerHTML]=\"item.value | json\"></span>\n\t\t\t\t\t<span class=\"rxc-list__remove\" (click)=\"onRemove(item)\">x</span>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>"
-};var factories = [CookieStorageComponent, LocalStorageComponent, SessionStorageComponent];
-var pipes = [];
-
-var StoreModule = function (_Module) {
-  _inheritsLoose(StoreModule, _Module);
-
-  function StoreModule() {
-    return _Module.apply(this, arguments) || this;
-  }
-
-  return StoreModule;
-}(rxcomp.Module);
-StoreModule.meta = {
-  declarations: [].concat(factories, pipes),
-  exports: [].concat(factories, pipes)
-};var StoreType;
-
-(function (StoreType) {
-  StoreType[StoreType["Memory"] = 1] = "Memory";
-  StoreType[StoreType["Session"] = 2] = "Session";
-  StoreType[StoreType["Local"] = 3] = "Local";
-  StoreType[StoreType["Cookie"] = 4] = "Cookie";
-})(StoreType || (StoreType = {}));
-var Store = function () {
-  function Store(state, type, key) {
-    if (state === void 0) {
-      state = {};
-    }
-
-    if (type === void 0) {
-      type = StoreType.Memory;
-    }
-
-    if (key === void 0) {
-      key = 'store';
-    }
-
+    this.message = message;
     this.type = type;
-    this.key = "rxcomp_" + key;
-    state.busy = false;
-    state.error = null;
-    var state_ = new rxjs.BehaviorSubject(state);
-    this.next = makeNext(state_);
-    this.nextError = makeNextError(state_);
-    this.select = makeSelect(state_);
-    this.state$ = state_.asObservable();
+
+    // when err.type is `system`, err.code contains system error code
+    if (systemError) {
+      this.code = this.errno = systemError.code;
+    }
+
+    // hide custom error implementation details from end-users
+    Error.captureStackTrace(this, this.constructor);
   }
 
-  var _proto = Store.prototype;
+  FetchError.prototype = Object.create(Error.prototype);
+  FetchError.prototype.constructor = FetchError;
+  FetchError.prototype.name = 'FetchError';
 
-  _proto.busy$ = function busy$() {
-    var _this = this;
+  let convert;
+  try {
+  	convert = require('encoding').convert;
+  } catch (e) {}
 
-    return rxjs.of(null).pipe(operators.filter(function () {
-      var busy = _this.select(function (state) {
-        return state.busy;
-      });
+  const INTERNALS = Symbol('Body internals');
 
-      if (!busy) {
-        _this.state = function (draft) {
-          draft.busy = true;
-          draft.error = null;
-        };
+  // fix an issue where "PassThrough" isn't a named export for node <10
+  const PassThrough = Stream.PassThrough;
 
-        return true;
-      } else {
-        return false;
-      }
-    }));
+  /**
+   * Body mixin
+   *
+   * Ref: https://fetch.spec.whatwg.org/#body
+   *
+   * @param   Stream  body  Readable stream
+   * @param   Object  opts  Response options
+   * @return  Void
+   */
+  function Body(body) {
+  	var _this = this;
+
+  	var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+  	    _ref$size = _ref.size;
+
+  	let size = _ref$size === undefined ? 0 : _ref$size;
+  	var _ref$timeout = _ref.timeout;
+  	let timeout = _ref$timeout === undefined ? 0 : _ref$timeout;
+
+  	if (body == null) {
+  		// body is undefined or null
+  		body = null;
+  	} else if (isURLSearchParams(body)) {
+  		// body is a URLSearchParams
+  		body = Buffer.from(body.toString());
+  	} else if (isBlob(body)) ; else if (Buffer.isBuffer(body)) ; else if (Object.prototype.toString.call(body) === '[object ArrayBuffer]') {
+  		// body is ArrayBuffer
+  		body = Buffer.from(body);
+  	} else if (ArrayBuffer.isView(body)) {
+  		// body is ArrayBufferView
+  		body = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
+  	} else if (body instanceof Stream) ; else {
+  		// none of the above
+  		// coerce to string then buffer
+  		body = Buffer.from(String(body));
+  	}
+  	this[INTERNALS] = {
+  		body,
+  		disturbed: false,
+  		error: null
+  	};
+  	this.size = size;
+  	this.timeout = timeout;
+
+  	if (body instanceof Stream) {
+  		body.on('error', function (err) {
+  			const error = err.name === 'AbortError' ? err : new FetchError(`Invalid response body while trying to fetch ${_this.url}: ${err.message}`, 'system', err);
+  			_this[INTERNALS].error = error;
+  		});
+  	}
+  }
+
+  Body.prototype = {
+  	get body() {
+  		return this[INTERNALS].body;
+  	},
+
+  	get bodyUsed() {
+  		return this[INTERNALS].disturbed;
+  	},
+
+  	/**
+    * Decode response as ArrayBuffer
+    *
+    * @return  Promise
+    */
+  	arrayBuffer() {
+  		return consumeBody.call(this).then(function (buf) {
+  			return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+  		});
+  	},
+
+  	/**
+    * Return raw response as Blob
+    *
+    * @return Promise
+    */
+  	blob() {
+  		let ct = this.headers && this.headers.get('content-type') || '';
+  		return consumeBody.call(this).then(function (buf) {
+  			return Object.assign(
+  			// Prevent copying
+  			new Blob([], {
+  				type: ct.toLowerCase()
+  			}), {
+  				[BUFFER]: buf
+  			});
+  		});
+  	},
+
+  	/**
+    * Decode response as json
+    *
+    * @return  Promise
+    */
+  	json() {
+  		var _this2 = this;
+
+  		return consumeBody.call(this).then(function (buffer) {
+  			try {
+  				return JSON.parse(buffer.toString());
+  			} catch (err) {
+  				return Body.Promise.reject(new FetchError(`invalid json response body at ${_this2.url} reason: ${err.message}`, 'invalid-json'));
+  			}
+  		});
+  	},
+
+  	/**
+    * Decode response as text
+    *
+    * @return  Promise
+    */
+  	text() {
+  		return consumeBody.call(this).then(function (buffer) {
+  			return buffer.toString();
+  		});
+  	},
+
+  	/**
+    * Decode response as buffer (non-spec api)
+    *
+    * @return  Promise
+    */
+  	buffer() {
+  		return consumeBody.call(this);
+  	},
+
+  	/**
+    * Decode response as text, while automatically detecting the encoding and
+    * trying to decode to UTF-8 (non-spec api)
+    *
+    * @return  Promise
+    */
+  	textConverted() {
+  		var _this3 = this;
+
+  		return consumeBody.call(this).then(function (buffer) {
+  			return convertBody(buffer, _this3.headers);
+  		});
+  	}
   };
 
-  _proto.cached$ = function cached$(callback) {
-    var _this2 = this;
+  // In browsers, all properties are enumerable.
+  Object.defineProperties(Body.prototype, {
+  	body: { enumerable: true },
+  	bodyUsed: { enumerable: true },
+  	arrayBuffer: { enumerable: true },
+  	blob: { enumerable: true },
+  	json: { enumerable: true },
+  	text: { enumerable: true }
+  });
 
-    return rxjs.of(null).pipe(operators.map(function () {
-      var value = null;
-
-      if (_this2.type === StoreType.Local) {
-        value = LocalStorageService.get(_this2.key);
-      } else if (_this2.type === StoreType.Session) {
-        value = SessionStorageService.get(_this2.key);
-      } else if (_this2.type === StoreType.Cookie) {
-        value = CookieStorageService.get(_this2.key);
-      }
-
-      if (value && typeof callback === 'function') {
-        value = callback(value);
-      }
-
-      return value;
-    }), operators.filter(function (x) {
-      return x != null;
-    }));
+  Body.mixIn = function (proto) {
+  	for (const name of Object.getOwnPropertyNames(Body.prototype)) {
+  		// istanbul ignore else: future proof
+  		if (!(name in proto)) {
+  			const desc = Object.getOwnPropertyDescriptor(Body.prototype, name);
+  			Object.defineProperty(proto, name, desc);
+  		}
+  	}
   };
 
-  _proto.select$ = function select$(callback) {
-    return this.state$.pipe(operators.map(callback), operators.distinctUntilChanged());
+  /**
+   * Consume and convert an entire Body to a Buffer.
+   *
+   * Ref: https://fetch.spec.whatwg.org/#concept-body-consume-body
+   *
+   * @return  Promise
+   */
+  function consumeBody() {
+  	var _this4 = this;
+
+  	if (this[INTERNALS].disturbed) {
+  		return Body.Promise.reject(new TypeError(`body used already for: ${this.url}`));
+  	}
+
+  	this[INTERNALS].disturbed = true;
+
+  	if (this[INTERNALS].error) {
+  		return Body.Promise.reject(this[INTERNALS].error);
+  	}
+
+  	let body = this.body;
+
+  	// body is null
+  	if (body === null) {
+  		return Body.Promise.resolve(Buffer.alloc(0));
+  	}
+
+  	// body is blob
+  	if (isBlob(body)) {
+  		body = body.stream();
+  	}
+
+  	// body is buffer
+  	if (Buffer.isBuffer(body)) {
+  		return Body.Promise.resolve(body);
+  	}
+
+  	// istanbul ignore if: should never happen
+  	if (!(body instanceof Stream)) {
+  		return Body.Promise.resolve(Buffer.alloc(0));
+  	}
+
+  	// body is stream
+  	// get ready to actually consume the body
+  	let accum = [];
+  	let accumBytes = 0;
+  	let abort = false;
+
+  	return new Body.Promise(function (resolve, reject) {
+  		let resTimeout;
+
+  		// allow timeout on slow response body
+  		if (_this4.timeout) {
+  			resTimeout = setTimeout(function () {
+  				abort = true;
+  				reject(new FetchError(`Response timeout while trying to fetch ${_this4.url} (over ${_this4.timeout}ms)`, 'body-timeout'));
+  			}, _this4.timeout);
+  		}
+
+  		// handle stream errors
+  		body.on('error', function (err) {
+  			if (err.name === 'AbortError') {
+  				// if the request was aborted, reject with this Error
+  				abort = true;
+  				reject(err);
+  			} else {
+  				// other errors, such as incorrect content-encoding
+  				reject(new FetchError(`Invalid response body while trying to fetch ${_this4.url}: ${err.message}`, 'system', err));
+  			}
+  		});
+
+  		body.on('data', function (chunk) {
+  			if (abort || chunk === null) {
+  				return;
+  			}
+
+  			if (_this4.size && accumBytes + chunk.length > _this4.size) {
+  				abort = true;
+  				reject(new FetchError(`content size at ${_this4.url} over limit: ${_this4.size}`, 'max-size'));
+  				return;
+  			}
+
+  			accumBytes += chunk.length;
+  			accum.push(chunk);
+  		});
+
+  		body.on('end', function () {
+  			if (abort) {
+  				return;
+  			}
+
+  			clearTimeout(resTimeout);
+
+  			try {
+  				resolve(Buffer.concat(accum, accumBytes));
+  			} catch (err) {
+  				// handle streams that have accumulated too much data (issue #414)
+  				reject(new FetchError(`Could not create Buffer from response body for ${_this4.url}: ${err.message}`, 'system', err));
+  			}
+  		});
+  	});
+  }
+
+  /**
+   * Detect buffer encoding and convert to target encoding
+   * ref: http://www.w3.org/TR/2011/WD-html5-20110113/parsing.html#determining-the-character-encoding
+   *
+   * @param   Buffer  buffer    Incoming buffer
+   * @param   String  encoding  Target encoding
+   * @return  String
+   */
+  function convertBody(buffer, headers) {
+  	if (typeof convert !== 'function') {
+  		throw new Error('The package `encoding` must be installed to use the textConverted() function');
+  	}
+
+  	const ct = headers.get('content-type');
+  	let charset = 'utf-8';
+  	let res, str;
+
+  	// header
+  	if (ct) {
+  		res = /charset=([^;]*)/i.exec(ct);
+  	}
+
+  	// no charset in content type, peek at response body for at most 1024 bytes
+  	str = buffer.slice(0, 1024).toString();
+
+  	// html5
+  	if (!res && str) {
+  		res = /<meta.+?charset=(['"])(.+?)\1/i.exec(str);
+  	}
+
+  	// html4
+  	if (!res && str) {
+  		res = /<meta[\s]+?http-equiv=(['"])content-type\1[\s]+?content=(['"])(.+?)\2/i.exec(str);
+
+  		if (res) {
+  			res = /charset=(.*)/i.exec(res.pop());
+  		}
+  	}
+
+  	// xml
+  	if (!res && str) {
+  		res = /<\?xml.+?encoding=(['"])(.+?)\1/i.exec(str);
+  	}
+
+  	// found charset
+  	if (res) {
+  		charset = res.pop();
+
+  		// prevent decode issues when sites use incorrect encoding
+  		// ref: https://hsivonen.fi/encoding-menu/
+  		if (charset === 'gb2312' || charset === 'gbk') {
+  			charset = 'gb18030';
+  		}
+  	}
+
+  	// turn raw buffers into a single utf-8 buffer
+  	return convert(buffer, 'UTF-8', charset).toString();
+  }
+
+  /**
+   * Detect a URLSearchParams object
+   * ref: https://github.com/bitinn/node-fetch/issues/296#issuecomment-307598143
+   *
+   * @param   Object  obj     Object to detect by type or brand
+   * @return  String
+   */
+  function isURLSearchParams(obj) {
+  	// Duck-typing as a necessary condition.
+  	if (typeof obj !== 'object' || typeof obj.append !== 'function' || typeof obj.delete !== 'function' || typeof obj.get !== 'function' || typeof obj.getAll !== 'function' || typeof obj.has !== 'function' || typeof obj.set !== 'function') {
+  		return false;
+  	}
+
+  	// Brand-checking and more duck-typing as optional condition.
+  	return obj.constructor.name === 'URLSearchParams' || Object.prototype.toString.call(obj) === '[object URLSearchParams]' || typeof obj.sort === 'function';
+  }
+
+  /**
+   * Check if `obj` is a W3C `Blob` object (which `File` inherits from)
+   * @param  {*} obj
+   * @return {boolean}
+   */
+  function isBlob(obj) {
+  	return typeof obj === 'object' && typeof obj.arrayBuffer === 'function' && typeof obj.type === 'string' && typeof obj.stream === 'function' && typeof obj.constructor === 'function' && typeof obj.constructor.name === 'string' && /^(Blob|File)$/.test(obj.constructor.name) && /^(Blob|File)$/.test(obj[Symbol.toStringTag]);
+  }
+
+  /**
+   * Clone body given Res/Req instance
+   *
+   * @param   Mixed  instance  Response or Request instance
+   * @return  Mixed
+   */
+  function clone(instance) {
+  	let p1, p2;
+  	let body = instance.body;
+
+  	// don't allow cloning a used body
+  	if (instance.bodyUsed) {
+  		throw new Error('cannot clone body after it is used');
+  	}
+
+  	// check that body is a stream and not form-data object
+  	// note: we can't clone the form-data object without having it as a dependency
+  	if (body instanceof Stream && typeof body.getBoundary !== 'function') {
+  		// tee instance body
+  		p1 = new PassThrough();
+  		p2 = new PassThrough();
+  		body.pipe(p1);
+  		body.pipe(p2);
+  		// set instance body to teed body and return the other teed body
+  		instance[INTERNALS].body = p1;
+  		body = p2;
+  	}
+
+  	return body;
+  }
+
+  /**
+   * Performs the operation "extract a `Content-Type` value from |object|" as
+   * specified in the specification:
+   * https://fetch.spec.whatwg.org/#concept-bodyinit-extract
+   *
+   * This function assumes that instance.body is present.
+   *
+   * @param   Mixed  instance  Any options.body input
+   */
+  function extractContentType(body) {
+  	if (body === null) {
+  		// body is null
+  		return null;
+  	} else if (typeof body === 'string') {
+  		// body is string
+  		return 'text/plain;charset=UTF-8';
+  	} else if (isURLSearchParams(body)) {
+  		// body is a URLSearchParams
+  		return 'application/x-www-form-urlencoded;charset=UTF-8';
+  	} else if (isBlob(body)) {
+  		// body is blob
+  		return body.type || null;
+  	} else if (Buffer.isBuffer(body)) {
+  		// body is buffer
+  		return null;
+  	} else if (Object.prototype.toString.call(body) === '[object ArrayBuffer]') {
+  		// body is ArrayBuffer
+  		return null;
+  	} else if (ArrayBuffer.isView(body)) {
+  		// body is ArrayBufferView
+  		return null;
+  	} else if (typeof body.getBoundary === 'function') {
+  		// detect form data input from form-data module
+  		return `multipart/form-data;boundary=${body.getBoundary()}`;
+  	} else if (body instanceof Stream) {
+  		// body is stream
+  		// can't really do much about this
+  		return null;
+  	} else {
+  		// Body constructor defaults other things to string
+  		return 'text/plain;charset=UTF-8';
+  	}
+  }
+
+  /**
+   * The Fetch Standard treats this as if "total bytes" is a property on the body.
+   * For us, we have to explicitly get it with a function.
+   *
+   * ref: https://fetch.spec.whatwg.org/#concept-body-total-bytes
+   *
+   * @param   Body    instance   Instance of Body
+   * @return  Number?            Number of bytes, or null if not possible
+   */
+  function getTotalBytes(instance) {
+  	const body = instance.body;
+
+
+  	if (body === null) {
+  		// body is null
+  		return 0;
+  	} else if (isBlob(body)) {
+  		return body.size;
+  	} else if (Buffer.isBuffer(body)) {
+  		// body is buffer
+  		return body.length;
+  	} else if (body && typeof body.getLengthSync === 'function') {
+  		// detect form data input from form-data module
+  		if (body._lengthRetrievers && body._lengthRetrievers.length == 0 || // 1.x
+  		body.hasKnownLength && body.hasKnownLength()) {
+  			// 2.x
+  			return body.getLengthSync();
+  		}
+  		return null;
+  	} else {
+  		// body is stream
+  		return null;
+  	}
+  }
+
+  /**
+   * Write a Body to a Node.js WritableStream (e.g. http.Request) object.
+   *
+   * @param   Body    instance   Instance of Body
+   * @return  Void
+   */
+  function writeToStream(dest, instance) {
+  	const body = instance.body;
+
+
+  	if (body === null) {
+  		// body is null
+  		dest.end();
+  	} else if (isBlob(body)) {
+  		body.stream().pipe(dest);
+  	} else if (Buffer.isBuffer(body)) {
+  		// body is buffer
+  		dest.write(body);
+  		dest.end();
+  	} else {
+  		// body is stream
+  		body.pipe(dest);
+  	}
+  }
+
+  // expose Promise
+  Body.Promise = global.Promise;
+
+  /**
+   * headers.js
+   *
+   * Headers class offers convenient helpers
+   */
+
+  const invalidTokenRegex = /[^\^_`a-zA-Z\-0-9!#$%&'*+.|~]/;
+  const invalidHeaderCharRegex = /[^\t\x20-\x7e\x80-\xff]/;
+
+  function validateName(name) {
+  	name = `${name}`;
+  	if (invalidTokenRegex.test(name) || name === '') {
+  		throw new TypeError(`${name} is not a legal HTTP header name`);
+  	}
+  }
+
+  function validateValue(value) {
+  	value = `${value}`;
+  	if (invalidHeaderCharRegex.test(value)) {
+  		throw new TypeError(`${value} is not a legal HTTP header value`);
+  	}
+  }
+
+  /**
+   * Find the key in the map object given a header name.
+   *
+   * Returns undefined if not found.
+   *
+   * @param   String  name  Header name
+   * @return  String|Undefined
+   */
+  function find(map, name) {
+  	name = name.toLowerCase();
+  	for (const key in map) {
+  		if (key.toLowerCase() === name) {
+  			return key;
+  		}
+  	}
+  	return undefined;
+  }
+
+  const MAP = Symbol('map');
+  class Headers {
+  	/**
+    * Headers class
+    *
+    * @param   Object  headers  Response headers
+    * @return  Void
+    */
+  	constructor() {
+  		let init = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+
+  		this[MAP] = Object.create(null);
+
+  		if (init instanceof Headers) {
+  			const rawHeaders = init.raw();
+  			const headerNames = Object.keys(rawHeaders);
+
+  			for (const headerName of headerNames) {
+  				for (const value of rawHeaders[headerName]) {
+  					this.append(headerName, value);
+  				}
+  			}
+
+  			return;
+  		}
+
+  		// We don't worry about converting prop to ByteString here as append()
+  		// will handle it.
+  		if (init == null) ; else if (typeof init === 'object') {
+  			const method = init[Symbol.iterator];
+  			if (method != null) {
+  				if (typeof method !== 'function') {
+  					throw new TypeError('Header pairs must be iterable');
+  				}
+
+  				// sequence<sequence<ByteString>>
+  				// Note: per spec we have to first exhaust the lists then process them
+  				const pairs = [];
+  				for (const pair of init) {
+  					if (typeof pair !== 'object' || typeof pair[Symbol.iterator] !== 'function') {
+  						throw new TypeError('Each header pair must be iterable');
+  					}
+  					pairs.push(Array.from(pair));
+  				}
+
+  				for (const pair of pairs) {
+  					if (pair.length !== 2) {
+  						throw new TypeError('Each header pair must be a name/value tuple');
+  					}
+  					this.append(pair[0], pair[1]);
+  				}
+  			} else {
+  				// record<ByteString, ByteString>
+  				for (const key of Object.keys(init)) {
+  					const value = init[key];
+  					this.append(key, value);
+  				}
+  			}
+  		} else {
+  			throw new TypeError('Provided initializer must be an object');
+  		}
+  	}
+
+  	/**
+    * Return combined header value given name
+    *
+    * @param   String  name  Header name
+    * @return  Mixed
+    */
+  	get(name) {
+  		name = `${name}`;
+  		validateName(name);
+  		const key = find(this[MAP], name);
+  		if (key === undefined) {
+  			return null;
+  		}
+
+  		return this[MAP][key].join(', ');
+  	}
+
+  	/**
+    * Iterate over all headers
+    *
+    * @param   Function  callback  Executed for each item with parameters (value, name, thisArg)
+    * @param   Boolean   thisArg   `this` context for callback function
+    * @return  Void
+    */
+  	forEach(callback) {
+  		let thisArg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+  		let pairs = getHeaders(this);
+  		let i = 0;
+  		while (i < pairs.length) {
+  			var _pairs$i = pairs[i];
+  			const name = _pairs$i[0],
+  			      value = _pairs$i[1];
+
+  			callback.call(thisArg, value, name, this);
+  			pairs = getHeaders(this);
+  			i++;
+  		}
+  	}
+
+  	/**
+    * Overwrite header values given name
+    *
+    * @param   String  name   Header name
+    * @param   String  value  Header value
+    * @return  Void
+    */
+  	set(name, value) {
+  		name = `${name}`;
+  		value = `${value}`;
+  		validateName(name);
+  		validateValue(value);
+  		const key = find(this[MAP], name);
+  		this[MAP][key !== undefined ? key : name] = [value];
+  	}
+
+  	/**
+    * Append a value onto existing header
+    *
+    * @param   String  name   Header name
+    * @param   String  value  Header value
+    * @return  Void
+    */
+  	append(name, value) {
+  		name = `${name}`;
+  		value = `${value}`;
+  		validateName(name);
+  		validateValue(value);
+  		const key = find(this[MAP], name);
+  		if (key !== undefined) {
+  			this[MAP][key].push(value);
+  		} else {
+  			this[MAP][name] = [value];
+  		}
+  	}
+
+  	/**
+    * Check for header name existence
+    *
+    * @param   String   name  Header name
+    * @return  Boolean
+    */
+  	has(name) {
+  		name = `${name}`;
+  		validateName(name);
+  		return find(this[MAP], name) !== undefined;
+  	}
+
+  	/**
+    * Delete all header values given name
+    *
+    * @param   String  name  Header name
+    * @return  Void
+    */
+  	delete(name) {
+  		name = `${name}`;
+  		validateName(name);
+  		const key = find(this[MAP], name);
+  		if (key !== undefined) {
+  			delete this[MAP][key];
+  		}
+  	}
+
+  	/**
+    * Return raw headers (non-spec api)
+    *
+    * @return  Object
+    */
+  	raw() {
+  		return this[MAP];
+  	}
+
+  	/**
+    * Get an iterator on keys.
+    *
+    * @return  Iterator
+    */
+  	keys() {
+  		return createHeadersIterator(this, 'key');
+  	}
+
+  	/**
+    * Get an iterator on values.
+    *
+    * @return  Iterator
+    */
+  	values() {
+  		return createHeadersIterator(this, 'value');
+  	}
+
+  	/**
+    * Get an iterator on entries.
+    *
+    * This is the default iterator of the Headers object.
+    *
+    * @return  Iterator
+    */
+  	[Symbol.iterator]() {
+  		return createHeadersIterator(this, 'key+value');
+  	}
+  }
+  Headers.prototype.entries = Headers.prototype[Symbol.iterator];
+
+  Object.defineProperty(Headers.prototype, Symbol.toStringTag, {
+  	value: 'Headers',
+  	writable: false,
+  	enumerable: false,
+  	configurable: true
+  });
+
+  Object.defineProperties(Headers.prototype, {
+  	get: { enumerable: true },
+  	forEach: { enumerable: true },
+  	set: { enumerable: true },
+  	append: { enumerable: true },
+  	has: { enumerable: true },
+  	delete: { enumerable: true },
+  	keys: { enumerable: true },
+  	values: { enumerable: true },
+  	entries: { enumerable: true }
+  });
+
+  function getHeaders(headers) {
+  	let kind = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'key+value';
+
+  	const keys = Object.keys(headers[MAP]).sort();
+  	return keys.map(kind === 'key' ? function (k) {
+  		return k.toLowerCase();
+  	} : kind === 'value' ? function (k) {
+  		return headers[MAP][k].join(', ');
+  	} : function (k) {
+  		return [k.toLowerCase(), headers[MAP][k].join(', ')];
+  	});
+  }
+
+  const INTERNAL = Symbol('internal');
+
+  function createHeadersIterator(target, kind) {
+  	const iterator = Object.create(HeadersIteratorPrototype);
+  	iterator[INTERNAL] = {
+  		target,
+  		kind,
+  		index: 0
+  	};
+  	return iterator;
+  }
+
+  const HeadersIteratorPrototype = Object.setPrototypeOf({
+  	next() {
+  		// istanbul ignore if
+  		if (!this || Object.getPrototypeOf(this) !== HeadersIteratorPrototype) {
+  			throw new TypeError('Value of `this` is not a HeadersIterator');
+  		}
+
+  		var _INTERNAL = this[INTERNAL];
+  		const target = _INTERNAL.target,
+  		      kind = _INTERNAL.kind,
+  		      index = _INTERNAL.index;
+
+  		const values = getHeaders(target, kind);
+  		const len = values.length;
+  		if (index >= len) {
+  			return {
+  				value: undefined,
+  				done: true
+  			};
+  		}
+
+  		this[INTERNAL].index = index + 1;
+
+  		return {
+  			value: values[index],
+  			done: false
+  		};
+  	}
+  }, Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]())));
+
+  Object.defineProperty(HeadersIteratorPrototype, Symbol.toStringTag, {
+  	value: 'HeadersIterator',
+  	writable: false,
+  	enumerable: false,
+  	configurable: true
+  });
+
+  /**
+   * Export the Headers object in a form that Node.js can consume.
+   *
+   * @param   Headers  headers
+   * @return  Object
+   */
+  function exportNodeCompatibleHeaders(headers) {
+  	const obj = Object.assign({ __proto__: null }, headers[MAP]);
+
+  	// http.request() only supports string as Host header. This hack makes
+  	// specifying custom Host header possible.
+  	const hostHeaderKey = find(headers[MAP], 'Host');
+  	if (hostHeaderKey !== undefined) {
+  		obj[hostHeaderKey] = obj[hostHeaderKey][0];
+  	}
+
+  	return obj;
+  }
+
+  /**
+   * Create a Headers object from an object of headers, ignoring those that do
+   * not conform to HTTP grammar productions.
+   *
+   * @param   Object  obj  Object of headers
+   * @return  Headers
+   */
+  function createHeadersLenient(obj) {
+  	const headers = new Headers();
+  	for (const name of Object.keys(obj)) {
+  		if (invalidTokenRegex.test(name)) {
+  			continue;
+  		}
+  		if (Array.isArray(obj[name])) {
+  			for (const val of obj[name]) {
+  				if (invalidHeaderCharRegex.test(val)) {
+  					continue;
+  				}
+  				if (headers[MAP][name] === undefined) {
+  					headers[MAP][name] = [val];
+  				} else {
+  					headers[MAP][name].push(val);
+  				}
+  			}
+  		} else if (!invalidHeaderCharRegex.test(obj[name])) {
+  			headers[MAP][name] = [obj[name]];
+  		}
+  	}
+  	return headers;
+  }
+
+  const INTERNALS$1 = Symbol('Response internals');
+
+  // fix an issue where "STATUS_CODES" aren't a named export for node <10
+  const STATUS_CODES = http.STATUS_CODES;
+
+  /**
+   * Response class
+   *
+   * @param   Stream  body  Readable stream
+   * @param   Object  opts  Response options
+   * @return  Void
+   */
+  class Response {
+  	constructor() {
+  		let body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+  		let opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  		Body.call(this, body, opts);
+
+  		const status = opts.status || 200;
+  		const headers = new Headers(opts.headers);
+
+  		if (body != null && !headers.has('Content-Type')) {
+  			const contentType = extractContentType(body);
+  			if (contentType) {
+  				headers.append('Content-Type', contentType);
+  			}
+  		}
+
+  		this[INTERNALS$1] = {
+  			url: opts.url,
+  			status,
+  			statusText: opts.statusText || STATUS_CODES[status],
+  			headers,
+  			counter: opts.counter
+  		};
+  	}
+
+  	get url() {
+  		return this[INTERNALS$1].url || '';
+  	}
+
+  	get status() {
+  		return this[INTERNALS$1].status;
+  	}
+
+  	/**
+    * Convenience property representing if the request ended normally
+    */
+  	get ok() {
+  		return this[INTERNALS$1].status >= 200 && this[INTERNALS$1].status < 300;
+  	}
+
+  	get redirected() {
+  		return this[INTERNALS$1].counter > 0;
+  	}
+
+  	get statusText() {
+  		return this[INTERNALS$1].statusText;
+  	}
+
+  	get headers() {
+  		return this[INTERNALS$1].headers;
+  	}
+
+  	/**
+    * Clone this response
+    *
+    * @return  Response
+    */
+  	clone() {
+  		return new Response(clone(this), {
+  			url: this.url,
+  			status: this.status,
+  			statusText: this.statusText,
+  			headers: this.headers,
+  			ok: this.ok,
+  			redirected: this.redirected
+  		});
+  	}
+  }
+
+  Body.mixIn(Response.prototype);
+
+  Object.defineProperties(Response.prototype, {
+  	url: { enumerable: true },
+  	status: { enumerable: true },
+  	ok: { enumerable: true },
+  	redirected: { enumerable: true },
+  	statusText: { enumerable: true },
+  	headers: { enumerable: true },
+  	clone: { enumerable: true }
+  });
+
+  Object.defineProperty(Response.prototype, Symbol.toStringTag, {
+  	value: 'Response',
+  	writable: false,
+  	enumerable: false,
+  	configurable: true
+  });
+
+  const INTERNALS$2 = Symbol('Request internals');
+
+  // fix an issue where "format", "parse" aren't a named export for node <10
+  const parse_url = Url.parse;
+  const format_url = Url.format;
+
+  const streamDestructionSupported = 'destroy' in Stream.Readable.prototype;
+
+  /**
+   * Check if a value is an instance of Request.
+   *
+   * @param   Mixed   input
+   * @return  Boolean
+   */
+  function isRequest(input) {
+  	return typeof input === 'object' && typeof input[INTERNALS$2] === 'object';
+  }
+
+  function isAbortSignal(signal) {
+  	const proto = signal && typeof signal === 'object' && Object.getPrototypeOf(signal);
+  	return !!(proto && proto.constructor.name === 'AbortSignal');
+  }
+
+  /**
+   * Request class
+   *
+   * @param   Mixed   input  Url or Request instance
+   * @param   Object  init   Custom options
+   * @return  Void
+   */
+  class Request {
+  	constructor(input) {
+  		let init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  		let parsedURL;
+
+  		// normalize input
+  		if (!isRequest(input)) {
+  			if (input && input.href) {
+  				// in order to support Node.js' Url objects; though WHATWG's URL objects
+  				// will fall into this branch also (since their `toString()` will return
+  				// `href` property anyway)
+  				parsedURL = parse_url(input.href);
+  			} else {
+  				// coerce input to a string before attempting to parse
+  				parsedURL = parse_url(`${input}`);
+  			}
+  			input = {};
+  		} else {
+  			parsedURL = parse_url(input.url);
+  		}
+
+  		let method = init.method || input.method || 'GET';
+  		method = method.toUpperCase();
+
+  		if ((init.body != null || isRequest(input) && input.body !== null) && (method === 'GET' || method === 'HEAD')) {
+  			throw new TypeError('Request with GET/HEAD method cannot have body');
+  		}
+
+  		let inputBody = init.body != null ? init.body : isRequest(input) && input.body !== null ? clone(input) : null;
+
+  		Body.call(this, inputBody, {
+  			timeout: init.timeout || input.timeout || 0,
+  			size: init.size || input.size || 0
+  		});
+
+  		const headers = new Headers(init.headers || input.headers || {});
+
+  		if (inputBody != null && !headers.has('Content-Type')) {
+  			const contentType = extractContentType(inputBody);
+  			if (contentType) {
+  				headers.append('Content-Type', contentType);
+  			}
+  		}
+
+  		let signal = isRequest(input) ? input.signal : null;
+  		if ('signal' in init) signal = init.signal;
+
+  		if (signal != null && !isAbortSignal(signal)) {
+  			throw new TypeError('Expected signal to be an instanceof AbortSignal');
+  		}
+
+  		this[INTERNALS$2] = {
+  			method,
+  			redirect: init.redirect || input.redirect || 'follow',
+  			headers,
+  			parsedURL,
+  			signal
+  		};
+
+  		// node-fetch-only options
+  		this.follow = init.follow !== undefined ? init.follow : input.follow !== undefined ? input.follow : 20;
+  		this.compress = init.compress !== undefined ? init.compress : input.compress !== undefined ? input.compress : true;
+  		this.counter = init.counter || input.counter || 0;
+  		this.agent = init.agent || input.agent;
+  	}
+
+  	get method() {
+  		return this[INTERNALS$2].method;
+  	}
+
+  	get url() {
+  		return format_url(this[INTERNALS$2].parsedURL);
+  	}
+
+  	get headers() {
+  		return this[INTERNALS$2].headers;
+  	}
+
+  	get redirect() {
+  		return this[INTERNALS$2].redirect;
+  	}
+
+  	get signal() {
+  		return this[INTERNALS$2].signal;
+  	}
+
+  	/**
+    * Clone this request
+    *
+    * @return  Request
+    */
+  	clone() {
+  		return new Request(this);
+  	}
+  }
+
+  Body.mixIn(Request.prototype);
+
+  Object.defineProperty(Request.prototype, Symbol.toStringTag, {
+  	value: 'Request',
+  	writable: false,
+  	enumerable: false,
+  	configurable: true
+  });
+
+  Object.defineProperties(Request.prototype, {
+  	method: { enumerable: true },
+  	url: { enumerable: true },
+  	headers: { enumerable: true },
+  	redirect: { enumerable: true },
+  	clone: { enumerable: true },
+  	signal: { enumerable: true }
+  });
+
+  /**
+   * Convert a Request to Node.js http request options.
+   *
+   * @param   Request  A Request instance
+   * @return  Object   The options object to be passed to http.request
+   */
+  function getNodeRequestOptions(request) {
+  	const parsedURL = request[INTERNALS$2].parsedURL;
+  	const headers = new Headers(request[INTERNALS$2].headers);
+
+  	// fetch step 1.3
+  	if (!headers.has('Accept')) {
+  		headers.set('Accept', '*/*');
+  	}
+
+  	// Basic fetch
+  	if (!parsedURL.protocol || !parsedURL.hostname) {
+  		throw new TypeError('Only absolute URLs are supported');
+  	}
+
+  	if (!/^https?:$/.test(parsedURL.protocol)) {
+  		throw new TypeError('Only HTTP(S) protocols are supported');
+  	}
+
+  	if (request.signal && request.body instanceof Stream.Readable && !streamDestructionSupported) {
+  		throw new Error('Cancellation of streamed requests with AbortSignal is not supported in node < 8');
+  	}
+
+  	// HTTP-network-or-cache fetch steps 2.4-2.7
+  	let contentLengthValue = null;
+  	if (request.body == null && /^(POST|PUT)$/i.test(request.method)) {
+  		contentLengthValue = '0';
+  	}
+  	if (request.body != null) {
+  		const totalBytes = getTotalBytes(request);
+  		if (typeof totalBytes === 'number') {
+  			contentLengthValue = String(totalBytes);
+  		}
+  	}
+  	if (contentLengthValue) {
+  		headers.set('Content-Length', contentLengthValue);
+  	}
+
+  	// HTTP-network-or-cache fetch step 2.11
+  	if (!headers.has('User-Agent')) {
+  		headers.set('User-Agent', 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)');
+  	}
+
+  	// HTTP-network-or-cache fetch step 2.15
+  	if (request.compress && !headers.has('Accept-Encoding')) {
+  		headers.set('Accept-Encoding', 'gzip,deflate');
+  	}
+
+  	let agent = request.agent;
+  	if (typeof agent === 'function') {
+  		agent = agent(parsedURL);
+  	}
+
+  	if (!headers.has('Connection') && !agent) {
+  		headers.set('Connection', 'close');
+  	}
+
+  	// HTTP-network fetch step 4.2
+  	// chunked encoding is handled by Node.js
+
+  	return Object.assign({}, parsedURL, {
+  		method: request.method,
+  		headers: exportNodeCompatibleHeaders(headers),
+  		agent
+  	});
+  }
+
+  /**
+   * abort-error.js
+   *
+   * AbortError interface for cancelled requests
+   */
+
+  /**
+   * Create AbortError instance
+   *
+   * @param   String      message      Error message for human
+   * @return  AbortError
+   */
+  function AbortError(message) {
+    Error.call(this, message);
+
+    this.type = 'aborted';
+    this.message = message;
+
+    // hide custom error implementation details from end-users
+    Error.captureStackTrace(this, this.constructor);
+  }
+
+  AbortError.prototype = Object.create(Error.prototype);
+  AbortError.prototype.constructor = AbortError;
+  AbortError.prototype.name = 'AbortError';
+
+  // fix an issue where "PassThrough", "resolve" aren't a named export for node <10
+  const PassThrough$1 = Stream.PassThrough;
+  const resolve_url = Url.resolve;
+
+  /**
+   * Fetch function
+   *
+   * @param   Mixed    url   Absolute url or Request instance
+   * @param   Object   opts  Fetch options
+   * @return  Promise
+   */
+  function fetch(url, opts) {
+
+  	// allow custom promise
+  	if (!fetch.Promise) {
+  		throw new Error('native promise missing, set fetch.Promise to your favorite alternative');
+  	}
+
+  	Body.Promise = fetch.Promise;
+
+  	// wrap http.request into fetch
+  	return new fetch.Promise(function (resolve, reject) {
+  		// build request object
+  		const request = new Request(url, opts);
+  		const options = getNodeRequestOptions(request);
+
+  		const send = (options.protocol === 'https:' ? https : http).request;
+  		const signal = request.signal;
+
+  		let response = null;
+
+  		const abort = function abort() {
+  			let error = new AbortError('The user aborted a request.');
+  			reject(error);
+  			if (request.body && request.body instanceof Stream.Readable) {
+  				request.body.destroy(error);
+  			}
+  			if (!response || !response.body) return;
+  			response.body.emit('error', error);
+  		};
+
+  		if (signal && signal.aborted) {
+  			abort();
+  			return;
+  		}
+
+  		const abortAndFinalize = function abortAndFinalize() {
+  			abort();
+  			finalize();
+  		};
+
+  		// send request
+  		const req = send(options);
+  		let reqTimeout;
+
+  		if (signal) {
+  			signal.addEventListener('abort', abortAndFinalize);
+  		}
+
+  		function finalize() {
+  			req.abort();
+  			if (signal) signal.removeEventListener('abort', abortAndFinalize);
+  			clearTimeout(reqTimeout);
+  		}
+
+  		if (request.timeout) {
+  			req.once('socket', function (socket) {
+  				reqTimeout = setTimeout(function () {
+  					reject(new FetchError(`network timeout at: ${request.url}`, 'request-timeout'));
+  					finalize();
+  				}, request.timeout);
+  			});
+  		}
+
+  		req.on('error', function (err) {
+  			reject(new FetchError(`request to ${request.url} failed, reason: ${err.message}`, 'system', err));
+  			finalize();
+  		});
+
+  		req.on('response', function (res) {
+  			clearTimeout(reqTimeout);
+
+  			const headers = createHeadersLenient(res.headers);
+
+  			// HTTP fetch step 5
+  			if (fetch.isRedirect(res.statusCode)) {
+  				// HTTP fetch step 5.2
+  				const location = headers.get('Location');
+
+  				// HTTP fetch step 5.3
+  				const locationURL = location === null ? null : resolve_url(request.url, location);
+
+  				// HTTP fetch step 5.5
+  				switch (request.redirect) {
+  					case 'error':
+  						reject(new FetchError(`redirect mode is set to error: ${request.url}`, 'no-redirect'));
+  						finalize();
+  						return;
+  					case 'manual':
+  						// node-fetch-specific step: make manual redirect a bit easier to use by setting the Location header value to the resolved URL.
+  						if (locationURL !== null) {
+  							// handle corrupted header
+  							try {
+  								headers.set('Location', locationURL);
+  							} catch (err) {
+  								// istanbul ignore next: nodejs server prevent invalid response headers, we can't test this through normal request
+  								reject(err);
+  							}
+  						}
+  						break;
+  					case 'follow':
+  						// HTTP-redirect fetch step 2
+  						if (locationURL === null) {
+  							break;
+  						}
+
+  						// HTTP-redirect fetch step 5
+  						if (request.counter >= request.follow) {
+  							reject(new FetchError(`maximum redirect reached at: ${request.url}`, 'max-redirect'));
+  							finalize();
+  							return;
+  						}
+
+  						// HTTP-redirect fetch step 6 (counter increment)
+  						// Create a new Request object.
+  						const requestOpts = {
+  							headers: new Headers(request.headers),
+  							follow: request.follow,
+  							counter: request.counter + 1,
+  							agent: request.agent,
+  							compress: request.compress,
+  							method: request.method,
+  							body: request.body,
+  							signal: request.signal,
+  							timeout: request.timeout
+  						};
+
+  						// HTTP-redirect fetch step 9
+  						if (res.statusCode !== 303 && request.body && getTotalBytes(request) === null) {
+  							reject(new FetchError('Cannot follow redirect with body being a readable stream', 'unsupported-redirect'));
+  							finalize();
+  							return;
+  						}
+
+  						// HTTP-redirect fetch step 11
+  						if (res.statusCode === 303 || (res.statusCode === 301 || res.statusCode === 302) && request.method === 'POST') {
+  							requestOpts.method = 'GET';
+  							requestOpts.body = undefined;
+  							requestOpts.headers.delete('content-length');
+  						}
+
+  						// HTTP-redirect fetch step 15
+  						resolve(fetch(new Request(locationURL, requestOpts)));
+  						finalize();
+  						return;
+  				}
+  			}
+
+  			// prepare response
+  			res.once('end', function () {
+  				if (signal) signal.removeEventListener('abort', abortAndFinalize);
+  			});
+  			let body = res.pipe(new PassThrough$1());
+
+  			const response_options = {
+  				url: request.url,
+  				status: res.statusCode,
+  				statusText: res.statusMessage,
+  				headers: headers,
+  				size: request.size,
+  				timeout: request.timeout,
+  				counter: request.counter
+  			};
+
+  			// HTTP-network fetch step 12.1.1.3
+  			const codings = headers.get('Content-Encoding');
+
+  			// HTTP-network fetch step 12.1.1.4: handle content codings
+
+  			// in following scenarios we ignore compression support
+  			// 1. compression support is disabled
+  			// 2. HEAD request
+  			// 3. no Content-Encoding header
+  			// 4. no content response (204)
+  			// 5. content not modified response (304)
+  			if (!request.compress || request.method === 'HEAD' || codings === null || res.statusCode === 204 || res.statusCode === 304) {
+  				response = new Response(body, response_options);
+  				resolve(response);
+  				return;
+  			}
+
+  			// For Node v6+
+  			// Be less strict when decoding compressed responses, since sometimes
+  			// servers send slightly invalid responses that are still accepted
+  			// by common browsers.
+  			// Always using Z_SYNC_FLUSH is what cURL does.
+  			const zlibOptions = {
+  				flush: zlib.Z_SYNC_FLUSH,
+  				finishFlush: zlib.Z_SYNC_FLUSH
+  			};
+
+  			// for gzip
+  			if (codings == 'gzip' || codings == 'x-gzip') {
+  				body = body.pipe(zlib.createGunzip(zlibOptions));
+  				response = new Response(body, response_options);
+  				resolve(response);
+  				return;
+  			}
+
+  			// for deflate
+  			if (codings == 'deflate' || codings == 'x-deflate') {
+  				// handle the infamous raw deflate response from old servers
+  				// a hack for old IIS and Apache servers
+  				const raw = res.pipe(new PassThrough$1());
+  				raw.once('data', function (chunk) {
+  					// see http://stackoverflow.com/questions/37519828
+  					if ((chunk[0] & 0x0F) === 0x08) {
+  						body = body.pipe(zlib.createInflate());
+  					} else {
+  						body = body.pipe(zlib.createInflateRaw());
+  					}
+  					response = new Response(body, response_options);
+  					resolve(response);
+  				});
+  				return;
+  			}
+
+  			// for br
+  			if (codings == 'br' && typeof zlib.createBrotliDecompress === 'function') {
+  				body = body.pipe(zlib.createBrotliDecompress());
+  				response = new Response(body, response_options);
+  				resolve(response);
+  				return;
+  			}
+
+  			// otherwise, use response as-is
+  			response = new Response(body, response_options);
+  			resolve(response);
+  		});
+
+  		writeToStream(req, request);
+  	});
+  }
+  /**
+   * Redirect code matching
+   *
+   * @param   Number   code  Status code
+   * @return  Boolean
+   */
+  fetch.isRedirect = function (code) {
+  	return code === 301 || code === 302 || code === 303 || code === 307 || code === 308;
   };
 
-  _proto.select = function select(callback) {};
+  // expose Promise
+  fetch.Promise = global.Promise;
 
-  _proto.next = function next(callback) {};
+  var lib = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    'default': fetch,
+    Headers: Headers,
+    Request: Request,
+    Response: Response,
+    FetchError: FetchError
+  });
 
-  _proto.nextError = function nextError(error) {
-    return rxjs.of();
-  };
+  var nodeFetch = getCjsExportFromNamespace(lib);
 
-  _proto.reducer = function reducer(_reducer) {
-    var _this3 = this;
+  var nodePonyfill = createCommonjsModule(function (module, exports) {
+  var realFetch = nodeFetch.default || nodeFetch;
 
-    return function (source) {
-      return rxjs.defer(function () {
-        return source.pipe(operators.map(function (data) {
-          if (typeof _reducer === 'function') {
-            _this3.state = function (draft) {
-              draft.error = null;
-
-              _reducer(data, draft);
-
-              draft.busy = false;
-
-              if (_this3.type === StoreType.Local) {
-                LocalStorageService.set(_this3.key, draft);
-              }
-
-              if (_this3.type === StoreType.Session) {
-                SessionStorageService.set(_this3.key, draft);
-              }
-
-              if (_this3.type === StoreType.Cookie) {
-                CookieStorageService.set(_this3.key, draft, 365);
-              }
-            };
-          }
-
-          return data;
-        }));
-      });
-    };
-  };
-
-  _proto.catchState = function catchState(errorReducer) {
-    var _this4 = this;
-
-    return function (source) {
-      return rxjs.defer(function () {
-        return source.pipe(operators.catchError(function (error) {
-          _this4.state = function (draft) {
-            draft.error = error;
-            draft.busy = false;
-          };
-
-          if (typeof errorReducer === 'function') {
-            error = errorReducer(error);
-          } else {
-            error = null;
-          }
-
-          return error ? rxjs.of(error) : rxjs.of();
-        }));
-      });
-    };
-  };
-
-  _createClass(Store, [{
-    key: "state",
-    get: function get() {
-      return this.select(function (draft) {
-        return draft;
-      });
-    },
-    set: function set(callback) {
-      this.next(callback);
+  var fetch = function (url, options) {
+    // Support schemaless URIs on the server for parity with the browser.
+    // Ex: //github.com/ -> https://github.com/
+    if (/^\/\//.test(url)) {
+      url = 'https:' + url;
     }
-  }]);
-
-  return Store;
-}();
-function useStore(state, type, key) {
-  var store = new Store(state, type, key);
-  return {
-    state$: store.state$,
-    busy$: store.busy$.bind(store),
-    cached$: store.cached$.bind(store),
-    select$: store.select$.bind(store),
-    select: store.select.bind(store),
-    next: store.next.bind(store),
-    nextError: store.nextError.bind(store),
-    reducer: store.reducer.bind(store),
-    catchState: store.catchState.bind(store)
+    return realFetch.call(this, url, options)
   };
-}
 
-function makeNext(state) {
-  return function (callback) {
-    state.next(immer.produce(state.getValue(), function (draft) {
-      if (typeof callback === 'function') {
-        callback(draft);
+  module.exports = exports = fetch;
+  exports.fetch = fetch;
+  exports.Headers = nodeFetch.Headers;
+  exports.Request = nodeFetch.Request;
+  exports.Response = nodeFetch.Response;
+
+  // Needed for TypeScript consumers without esModuleInterop.
+  exports.default = fetch;
+  });
+
+  var HttpResponse = function () {
+    function HttpResponse(response) {
+      this.url = '';
+      this.status = 0;
+      this.statusText = '';
+      this.ok = false;
+      this.redirected = false;
+      this.data = null;
+
+      if (response) {
+        this.url = response.url;
+        this.status = response.status;
+        this.statusText = response.statusText;
+        this.ok = response.ok;
+        this.redirected = response.redirected;
+      }
+    }
+
+    _createClass(HttpResponse, [{
+      key: "static",
+      get: function get() {
+        return this.url.indexOf('.json') === this.url.length - 5;
+      }
+    }]);
+
+    return HttpResponse;
+  }();
+
+  var HttpService = function () {
+    function HttpService() {}
+
+    HttpService.http$ = function http$(method, url, data, format) {
+      var _this = this;
+
+      if (format === void 0) {
+        format = 'json';
       }
 
-      return draft;
-    }));
-  };
-}
+      method = url.indexOf('.json') !== -1 ? 'GET' : method;
+      var methods = ['POST', 'PUT', 'PATCH'];
+      var response_ = null;
+      this.pendingRequests$.next(this.pendingRequests$.getValue() + 1);
+      return rxjs.from(nodePonyfill(url, {
+        method: method,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: methods.indexOf(method) !== -1 ? JSON.stringify(data) : undefined
+      }).then(function (response) {
+        response_ = new HttpResponse(response);
 
-function makeNextError(state) {
-  return function (error) {
-    state.next(immer.produce(state.getValue(), function (draft) {
-      draft.error = error;
-      draft.busy = false;
-      return draft;
-    }));
-    return rxjs.of(error);
-  };
-}
+        if (typeof response[format] === 'function') {
+          return response[format]().then(function (json) {
+            response_.data = json;
 
-function makeSelect(state) {
-  return function (callback) {
-    return callback(state.getValue());
-  };
-}var DELAY = 300;
-var PROGRESSIVE_INDEX = 0;
-
-var ApiService = function () {
-  function ApiService() {}
-
-  ApiService.load$ = function load$(url) {
-    return rxjs.of(new Array(1).fill(0).map(function (x, i) {
-      var id = new Date().valueOf() + i;
-      return {
-        id: id,
-        name: PROGRESSIVE_INDEX++ + " item " + id
-      };
-    })).pipe(operators.delay(DELAY * Math.random()));
-  };
-
-  ApiService.addItem$ = function addItem$(url, item) {
-    var id = new Date().valueOf();
-
-    if (Math.random() < 0.3) {
-      return rxjs.of(1).pipe(operators.delay(DELAY * Math.random()), operators.switchMap(function () {
-        return rxjs.throwError("simulated error " + id);
+            if (response.ok) {
+              return Promise.resolve(response_);
+            } else {
+              return Promise.reject(response_);
+            }
+          });
+        } else {
+          return Promise.reject(response_);
+        }
+      })).pipe(operators.catchError(function (error) {
+        console.log('error', error);
+        return rxjs.throwError(_this.getError(error, response_));
+      }), operators.finalize(function () {
+        _this.pendingRequests$.next(_this.pendingRequests$.getValue() - 1);
       }));
+    };
+
+    HttpService.get$ = function get$(url, data, format) {
+      var query = this.query(data);
+      return this.http$('GET', "" + url + query, undefined, format);
+    };
+
+    HttpService.delete$ = function delete$(url) {
+      return this.http$('DELETE', url);
+    };
+
+    HttpService.post$ = function post$(url, data) {
+      return this.http$('POST', url, data);
+    };
+
+    HttpService.put$ = function put$(url, data) {
+      return this.http$('PUT', url, data);
+    };
+
+    HttpService.patch$ = function patch$(url, data) {
+      return this.http$('PATCH', url, data);
+    };
+
+    HttpService.query = function query(data) {
+      return '';
+    };
+
+    HttpService.getError = function getError(object, response) {
+      var error = typeof object === 'object' ? object : {};
+
+      if (!error.statusCode) {
+        error.statusCode = response ? response.status : 0;
+      }
+
+      if (!error.statusMessage) {
+        error.statusMessage = response ? response.statusText : object;
+      }
+
+      return error;
+    };
+
+    return HttpService;
+  }();
+  HttpService.pendingRequests$ = new rxjs.BehaviorSubject(0);
+
+  var AppComponent = function (_Component) {
+    _inheritsLoose(AppComponent, _Component);
+
+    function AppComponent() {
+      return _Component.apply(this, arguments) || this;
     }
 
-    return rxjs.of({
-      id: id,
-      name: PROGRESSIVE_INDEX++ + " item " + id
-    }).pipe(operators.delay(DELAY * Math.random()));
+    var _proto = AppComponent.prototype;
+
+    _proto.onInit = function onInit() {
+      var _this = this;
+
+      this.items = new Array(4).fill(0).map(function (x, i) {
+        return {
+          title: "item " + (i + 1),
+          completed: Math.random() > 0.75
+        };
+      });
+      this.flag = true;
+      this.active = false;
+      HttpService.get$('https://jsonplaceholder.typicode.com/users/1/todos').pipe(operators.first()).subscribe(function (response) {
+        console.log('AppComponent.items', response);
+        _this.items = response.data;
+
+        _this.pushChanges();
+      });
+    };
+
+    _proto.onClick = function onClick(item) {
+      console.log('onClick', item);
+    };
+
+    return AppComponent;
+  }(rxcomp.Component);
+  AppComponent.meta = {
+    selector: '[app-component]'
   };
 
-  ApiService.clearItems$ = function clearItems$(url) {
-    return rxjs.of([]).pipe(operators.delay(DELAY * Math.random()));
-  };
+  var AppModule = function (_Module) {
+    _inheritsLoose(AppModule, _Module);
 
-  ApiService.remove$ = function remove$(url, id) {
-    return rxjs.of(id).pipe(operators.delay(DELAY * Math.random()));
-  };
-
-  ApiService.patch$ = function patch$(url, item) {
-    return rxjs.of(item).pipe(operators.delay(DELAY * Math.random()));
-  };
-
-  return ApiService;
-}();var _useStore = useStore({
-  todolist: []
-}, StoreType.Session, 'todolist'),
-    state$ = _useStore.state$,
-    busy$ = _useStore.busy$,
-    cached$ = _useStore.cached$,
-    reducer = _useStore.reducer,
-    catchState = _useStore.catchState;
-
-var TodoService = function () {
-  function TodoService() {}
-
-  TodoService.loadWithCache$ = function loadWithCache$() {
-    return busy$().pipe(operators.switchMap(function () {
-      return rxjs.merge(cached$(function (state) {
-        return state.todolist;
-      }), ApiService.load$('url')).pipe(reducer(function (todolist, state) {
-        return state.todolist = todolist;
-      }), catchState(console.log));
-    }));
-  };
-
-  TodoService.load$ = function load$() {
-    return busy$().pipe(operators.switchMap(function () {
-      return ApiService.load$('url').pipe(reducer(function (todolist, state) {
-        return state.todolist = todolist;
-      }), catchState(console.log));
-    }));
-  };
-
-  TodoService.addItem$ = function addItem$() {
-    return busy$().pipe(operators.switchMap(function () {
-      return ApiService.addItem$('url').pipe(reducer(function (item, state) {
-        state.todolist.push(item);
-      }), catchState(console.log));
-    }));
-  };
-
-  TodoService.clearItems$ = function clearItems$() {
-    return busy$().pipe(operators.switchMap(function () {
-      return ApiService.clearItems$('url').pipe(reducer(function (items, state) {
-        return state.todolist = items;
-      }), catchState(console.log));
-    }));
-  };
-
-  TodoService.removeItem$ = function removeItem$(id) {
-    return busy$().pipe(operators.switchMap(function () {
-      return ApiService.remove$('url', id).pipe(reducer(function (id, state) {
-        var index = state.todolist.reduce(function (p, c, i) {
-          return c.id === id ? i : p;
-        }, -1);
-
-        if (index !== -1) {
-          state.todolist.splice(index, 1);
-        }
-      }), catchState(console.log));
-    }));
-  };
-
-  TodoService.toggleCompleted$ = function toggleCompleted$(item) {
-    return busy$().pipe(operators.switchMap(function () {
-      return ApiService.patch$('url', item).pipe(reducer(function (item, state) {
-        var stateItem = state.todolist.find(function (x) {
-          return x.id === item.id;
-        });
-
-        if (stateItem) {
-          stateItem.completed = !stateItem.completed;
-        }
-      }), catchState(console.log));
-    }));
-  };
-
-  _createClass(TodoService, null, [{
-    key: "state$",
-    get: function get() {
-      return state$;
+    function AppModule() {
+      return _Module.apply(this, arguments) || this;
     }
-  }]);
 
-  return TodoService;
-}();var c = 0;
-
-var AppComponent = function (_Component) {
-  _inheritsLoose(AppComponent, _Component);
-
-  function AppComponent() {
-    return _Component.apply(this, arguments) || this;
-  }
-
-  var _proto = AppComponent.prototype;
-
-  _proto.onInit = function onInit() {
-    var _this = this;
-
-    var _getContext = rxcomp.getContext(this),
-        node = _getContext.node;
-
-    node.classList.add('init');
-    TodoService.state$.pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (state) {
-      _this.state = state;
-
-      _this.pushChanges();
-
-      console.log('call', c++);
-    });
-    TodoService.loadWithCache$().pipe(operators.first()).subscribe(console.log);
+    return AppModule;
+  }(rxcomp.Module);
+  AppModule.meta = {
+    imports: [rxcomp.CoreModule],
+    declarations: [],
+    bootstrap: AppComponent
   };
 
-  _proto.onToggle = function onToggle(item) {
-    TodoService.toggleCompleted$(item).subscribe(console.log);
-  };
+  console.log('browser!');
 
-  _proto.onAddItem = function onAddItem() {
-    TodoService.addItem$().subscribe(console.log);
-  };
-
-  _proto.onClearItems = function onClearItems() {
-    TodoService.clearItems$().subscribe(console.log);
-  };
-
-  _proto.removeItem = function removeItem(id) {
-    TodoService.removeItem$(id).subscribe(console.log);
-  };
-
-  _proto.clearCookie = function clearCookie() {
-    CookieStorageService.clear();
-  };
-
-  _proto.clearLocalStorage = function clearLocalStorage() {
-    LocalStorageService.clear();
-  };
-
-  _proto.clearSessionStorage = function clearSessionStorage() {
-    SessionStorageService.clear();
-  };
-
-  return AppComponent;
-}(rxcomp.Component);
-AppComponent.meta = {
-  selector: '[app-component]'
-};var AppModule = function (_Module) {
-  _inheritsLoose(AppModule, _Module);
-
-  function AppModule() {
-    return _Module.apply(this, arguments) || this;
-  }
-
-  return AppModule;
-}(rxcomp.Module);
-AppModule.meta = {
-  imports: [rxcomp.CoreModule, StoreModule],
-  declarations: [],
-  bootstrap: AppComponent
-};rxcomp.Browser.bootstrap(AppModule);}(rxcomp,rxjs.operators,rxjs,immer));
+}(rxcomp, rxjs.operators, Stream, http, Url, https, zlib, rxjs));
+//# sourceMappingURL=main.js.map

@@ -207,6 +207,40 @@ button,
     .btn--secondary {
       display: block; } }
 
+.list > li > a,
+.list > li > span, .list__item {
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  -webkit-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  cursor: pointer;
+  z-index: 1; }
+  .list > li > a:focus,
+  .list > li > span:focus, .list__item:focus {
+    outline: 0; }
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0; }
+
+.list {
+  width: 100%; }
+  .list > li {
+    position: relative;
+    display: block;
+    flex: 1 1 auto; }
+  @media (min-width: 768px) {
+    .list {
+      display: flex;
+      justify-content: flex-start; } }
+  @media (max-width: 767.98px) {
+    .list {
+      display: block; } }
+
 .group--form {
   display: flex;
   align-items: center;
@@ -290,13 +324,6 @@ input.valid + .icon--check {
     letter-spacing: 0.5px;
     line-height: 1.5;
     color: rgba(98, 108, 98, 0.2); }
-  .control--text::-ms-input-placeholder {
-    font-family: "Open Sans", sans-serif;
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    line-height: 1.5;
-    color: rgba(98, 108, 98, 0.2); }
   .control--text::placeholder {
     font-family: "Open Sans", sans-serif;
     font-size: 19px;
@@ -362,13 +389,6 @@ input.valid + .icon--check {
     -webkit-transition: background-color 5000s ease-in-out 0s;
     transition: background-color 5000s ease-in-out 0s; }
   .control--select:-ms-input-placeholder {
-    font-family: "Open Sans", sans-serif;
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    line-height: 1.5;
-    color: rgba(98, 108, 98, 0.2); }
-  .control--select::-ms-input-placeholder {
     font-family: "Open Sans", sans-serif;
     font-size: 19px;
     font-weight: 700;
@@ -493,9 +513,13 @@ body {
   background: #212121;
   color: #8f929b; }
 
-.app:not(.init) {
-  display: none; }
-
+/*
+.app {
+	&:not(.init) {
+		display: none;
+	}
+}
+*/
 .app {
   display: flex;
   align-items: flex-start;
@@ -669,6 +693,9 @@ counter-component {
   100% {
     transform: rotate(360deg); } }
 
+.list__item.done {
+  color: yellow; }
+
 @media (max-width: 767.98px) {
   .hidden-xs-down {
     display: none !important; } }
@@ -706,3 +733,4 @@ counter-component {
 @media (min-width: 1830px) {
   .hidden-xl-up {
     display: none !important; } }
+/*# sourceMappingURL=main.css.map */

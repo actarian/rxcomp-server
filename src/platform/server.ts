@@ -1,4 +1,5 @@
-import { Platform, Module, IElement } from 'rxcomp';
+import { IElement, Module, Platform } from 'rxcomp';
+import { RxDocument } from '../renderer/node';
 import Renderer from '../renderer/renderer';
 
 export default class Server extends Platform {
@@ -25,7 +26,7 @@ export default class Server extends Platform {
 		const meta = this.resolveMeta(moduleFactory);
 		const module = new moduleFactory();
 		module.meta = meta;
-		const instances = module.compile(meta.node, window);
+		const instances = module.compile(meta.node, {} as Window);
 		module.instances = instances;
 		const root = instances[0];
 		root.pushChanges();
@@ -34,5 +35,16 @@ export default class Server extends Platform {
 
 	static querySelector(selector: string): IElement | null {
 		return Renderer.document.querySelector(selector) as IElement;
+	}
+
+	static serialize(): string {
+		console.log('Server.serialize');
+		if (Renderer.document instanceof RxDocument) {
+			const serialized = Renderer.document.serialize();
+			// console.log('serialized', serialized);
+			return serialized;
+		} else {
+			throw ('Renderer.document is not an instance of RxDocument');
+		}
 	}
 }

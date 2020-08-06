@@ -58,16 +58,17 @@ export enum SelectorType {
 export function isRxElement(x: RxNode): x is RxElement {
 	return x.nodeType === RxNodeType.ELEMENT_NODE;
 }
-
 export function isRxText(x: RxNode): x is RxText {
 	return x.nodeType === RxNodeType.TEXT_NODE;
 }
-
 export function isRxComment(x: RxNode): x is RxComment {
 	return x.nodeType === RxNodeType.COMMENT_NODE;
 }
 export function isRxDocument(x: RxNode): x is RxDocument {
 	return x.nodeType === RxNodeType.DOCUMENT_NODE;
+}
+export function isRxDocumentFragment(x: RxNode): x is RxDocumentFragment {
+	return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
 }
 export function isRxDocumentType(x: RxNode): x is RxDocumentType {
 	return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
@@ -98,10 +99,11 @@ export function parse(html: string) {
 				}
 			},
 			ontext: (nodeValue) => {
-				if (nodeValue.length) {
-					const textNode = new RxText(parentNode, nodeValue);
-					parentNode.childNodes.push(textNode);
-				}
+				// console.log('ontext', nodeValue);
+				// if (nodeValue.length) {
+				const textNode = new RxText(parentNode, nodeValue);
+				parentNode.childNodes.push(textNode);
+				// }
 			},
 			onprocessinginstruction: (nodeName, nodeValue) => {
 				// console.log('onprocessinginstruction', nodeName, nodeValue);
@@ -237,7 +239,7 @@ export function querySelector(queries: RxQuery[], childNodes: RxNode[], query: R
 	return node;
 }
 
-export function cloneNode(source: RxNode, deep: boolean = false, parentNode = null): RxNode {
+export function cloneNode(source: RxNode, deep: boolean = false, parentNode: RxElement | null = null): RxNode {
 	let node: RxNode;
 	if (isRxElement(source)) {
 		const nodeElement: RxElement = new RxElement(
@@ -246,9 +248,15 @@ export function cloneNode(source: RxNode, deep: boolean = false, parentNode = nu
 			Object.assign({}, source.attributes)
 		);
 		if (deep) {
-			nodeElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [nodeElement, deep]));
+			nodeElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeElement]));
 		}
 		node = nodeElement;
+	} else if (isRxDocumentFragment(source)) {
+		const nodeDocumentFragment: RxDocumentFragment = new RxDocumentFragment();
+		if (deep) {
+			nodeDocumentFragment.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeDocumentFragment]));
+		}
+		node = nodeDocumentFragment;
 	} else if (isRxText(source)) {
 		node = new RxText(parentNode, source.nodeValue);
 	} else if (isRxComment(source)) {
@@ -256,7 +264,7 @@ export function cloneNode(source: RxNode, deep: boolean = false, parentNode = nu
 	} else if (isRxDocument(source)) {
 		const documentElement: RxDocument = new RxDocument();
 		if (deep) {
-			documentElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [documentElement, deep]));
+			documentElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, documentElement]));
 		}
 		node = documentElement;
 	} else {
@@ -380,19 +388,19 @@ export class RxElement extends RxNode {
 		}
 		return node;
 	}
+	get wholeText() {
+		let nodeValue;
+		if (this.nodeType === RxNodeType.TEXT_NODE) {
+			return this.nodeValue;
+		}
+		return nodeValue;
+	}
 	get outerHTML(): string | null {
 		let html = null;
 		if (this.parentNode) {
 			html = this.parentNode.serialize();
 		}
 		return html;
-	}
-	get wholeText(): string | null {
-		let nodeValue = null;
-		if (isRxText(this)) {
-			nodeValue = this.nodeValue;
-		}
-		return nodeValue;
 	}
 	get classList(): string[] {
 		const classList: string[] = this.attributes.class
@@ -404,7 +412,8 @@ export class RxElement extends RxNode {
 		this.childNodes = [new RxText(this, nodeValue)];
 	}
 	get innerText(): string | null {
-		return this.childNodes.filter((n): n is RxText => isRxText(n)).map(n => n.innerText).join('');
+		// return this.childNodes.filter((n): n is RxText => isRxText(n)).map(n => n.innerText).join('');
+		return this.childNodes.filter((n): n is RxText | RxElement => isRxText(n) || isRxElement(n)).map(n => n.innerText).join('');
 	}
 	set textContent(nodeValue: string | null) {
 		this.innerText = String(nodeValue);
@@ -524,7 +533,20 @@ export class RxElement extends RxNode {
 			this.childNodes[index] = newChild;
 			newChild.parentNode = this;
 		}
+		// console.log('replaceChild', this, newChild, oldChild);
 		return oldChild;
+	}
+	removeChild(child: RxNode): RxNode {
+		if (!(child instanceof RxNode)) {
+			throw (`Uncaught TypeError: Failed to execute 'removeChild' on 'Node': parameter 1 is not of type 'Node'.`);
+		}
+		const index = this.childNodes.indexOf(child);
+		if (index === -1) {
+			throw (`Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`);
+		}
+		this.childNodes.splice(index, 1);
+		// console.log('removeChild', this.childNodes.length);
+		return child;
 	}
 	insertBefore(newNode: RxNode, referenceNode: RxNode | null = null): RxNode {
 		const index = referenceNode
@@ -534,7 +556,11 @@ export class RxElement extends RxNode {
 			this.childNodes.splice(index, 0, newNode);
 			newNode.parentNode = this;
 		}
+		// console.log('insertBefore', this, newNode, referenceNode);
 		return newNode;
+	}
+	cloneNode(deep: boolean = false) {
+		return cloneNode.apply(this, [this, deep]);
 	}
 	addListener(eventName: string, handler: (e: any) => {}) { }
 	removeListener(eventName: string, handler: (e: any) => {}) { }
@@ -589,6 +615,7 @@ export class RxText extends RxNode {
 		super(parentNode);
 		this.nodeType = RxNodeType.TEXT_NODE;
 		this.nodeValue = String(nodeValue);
+		// console.log('RxText', nodeValue);
 	}
 	serialize(): string {
 		return this.nodeValue;
@@ -685,6 +712,14 @@ export class RxDocumentType extends RxNode {
 	}
 }
 
+export class RxDocumentFragment extends RxElement {
+	constructor() {
+		super(null, '#document-fragment');
+		this.nodeType = RxNodeType.DOCUMENT_FRAGMENT_NODE;
+		this.childNodes = [];
+	}
+}
+
 export class RxDocument extends RxElement {
 	get hidden(): true {
 		return true;
@@ -729,21 +764,29 @@ export class RxDocument extends RxElement {
 	// Creates a new attribute node in a given namespace and returns it.
 	createCDATASection() { }
 	// Creates a new CDATA node and returns it.
-	createComment() { }
+	createComment(nodeValue: string) {
+		return new RxComment(null, nodeValue);
+	}
 	// Creates a new comment node and returns it.
-	createDocumentFragment() { }
+	createDocumentFragment() {
+		return new RxDocumentFragment();
+	}
 	// Creates a new document fragment.
 	createElement(nodeName: string): RxElement {
 		return new RxElement(null, nodeName);
 	}
 	// Creates a new element with the given tag name.
-	createElementNS() { }
+	createElementNS(nodeName: string): RxElement {
+		return new RxElement(null, nodeName);
+	}
 	// Creates a new element with the given tag name and namespace URI.
 	createEvent() { }
 	// Creates an event object.
 	createNodeIterator() { }
 	// Creates a NodeIterator object.
-	createProcessingInstruction() { }
+	createProcessingInstruction(nodeValue: string) {
+		return new RxProcessingInstruction(null, nodeValue);
+	}
 	// Creates a new ProcessingInstruction object.
 	createRange() { }
 	// Creates a Range object.

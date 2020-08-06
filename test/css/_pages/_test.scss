@@ -12,11 +12,13 @@ body {
 	color: $foreground-secondary;
 }
 
+/*
 .app {
 	&:not(.init) {
 		display: none;
 	}
 }
+*/
 
 .app {
 	display: flex;
@@ -231,5 +233,17 @@ counter-component {
 
 	100% {
 		transform: rotate(360deg);
+	}
+}
+
+.list {
+	@extend %nav;
+
+	&__item {
+		@extend %nav-item;
+
+		&.done {
+			color: yellow;
+		}
 	}
 }
