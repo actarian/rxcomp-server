@@ -19,13 +19,14 @@ export declare function isRxElement(x: RxNode): x is RxElement;
 export declare function isRxText(x: RxNode): x is RxText;
 export declare function isRxComment(x: RxNode): x is RxComment;
 export declare function isRxDocument(x: RxNode): x is RxDocument;
+export declare function isRxDocumentFragment(x: RxNode): x is RxDocumentFragment;
 export declare function isRxDocumentType(x: RxNode): x is RxDocumentType;
 export declare function isRxProcessingInstruction(x: RxNode): x is RxProcessingInstruction;
 export declare function parse(html: string): RxDocument;
 export declare function getQueries(selector: string): RxQuery[];
 export declare function querySelectorAll(queries: RxQuery[], childNodes: RxNode[], nodes?: never[]): RxElement[] | null;
 export declare function querySelector(queries: RxQuery[], childNodes: RxNode[], query?: RxQuery | null): RxElement | null;
-export declare function cloneNode(source: RxNode, deep?: boolean, parentNode?: null): RxNode;
+export declare function cloneNode(source: RxNode, deep?: boolean, parentNode?: RxElement | null): RxNode;
 export declare class RxSelector {
     selector: string;
     type: SelectorType;
@@ -58,8 +59,8 @@ export declare class RxElement extends RxNode {
     get lastElementChild(): RxElement | null;
     get previousSibling(): RxNode | null;
     get nextSibling(): RxNode | null;
+    get wholeText(): string | null | undefined;
     get outerHTML(): string | null;
-    get wholeText(): string | null;
     get classList(): string[];
     set innerText(nodeValue: string | null);
     get innerText(): string | null;
@@ -79,7 +80,9 @@ export declare class RxElement extends RxNode {
     setAttribute(attribute: string, value: any): void;
     removeAttribute(attribute: string): void;
     replaceChild(newChild: RxNode, oldChild: RxNode): RxNode;
+    removeChild(child: RxNode): RxNode;
     insertBefore(newNode: RxNode, referenceNode?: RxNode | null): RxNode;
+    cloneNode(deep?: boolean): RxNode;
     addListener(eventName: string, handler: (e: any) => {}): void;
     removeListener(eventName: string, handler: (e: any) => {}): void;
     serialize(): string;
@@ -126,6 +129,9 @@ export declare class RxDocumentType extends RxNode {
     constructor(parentNode: RxElement | null | undefined, nodeValue: any);
     serialize(): string;
 }
+export declare class RxDocumentFragment extends RxElement {
+    constructor();
+}
 export declare class RxDocument extends RxElement {
     get hidden(): true;
     get visibilityState(): 'prerender';
@@ -139,13 +145,13 @@ export declare class RxDocument extends RxElement {
     createAttribute(): void;
     createAttributeNS(): void;
     createCDATASection(): void;
-    createComment(): void;
-    createDocumentFragment(): void;
+    createComment(nodeValue: string): RxComment;
+    createDocumentFragment(): RxDocumentFragment;
     createElement(nodeName: string): RxElement;
-    createElementNS(): void;
+    createElementNS(nodeName: string): RxElement;
     createEvent(): void;
     createNodeIterator(): void;
-    createProcessingInstruction(): void;
+    createProcessingInstruction(nodeValue: string): RxProcessingInstruction;
     createRange(): void;
     createTextNode(nodeValue: string): RxText;
     createTouchList(): void;

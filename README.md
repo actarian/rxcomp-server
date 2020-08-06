@@ -10,8 +10,8 @@ The store can however be used with any framework or VanillaJS.
 :--------------------|:----------------------------------------------------------------------------------------------|
 rxcomp-server.min.js   | ![](https://img.badgesize.io/https://unpkg.com/rxcomp-server@1.0.0-beta.11/dist/umd/rxcomp-server.min.js.svg?compression=gzip)
 rxcomp-server.min.js   | ![](https://img.badgesize.io/https://unpkg.com/rxcomp-server@1.0.0-beta.11/dist/umd/rxcomp-server.min.js.svg)
-rxcomp.min.js        | ![](https://img.badgesize.io/https://unpkg.com/rxcomp@1.0.0-beta.11/dist/iife/rxcomp.min.js.svg?compression=gzip)
-rxcomp.min.js        | ![](https://img.badgesize.io/https://unpkg.com/rxcomp@1.0.0-beta.11/dist/iife/rxcomp.min.js.svg)
+rxcomp.min.js        | ![](https://img.badgesize.io/https://unpkg.com/rxcomp@1.0.0-beta.12/dist/iife/rxcomp.min.js.svg?compression=gzip)
+rxcomp.min.js        | ![](https://img.badgesize.io/https://unpkg.com/rxcomp@1.0.0-beta.12/dist/iife/rxcomp.min.js.svg)
 rxjs.min.js          | ![](https://img.badgesize.io/https://unpkg.com/rxjs@6.6.2/bundles/rxjs.umd.min.js.svg?compression=gzip)
 rxjs.min.js          | ![](https://img.badgesize.io/https://unpkg.com/rxjs@6.6.2/bundles/rxjs.umd.min.js.svg)
 immer.min.js          | ![](https://img.badgesize.io/https://unpkg.com/immer@7.0.5/dist/immer.umd.production.min.js.svg?compression=gzip)
@@ -41,7 +41,7 @@ For CDN, you can use unpkg
 ```html
 <script src="https://unpkg.com/rxjs@6.6.2/bundles/rxjs.umd.min.js" crossorigin="anonymous" SameSite="none Secure"></script>
 <script src="https://unpkg.com/immer@7.0.5/dist/immer.umd.production.min.js" crossorigin="anonymous" SameSite="none Secure"></script>
-<script src="https://unpkg.com/rxcomp@1.0.0-beta.11/dist/umd/rxcomp.min.js" crossorigin="anonymous" SameSite="none Secure"></script>  
+<script src="https://unpkg.com/rxcomp@1.0.0-beta.12/dist/umd/rxcomp.min.js" crossorigin="anonymous" SameSite="none Secure"></script>  
 <script src="https://unpkg.com/rxcomp-server@1.0.0-beta.11/dist/umd/rxcomp-server.min.js" crossorigin="anonymous" SameSite="none Secure"></script>  
 ```
 

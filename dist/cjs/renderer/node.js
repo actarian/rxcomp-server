@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RxDocument = exports.RxDocumentType = exports.RxProcessingInstruction = exports.RxComment = exports.RxCData = exports.RxText = exports.RxElement = exports.RxNode = exports.RxQuery = exports.RxSelector = exports.cloneNode = exports.querySelector = exports.querySelectorAll = exports.getQueries = exports.parse = exports.isRxProcessingInstruction = exports.isRxDocumentType = exports.isRxDocument = exports.isRxComment = exports.isRxText = exports.isRxElement = exports.SelectorType = exports.RxNodeType = void 0;
+exports.RxDocument = exports.RxDocumentFragment = exports.RxDocumentType = exports.RxProcessingInstruction = exports.RxComment = exports.RxCData = exports.RxText = exports.RxElement = exports.RxNode = exports.RxQuery = exports.RxSelector = exports.cloneNode = exports.querySelector = exports.querySelectorAll = exports.getQueries = exports.parse = exports.isRxProcessingInstruction = exports.isRxDocumentType = exports.isRxDocumentFragment = exports.isRxDocument = exports.isRxComment = exports.isRxText = exports.isRxElement = exports.SelectorType = exports.RxNodeType = void 0;
 var tslib_1 = require("tslib");
 var htmlparser2_1 = require("htmlparser2");
 /*
@@ -72,6 +72,10 @@ function isRxDocument(x) {
     return x.nodeType === RxNodeType.DOCUMENT_NODE;
 }
 exports.isRxDocument = isRxDocument;
+function isRxDocumentFragment(x) {
+    return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
+}
+exports.isRxDocumentFragment = isRxDocumentFragment;
 function isRxDocumentType(x) {
     return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
 }
@@ -100,10 +104,11 @@ function parse(html) {
             }
         },
         ontext: function (nodeValue) {
-            if (nodeValue.length) {
-                var textNode = new RxText(parentNode, nodeValue);
-                parentNode.childNodes.push(textNode);
-            }
+            // console.log('ontext', nodeValue);
+            // if (nodeValue.length) {
+            var textNode = new RxText(parentNode, nodeValue);
+            parentNode.childNodes.push(textNode);
+            // }
         },
         onprocessinginstruction: function (nodeName, nodeValue) {
             // console.log('onprocessinginstruction', nodeName, nodeValue);
@@ -263,9 +268,16 @@ function cloneNode(source, deep, parentNode) {
     if (isRxElement(source)) {
         var nodeElement_1 = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
         if (deep) {
-            nodeElement_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [nodeElement_1, deep]); });
+            nodeElement_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [x, deep, nodeElement_1]); });
         }
         node = nodeElement_1;
+    }
+    else if (isRxDocumentFragment(source)) {
+        var nodeDocumentFragment_1 = new RxDocumentFragment();
+        if (deep) {
+            nodeDocumentFragment_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [x, deep, nodeDocumentFragment_1]); });
+        }
+        node = nodeDocumentFragment_1;
     }
     else if (isRxText(source)) {
         node = new RxText(parentNode, source.nodeValue);
@@ -276,7 +288,7 @@ function cloneNode(source, deep, parentNode) {
     else if (isRxDocument(source)) {
         var documentElement_1 = new RxDocument();
         if (deep) {
-            documentElement_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [documentElement_1, deep]); });
+            documentElement_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [x, deep, documentElement_1]); });
         }
         node = documentElement_1;
     }
@@ -449,6 +461,17 @@ var RxElement = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(RxElement.prototype, "wholeText", {
+        get: function () {
+            var nodeValue;
+            if (this.nodeType === RxNodeType.TEXT_NODE) {
+                return this.nodeValue;
+            }
+            return nodeValue;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(RxElement.prototype, "outerHTML", {
         get: function () {
             var html = null;
@@ -456,17 +479,6 @@ var RxElement = /** @class */ (function (_super) {
                 html = this.parentNode.serialize();
             }
             return html;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(RxElement.prototype, "wholeText", {
-        get: function () {
-            var nodeValue = null;
-            if (isRxText(this)) {
-                nodeValue = this.nodeValue;
-            }
-            return nodeValue;
         },
         enumerable: false,
         configurable: true
@@ -483,7 +495,8 @@ var RxElement = /** @class */ (function (_super) {
     });
     Object.defineProperty(RxElement.prototype, "innerText", {
         get: function () {
-            return this.childNodes.filter(function (n) { return isRxText(n); }).map(function (n) { return n.innerText; }).join('');
+            // return this.childNodes.filter((n): n is RxText => isRxText(n)).map(n => n.innerText).join('');
+            return this.childNodes.filter(function (n) { return isRxText(n) || isRxElement(n); }).map(function (n) { return n.innerText; }).join('');
         },
         set: function (nodeValue) {
             this.childNodes = [new RxText(this, nodeValue)];
@@ -624,7 +637,20 @@ var RxElement = /** @class */ (function (_super) {
             this.childNodes[index] = newChild;
             newChild.parentNode = this;
         }
+        // console.log('replaceChild', this, newChild, oldChild);
         return oldChild;
+    };
+    RxElement.prototype.removeChild = function (child) {
+        if (!(child instanceof RxNode)) {
+            throw ("Uncaught TypeError: Failed to execute 'removeChild' on 'Node': parameter 1 is not of type 'Node'.");
+        }
+        var index = this.childNodes.indexOf(child);
+        if (index === -1) {
+            throw ("Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.");
+        }
+        this.childNodes.splice(index, 1);
+        // console.log('removeChild', this.childNodes.length);
+        return child;
     };
     RxElement.prototype.insertBefore = function (newNode, referenceNode) {
         if (referenceNode === void 0) { referenceNode = null; }
@@ -635,7 +661,12 @@ var RxElement = /** @class */ (function (_super) {
             this.childNodes.splice(index, 0, newNode);
             newNode.parentNode = this;
         }
+        // console.log('insertBefore', this, newNode, referenceNode);
         return newNode;
+    };
+    RxElement.prototype.cloneNode = function (deep) {
+        if (deep === void 0) { deep = false; }
+        return cloneNode.apply(this, [this, deep]);
     };
     RxElement.prototype.addListener = function (eventName, handler) { };
     RxElement.prototype.removeListener = function (eventName, handler) { };
@@ -670,6 +701,7 @@ var RxText = /** @class */ (function (_super) {
         _this.nodeType = RxNodeType.TEXT_NODE;
         _this.nodeValue = String(nodeValue);
         return _this;
+        // console.log('RxText', nodeValue);
     }
     Object.defineProperty(RxText.prototype, "outerHTML", {
         get: function () {
@@ -851,6 +883,17 @@ var RxDocumentType = /** @class */ (function (_super) {
     return RxDocumentType;
 }(RxNode));
 exports.RxDocumentType = RxDocumentType;
+var RxDocumentFragment = /** @class */ (function (_super) {
+    tslib_1.__extends(RxDocumentFragment, _super);
+    function RxDocumentFragment() {
+        var _this = _super.call(this, null, '#document-fragment') || this;
+        _this.nodeType = RxNodeType.DOCUMENT_FRAGMENT_NODE;
+        _this.childNodes = [];
+        return _this;
+    }
+    return RxDocumentFragment;
+}(RxElement));
+exports.RxDocumentFragment = RxDocumentFragment;
 var RxDocument = /** @class */ (function (_super) {
     tslib_1.__extends(RxDocument, _super);
     function RxDocument() {
@@ -926,21 +969,29 @@ var RxDocument = /** @class */ (function (_super) {
     // Creates a new attribute node in a given namespace and returns it.
     RxDocument.prototype.createCDATASection = function () { };
     // Creates a new CDATA node and returns it.
-    RxDocument.prototype.createComment = function () { };
+    RxDocument.prototype.createComment = function (nodeValue) {
+        return new RxComment(null, nodeValue);
+    };
     // Creates a new comment node and returns it.
-    RxDocument.prototype.createDocumentFragment = function () { };
+    RxDocument.prototype.createDocumentFragment = function () {
+        return new RxDocumentFragment();
+    };
     // Creates a new document fragment.
     RxDocument.prototype.createElement = function (nodeName) {
         return new RxElement(null, nodeName);
     };
     // Creates a new element with the given tag name.
-    RxDocument.prototype.createElementNS = function () { };
+    RxDocument.prototype.createElementNS = function (nodeName) {
+        return new RxElement(null, nodeName);
+    };
     // Creates a new element with the given tag name and namespace URI.
     RxDocument.prototype.createEvent = function () { };
     // Creates an event object.
     RxDocument.prototype.createNodeIterator = function () { };
     // Creates a NodeIterator object.
-    RxDocument.prototype.createProcessingInstruction = function () { };
+    RxDocument.prototype.createProcessingInstruction = function (nodeValue) {
+        return new RxProcessingInstruction(null, nodeValue);
+    };
     // Creates a new ProcessingInstruction object.
     RxDocument.prototype.createRange = function () { };
     // Creates a Range object.

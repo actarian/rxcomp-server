@@ -11,6 +11,9 @@ var Renderer = /** @class */ (function () {
         else {
             this.document = documentOrHtml;
         }
+        if (typeof process !== 'undefined') {
+            global.document = this.document;
+        }
     };
     Renderer.querySelector = function (selector) {
         return this.document.querySelector(selector);
