@@ -4,16 +4,33 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const serveStatic = require('serve-static');
 const path = require('path');
-const { renderServer } = require('./server/main');
+const { renderServer } = require('./main.server.umd.js');
+// const router = express.Router();
 
 const PORT = process.env.PORT || 5000;
 
-var app = express();
+const app = express();
 
 app.disable('x-powered-by');
 
-app.use(express.static(path.join(__dirname, '../../docs/')));
-app.use('/rxcomp-server', serveStatic(path.join(__dirname, '../../docs/')));
+app.get('/', (request, response) => {
+	fs.readFile(path.join(__dirname, '../docs/index.html'), 'utf8', function(error, html) {
+		if (error) {
+			throw error;
+		}
+		// console.log('html', html);
+		renderServer(html).subscribe(renderedHtml => {
+			// console.log('renderedHtml', renderedHtml);
+			response.send(renderedHtml);
+		});
+	});
+	// response.sendFile(path.join(__dirname, '../../docs/index.html'));
+	// response.render('docs/index');
+});
+
+// app.use(express.static(path.join(__dirname, '../docs/')));
+app.use('/', serveStatic(path.join(__dirname, '../docs/')));
+app.use('/rxcomp-server', serveStatic(path.join(__dirname, '../docs/')));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
@@ -31,17 +48,43 @@ app.get('/', (request, response) => response.render('pages/index'));
 */
 // app.set('view engine', 'handlebars');
 
-app.get('/', function (request: any, response: any) {
-	fs.readFile(path.join(__dirname, '../../docs/index.html'), "utf8", function (error: any, html: any) {
+/*
+app.get('/', function(request, response) {
+	fs.readFile(path.join(__dirname, '../docs/index.html'), 'utf8', function(error, html) {
 		if (error) {
 			throw error;
 		}
+		console.log('html', html);
 		const renderedHtml = renderServer(html);
+		console.log('renderedHtml', renderedHtml);
 		response.send(renderedHtml);
 	});
 	// response.sendFile(path.join(__dirname, '../../docs/index.html'));
 	// response.render('docs/index');
 });
+*/
+
+/*
+// middleware that is specific to this router
+router.use((request, response, next) => {
+	console.log('Time: ', Date.now());
+	next();
+});
+
+router.get('/', (request, response, next) => {
+	fs.readFile(path.join(__dirname, '../docs/index.html'), 'utf8', function(error, html) {
+		if (error) {
+			throw error;
+		}
+		console.log('html', html);
+		const renderedHtml = renderServer(html);
+		console.log('renderedHtml', renderedHtml);
+		response.send(renderedHtml);
+	});
+	// response.sendFile(path.join(__dirname, '../../docs/index.html'));
+	// response.render('docs/index');
+});
+*/
 
 /*
 app.post('/api/token/rtc', function (request, response) {
@@ -93,3 +136,5 @@ https
 
 // Build token with user account
 // const token = RtcTokenBuilder.buildTokenWithAccount(environment.appKey, environment.appCertificate, environment.channelName, account, role, expirationTime);
+
+// module.exports = router;

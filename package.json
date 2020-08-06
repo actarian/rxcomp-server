@@ -1,54 +1,55 @@
 {
-	"author": "Luca Zampetti <lzampetti@gmail.com>",
-	"name": "rxcomp-server",
-	"description": "Reactive StoreModule for RxComp component library",
-	"version": "1.0.0-beta.12",
-	"browser": "dist/umd/rxcomp-server.js",
-	"main": "dist/cjs/rxcomp-server.js",
-	"types": "dist/cjs/rxcomp-server.d.ts",
-	"es2015": "dist/esm/rxcomp-server.js",
-	"files": [
-		"dist/",
-		"!.DS_Store"
-	],
-	"license": "MIT",
-	"keywords": [
-		"rxcomp",
-		"framework",
-		"server",
-		"rxjs",
-		"es6",
-		"es2015"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git://github.com/actarian/rxcomp-server.git"
-	},
-	"bugs": {
-		"url": "https://github.com/actarian/rxcomp-server/issues"
-	},
-	"homepage": "https://github.com/actarian/rxcomp-server",
-	"scripts": {
-		"start": "gulp",
-		"build": "gulp build --target dist",
-		"docs": "typedoc --options typedoc.json",
-		"docs2": "typedoc --out docs/documentation src/rxcomp-server.ts --mode modules --theme default --includeDeclarations --excludeExternals --excludePrivate --excludeNotExported",
-		"serve": "node server/server.js"
-	},
-	"dependencies": {
-		"htmlparser2": "~4.1.0",
-		"rxjs": "~6.5.4",
-		"rxcomp": "~1.0.0-beta.11",
-		"tslib": "~2.0.0"
-	},
-	"devDependencies": {
-		"@types/node": "~14.0.27",
-		"body-parser": "~1.19.0",
-		"events": "~3.2.0",
-		"express": "~4.17.1",
-		"gulpfile-config": "~1.0.0-alpha.12",
-		"https": "~1.0.0",
-		"typedoc": "~0.17.8",
-		"typescript": "~3.9.7"
-	}
+  "author": "Luca Zampetti <lzampetti@gmail.com>",
+  "name": "rxcomp-server",
+  "description": "Reactive StoreModule for RxComp component library",
+  "version": "1.0.0-beta.12",
+  "browser": "dist/umd/rxcomp-server.js",
+  "main": "dist/cjs/rxcomp-server.js",
+  "types": "dist/cjs/rxcomp-server.d.ts",
+  "es2015": "dist/esm/rxcomp-server.js",
+  "files": [
+    "dist/",
+    "!.DS_Store"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "rxcomp",
+    "framework",
+    "server",
+    "rxjs",
+    "es6",
+    "es2015"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/actarian/rxcomp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/actarian/rxcomp-server/issues"
+  },
+  "homepage": "https://github.com/actarian/rxcomp-server",
+  "scripts": {
+    "start": "gulp",
+    "build": "gulp build --target dist",
+    "docs": "typedoc --options typedoc.json",
+    "docs2": "typedoc --out docs/documentation src/rxcomp-server.ts --mode modules --theme default --includeDeclarations --excludeExternals --excludePrivate --excludeNotExported",
+    "serve": "node server/server.js"
+  },
+  "dependencies": {
+    "htmlparser2": "~4.1.0",
+    "rxjs": "~6.5.4",
+    "rxcomp": "~1.0.0-beta.11",
+    "tslib": "~2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "~14.0.27",
+    "body-parser": "~1.19.0",
+    "cross-fetch": "~3.0.5",
+    "events": "~3.2.0",
+    "express": "~4.17.1",
+    "gulpfile-config": "~1.0.0-alpha.12",
+    "https": "~1.0.0",
+    "typedoc": "~0.17.8",
+    "typescript": "~3.9.7"
+  }
 }

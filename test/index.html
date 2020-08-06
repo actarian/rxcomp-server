@@ -6,9 +6,9 @@
 		<!-- @@include ./templates/shared/header.html -->
 		<div class="container">
 			<ul class="list">
-				<li class="list__item" *for="let item of items" [class]="{ done: item.done }" (click)="onClick(item)">
-					<div class="title" [innerhtml]="item.name"></div>
-					{{item.done}}
+				<li class="list__item" *for="let item of items" [class]="{ done: item.completed }" (click)="onClick(item)">
+					<div class="title" [innerhtml]="item.title"></div>
+					{{item.completed}}
 				</li>
 			</ul>
 			<div *if="flag">flag</div>

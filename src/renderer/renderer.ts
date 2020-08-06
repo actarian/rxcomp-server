@@ -8,6 +8,9 @@ export default class Renderer {
 		} else {
 			this.document = documentOrHtml;
 		}
+		if (typeof process !== 'undefined') {
+			global.document = this.document as Document;
+		}
 	}
 
 	static querySelector(selector: string) {

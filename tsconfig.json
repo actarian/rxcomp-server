@@ -12,6 +12,7 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noImplicitAny": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "downlevelIteration": true
 	}
 }

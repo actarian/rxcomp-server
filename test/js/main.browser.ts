@@ -1,4 +1,8 @@
 import { Browser } from 'rxcomp';
 import AppModule from './app.module';
 
-Browser.bootstrap(AppModule);
+console.log('browser!');
+
+if (false) {
+	Browser.bootstrap(AppModule);
+}
