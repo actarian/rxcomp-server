@@ -37,7 +37,7 @@
 	},
 	"dependencies": {
 		"htmlparser2": "~4.1.0",
-		"rxjs": "~6.5.4",
+		"rxjs": "~6.6.2",
 		"rxcomp": "~1.0.0-beta.11",
 		"tslib": "~2.0.0"
 	},
@@ -46,7 +46,7 @@
 		"body-parser": "~1.19.0",
 		"events": "~3.2.0",
 		"express": "~4.17.1",
-		"gulpfile-config": "~1.0.0-alpha.12",
+		"gulpfile-config": "~1.0.0-alpha.13",
 		"https": "~1.0.0",
 		"typedoc": "~0.17.8",
 		"typescript": "~3.9.7"
