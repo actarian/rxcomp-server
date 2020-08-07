@@ -245,7 +245,7 @@ export function cloneNode(source: RxNode, deep: boolean = false, parentNode: RxE
 		const nodeElement: RxElement = new RxElement(
 			parentNode,
 			source.nodeName,
-			Object.assign({}, source.attributes)
+			Object.assign({}, source.attributes),
 		);
 		if (deep) {
 			nodeElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeElement]));
@@ -311,10 +311,138 @@ export class RxNode {
 	}
 }
 
+export class RxStyle {
+	[key: string]: any;
+	item(index: number): string | undefined {
+		const keys = Object.keys(this);
+		if (keys.length > index) {
+			return keys[index];
+		} else {
+			return undefined;
+		}
+	}
+	getPropertyPriority(key: string): string {
+		const value = this[key];
+		if (value && value.indexOf('!important')) {
+			return 'important';
+		} else {
+			return '';
+		}
+	}
+	getPropertyValue(key: string): string {
+		return this[key];
+	}
+	setProperty(key: string, value: string, important: 'important' | '' | undefined) {
+		this[key] = value + (important === 'important' ? '!important' : '');
+		this.serialize_();
+	}
+	removeProperty(key: string) {
+		delete this[key];
+		this.serialize_();
+	}
+	private serialize_() {
+		this.node.attributes.style = Object.keys(this).map(key => {
+			return `${key}: ${this[key]};`;
+		}).join(' ');
+	}
+	init() {
+		const keys = Object.keys(this);
+		keys.forEach(key => delete this[key]);
+		if (this.node.attributes?.style) {
+			const regex: RegExp = /([^:]+):([^;]+);?\s*/gm
+			const matches: RegExpMatchArray[] = [...this.node.attributes.style.matchAll(regex)];
+			matches.forEach((match: RegExpMatchArray) => {
+				const key: string = match[1];
+				const value: string = match[2];
+				this[key] = value;
+			});
+		}
+	}
+	constructor(node: RxElement) {
+		Object.defineProperty(this, 'node', {
+			value: node,
+			writable: false,
+			enumerable: false
+		});
+		this.init();
+	}
+}
+
+export class RxClassList extends Array<string> {
+	node: RxElement;
+	item(index: number) {
+		return this[index];
+	}
+	contains(name: string): boolean {
+		return this.indexOf(name) !== -1;
+	}
+	add(...names: string[]) {
+		names.forEach(name => {
+			if (this.indexOf(name) !== -1) {
+				this.push(name);
+			}
+		});
+		this.serialize_();
+	}
+	remove(...names: string[]) {
+		names.forEach(name => {
+			const index: number = this.indexOf(name);
+			if (index !== -1) {
+				this.splice(index, 1);
+			}
+		});
+		this.serialize_();
+	}
+	toggle(name: string, force?: boolean): boolean {
+		const index: number = this.indexOf(name);
+		if (force === false) {
+			this.splice(index, 1);
+			this.serialize_();
+			return false;
+		} else if (force === true) {
+			this.push(name);
+			this.serialize_();
+			return true;
+		} else if (index !== -1) {
+			this.splice(index, 1);
+			this.serialize_();
+			return false;
+		} else {
+			this.push(name);
+			this.serialize_();
+			return true;
+		}
+	}
+	replace(oldClass: string, newClass: string) {
+		const index: number = this.indexOf(oldClass);
+		if (index !== -1) {
+			this.splice(index, 1);
+		}
+		this.push(newClass);
+		this.serialize_();
+	}
+	private serialize_() {
+		this.node.attributes.class = this.join(' ');
+	}
+	init() {
+		this.length = 0;
+		if (this.node.attributes?.class) {
+			Array.prototype.push.apply(this, this.node.attributes.class.split(' ').map(name => name.trim()));
+		}
+	}
+	constructor(node: RxElement) {
+		super();
+		this.node = node;
+		this.init();
+	}
+}
+
 export class RxElement extends RxNode {
 	nodeName: string;
 	childNodes: RxNode[];
-	attributes: { [key: string]: string | null };
+	attributes: { [key: string]: string | null } = {};
+	style: RxStyle;
+	classList: RxClassList;
 	get children(): RxElement[] {
 		let children: RxElement[] = [],
 			i = 0,
@@ -357,6 +485,13 @@ export class RxElement extends RxNode {
 			}
 		}
 		return null;
+	}
+	get lastChild(): RxNode | null {
+		let node = null;
+		if (this.childNodes.length) {
+			node = this.childNodes[this.childNodes.length - 1];
+		}
+		return node;
 	}
 	get lastElementChild(): RxElement | null {
 		const nodes = this.childNodes;
@@ -402,12 +537,6 @@ export class RxElement extends RxNode {
 		}
 		return html;
 	}
-	get classList(): string[] {
-		const classList: string[] = this.attributes.class
-			? this.attributes.class.split(' ').map(c => c.trim())
-			: [];
-		return classList;
-	}
 	set innerText(nodeValue: string | null) {
 		this.childNodes = [new RxText(this, nodeValue)];
 	}
@@ -421,6 +550,9 @@ export class RxElement extends RxNode {
 	get textContent(): string | null {
 		return this.innerText;
 	}
+	get innerHTML(): string {
+		return this.childNodes.map(x => x.serialize()).join('');
+	}
 	set innerHTML(html: string) {
 		const doc = parse(html);
 		const childNodes = doc.childNodes.map(n => {
@@ -433,7 +565,11 @@ export class RxElement extends RxNode {
 		super(parentNode);
 		this.nodeType = RxNodeType.ELEMENT_NODE;
 		this.nodeName = nodeName;
-		this.attributes = attributes || {};
+		if (attributes && typeof attributes === 'object') {
+			this.attributes = attributes;
+		}
+		this.style = new RxStyle(this);
+		this.classList = new RxClassList(this);
 		this.childNodes = [];
 		/*
 			if (SKIP.indexOf(nodeName) === -1) {
@@ -523,9 +659,19 @@ export class RxElement extends RxNode {
 	}
 	setAttribute(attribute: string, value: any) {
 		this.attributes[attribute.toLowerCase()] = value.toString();
+		if (attribute === 'style') {
+			this.style.init();
+		} else if (attribute === 'class') {
+			this.classList.init();
+		}
 	}
 	removeAttribute(attribute: string) {
 		delete this.attributes[attribute];
+		if (attribute === 'style') {
+			this.style.init();
+		} else if (attribute === 'class') {
+			this.classList.init();
+		}
 	}
 	replaceChild(newChild: RxNode, oldChild: RxNode): RxNode {
 		const index = this.childNodes.indexOf(oldChild);

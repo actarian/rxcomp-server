@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { BehaviorSubject, from, Observable, throwError } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 

@@ -34,7 +34,6 @@
 <body class="page--test">
 	<!-- include ./shared/analytics.html { "code": "GTM-WL42JM2" } -->
 <!-- start main -->
-<!-- main app-component -->
 <main class="app" app-component>
 	<div class="app__inner">
 <!-- start header.html-->
@@ -53,24 +52,20 @@
 <!-- end header.html-->
 		<div class="container">
 			<ul class="list">
-				<li class="list__item" *for="let item of items" [class]="{ done: item.completed }" (click)="onClick(item)">
+				<li class="list__item" *for="let item of items" [class]="{ completed: item.completed }" [style]="{ 'border-color': item.completed ? 'red' : 'black' }" (click)="onClick(item)">
 					<div class="title" [innerhtml]="item.title"></div>
-					{{item.completed}}
+					<div class="completed">{{item.completed}}</div>
 				</li>
 			</ul>
-			<div *if="flag">flag</div>
-			<div *if="active">active</div>
-			<div *if="!active">inactive</div>
 		</div>
 	</div>
 </main>
-<!-- /end main app-component -->
 
 <!-- end main -->
 	<script src="https://polyfill.io/v3/polyfill.min.js?features=es5%2CArray.prototype.find%2CObject.assign%2CPromise%2CMap"></script>
 	<script src="https://unpkg.com/rxjs@6.6.2/bundles/rxjs.umd.min.js" crossorigin="anonymous" SameSite="none Secure"></script>
-	<script src="https://unpkg.com/rxcomp@1.0.0-beta.12/dist/iife/rxcomp.min.js" crossorigin="anonymous" SameSite="none Secure"></script>
-	<!-- <script src="/rxcomp-server/js/rxcomp.js"></script> -->
+	<!-- <script src="https://unpkg.com/rxcomp@1.0.0-beta.12/dist/iife/rxcomp.min.js" crossorigin="anonymous" SameSite="none Secure"></script> -->
+	<script src="/rxcomp-server/js/rxcomp.js"></script>
 <!-- start js -->
 <script src="/rxcomp-server/js/main.js"></script>
 

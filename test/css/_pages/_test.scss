@@ -238,11 +238,20 @@ counter-component {
 
 .list {
 	@extend %nav;
+	flex-direction: column;
 
-	&__item {
+	&>.list__item {
 		@extend %nav-item;
 
-		&.done {
+		display: flex;
+		justify-content: space-between;
+		background: rgba(0, 0, 0, 0.2);
+		padding: 4px 8px;
+		margin-bottom: 2px;
+		border-radius: 3px;
+		border-bottom: 1px solid black;
+
+		&.completed {
 			color: yellow;
 		}
 	}

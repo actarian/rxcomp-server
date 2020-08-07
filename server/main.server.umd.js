@@ -4,1190 +4,9 @@
  * License: MIT
  */
 
-(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?f(exports,require('rxjs/operators'),require('rxcomp'),require('htmlparser2'),require('stream'),require('http'),require('url'),require('https'),require('zlib'),require('rxjs')):typeof define==='function'&&define.amd?define(['exports','rxjs/operators','rxcomp','htmlparser2','stream','http','url','https','zlib','rxjs'],f):(g=typeof globalThis!=='undefined'?globalThis:g||self,f((g.main=g.main||{},g.main.server=g.main.server||{},g.main.server.umd={}),g.rxjs.operators,g.rxcomp,g.htmlparser2,g.Stream,g.http,g.Url,g.https,g.zlib,g.rxjs));}(this,(function(exports, operators, rxcomp, htmlparser2, Stream, http, Url, https, zlib, rxjs){'use strict';Stream=Stream&&Object.prototype.hasOwnProperty.call(Stream,'default')?Stream['default']:Stream;http=http&&Object.prototype.hasOwnProperty.call(http,'default')?http['default']:http;Url=Url&&Object.prototype.hasOwnProperty.call(Url,'default')?Url['default']:Url;https=https&&Object.prototype.hasOwnProperty.call(https,'default')?https['default']:https;zlib=zlib&&Object.prototype.hasOwnProperty.call(zlib,'default')?zlib['default']:zlib;function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
+(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?f(exports,require('stream'),require('http'),require('url'),require('https'),require('zlib'),require('rxjs/operators'),require('rxcomp'),require('htmlparser2'),require('rxjs')):typeof define==='function'&&define.amd?define(['exports','stream','http','url','https','zlib','rxjs/operators','rxcomp','htmlparser2','rxjs'],f):(g=typeof globalThis!=='undefined'?globalThis:g||self,f((g.main=g.main||{},g.main.server=g.main.server||{},g.main.server.umd={}),g.Stream,g.http,g.Url,g.https,g.zlib,g.rxjs.operators,g.rxcomp,g.htmlparser2,g.rxjs));}(this,(function(exports, Stream, http, Url, https, zlib, operators, rxcomp, htmlparser2, rxjs){'use strict';Stream=Stream&&Object.prototype.hasOwnProperty.call(Stream,'default')?Stream['default']:Stream;http=http&&Object.prototype.hasOwnProperty.call(http,'default')?http['default']:http;Url=Url&&Object.prototype.hasOwnProperty.call(Url,'default')?Url['default']:Url;https=https&&Object.prototype.hasOwnProperty.call(https,'default')?https['default']:https;zlib=zlib&&Object.prototype.hasOwnProperty.call(zlib,'default')?zlib['default']:zlib;var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  return Constructor;
-}
-
-function _inheritsLoose(subClass, superClass) {
-  subClass.prototype = Object.create(superClass.prototype);
-  subClass.prototype.constructor = subClass;
-  subClass.__proto__ = superClass;
-}
-
-function _unsupportedIterableToArray(o, minLen) {
-  if (!o) return;
-  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-  var n = Object.prototype.toString.call(o).slice(8, -1);
-  if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return Array.from(o);
-  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-}
-
-function _arrayLikeToArray(arr, len) {
-  if (len == null || len > arr.length) len = arr.length;
-
-  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
-  return arr2;
-}
-
-function _createForOfIteratorHelperLoose(o, allowArrayLike) {
-  var it;
-
-  if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
-    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
-      if (it) o = it;
-      var i = 0;
-      return function () {
-        if (i >= o.length) return {
-          done: true
-        };
-        return {
-          done: false,
-          value: o[i++]
-        };
-      };
-    }
-
-    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  it = o[Symbol.iterator]();
-  return it.next.bind(it);
-}/*
-export const NO_CHILDS = [
-    'title',
-    'base',
-    'meta',
-    'link',
-    'img',
-    'br',
-    'input',
-];
-
-const SKIP = [
-    'html',
-    'head',
-    'title',
-    'base',
-    'meta',
-    'script',
-    'link',
-    'body',
-];
-*/
-///
-
-/*
-if (true) {
-    document.createComment = nodeValue => {
-        return new RxComment(null, nodeValue);
-    };
-    document.createTextNode = nodeValue => {
-        return new RxText(null, nodeValue);
-    };
-}
-*/
-///
-
-var RxNodeType;
-
-(function (RxNodeType) {
-  RxNodeType[RxNodeType["ELEMENT_NODE"] = 1] = "ELEMENT_NODE";
-  RxNodeType[RxNodeType["TEXT_NODE"] = 3] = "TEXT_NODE";
-  RxNodeType[RxNodeType["CDATA_SECTION_NODE"] = 4] = "CDATA_SECTION_NODE";
-  RxNodeType[RxNodeType["PROCESSING_INSTRUCTION_NODE"] = 7] = "PROCESSING_INSTRUCTION_NODE";
-  RxNodeType[RxNodeType["COMMENT_NODE"] = 8] = "COMMENT_NODE";
-  RxNodeType[RxNodeType["DOCUMENT_NODE"] = 9] = "DOCUMENT_NODE";
-  RxNodeType[RxNodeType["DOCUMENT_TYPE_NODE"] = 10] = "DOCUMENT_TYPE_NODE";
-  RxNodeType[RxNodeType["DOCUMENT_FRAGMENT_NODE"] = 11] = "DOCUMENT_FRAGMENT_NODE";
-})(RxNodeType || (RxNodeType = {}));
-
-var SelectorType;
-
-(function (SelectorType) {
-  SelectorType[SelectorType["None"] = -1] = "None";
-  SelectorType[SelectorType["Id"] = 0] = "Id";
-  SelectorType[SelectorType["Class"] = 1] = "Class";
-  SelectorType[SelectorType["Attribute"] = 2] = "Attribute";
-  SelectorType[SelectorType["TagName"] = 3] = "TagName";
-})(SelectorType || (SelectorType = {}));
-
-function isRxElement(x) {
-  return x.nodeType === RxNodeType.ELEMENT_NODE;
-}
-function isRxText(x) {
-  return x.nodeType === RxNodeType.TEXT_NODE;
-}
-function isRxComment(x) {
-  return x.nodeType === RxNodeType.COMMENT_NODE;
-}
-function isRxDocument(x) {
-  return x.nodeType === RxNodeType.DOCUMENT_NODE;
-}
-function isRxDocumentFragment(x) {
-  return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
-}
-function isRxDocumentType(x) {
-  return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
-}
-function parse(html) {
-  var doc = new RxDocument();
-  var parentNode = doc,
-      node;
-  var parser = new htmlparser2.Parser({
-    onopentag: function onopentag(nodeName, attributes) {
-      // console.log(nodeName);
-      node = new RxElement(parentNode, nodeName, attributes);
-      parentNode.childNodes.push(node);
-      parentNode = node; // if (NO_CHILDS.indexOf(nodeName) === -1) {
-      //	console.log(nodeName);
-      //	parentNode = node;
-      // }
-    },
-    onclosetag: function onclosetag(nodeName) {
-      if (parentNode.parentNode) {
-        parentNode = parentNode.parentNode;
-      }
-    },
-    ontext: function ontext(nodeValue) {
-      // console.log('ontext', nodeValue);
-      // if (nodeValue.length) {
-      var textNode = new RxText(parentNode, nodeValue);
-      parentNode.childNodes.push(textNode); // }
-    },
-    onprocessinginstruction: function onprocessinginstruction(nodeName, nodeValue) {
-      // console.log('onprocessinginstruction', nodeName, nodeValue);
-      if (nodeName === '!doctype') {
-        node = new RxDocumentType(parentNode, nodeValue);
-      } else {
-        node = new RxProcessingInstruction(parentNode, nodeValue);
-      }
-
-      parentNode.childNodes.push(node);
-    },
-    oncomment: function oncomment(nodeValue) {
-      // console.log('oncomment', nodeValue);
-      node = new RxComment(parentNode, nodeValue);
-      parentNode.childNodes.push(node); // parentNode = node;
-    },
-    oncommentend: function oncommentend() {// console.log('oncommentend');
-      // parentNode = parentNode.parentNode;
-    },
-    oncdatastart: function oncdatastart() {
-      console.log('oncdatastart');
-    },
-    oncdataend: function oncdataend() {
-      console.log('oncdataend');
-    },
-    onerror: function onerror(error) {
-      console.log('error', error);
-    }
-  }, {
-    decodeEntities: false,
-    lowerCaseTags: true
-  });
-  parser.write(html);
-  parser.end();
-  return doc;
-}
-function getQueries(selector) {
-  var queries = [];
-  selector.trim().split(' ').forEach(function (x) {
-    x.trim().split('>').forEach(function (x, i) {
-      var regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
-      /*eslint no-useless-escape: "off"*/
-      // const regex = new RegExp(`\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)`, 'g');
-
-      var selectors = [];
-      var matches = x.matchAll(regex);
-
-      for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
-        var match = _step.value;
-
-        if (match[1]) {
-          selectors.push({
-            selector: match[1],
-            type: SelectorType.Class
-          });
-        } else if (match[2]) {
-          selectors.push({
-            selector: match[2],
-            type: SelectorType.Attribute
-          });
-        } else if (match[3]) {
-          selectors.push({
-            selector: match[3],
-            type: SelectorType.TagName
-          });
-        } // console.log('match', match);
-
-      }
-
-      var selector = i > 0 ? {
-        selector: x,
-        selectors: selectors,
-        inner: true
-      } : {
-        selector: x,
-        selectors: selectors,
-        inner: false
-      };
-      queries.push.call(queries, selector);
-    });
-  });
-  return queries;
-}
-
-function _querySelector(queries, childNodes, query) {
-  if (query === void 0) {
-    query = null;
-  }
-
-  var node = null;
-
-  var match = function match(child, selector) {
-    switch (selector.type) {
-      case SelectorType.Class:
-        return child.classList.indexOf(selector.selector) !== -1;
-
-      case SelectorType.Attribute:
-        return Object.keys(child.attributes).indexOf(selector.selector) !== -1;
-
-      case SelectorType.TagName:
-        return child.nodeName === selector.selector;
-
-      default:
-        return false;
-    }
-  };
-
-  if (query || queries.length) {
-    query = query || queries.shift();
-
-    var _loop = function _loop() {
-      var child = _step2.value;
-
-      if (child instanceof RxElement) {
-        var has = query.selectors.reduce(function (p, selector, i) {
-          return p && match(child, selector);
-        }, true);
-
-        if (has) {
-          // console.log(query);
-          if (queries.length) {
-            return {
-              v: _querySelector(queries, child.childNodes)
-            };
-          } else {
-            return {
-              v: child
-            };
-          }
-        } else if (!query.inner) {
-          node = _querySelector(queries, child.childNodes, query);
-        }
-      }
-    };
-
-    for (var _iterator2 = _createForOfIteratorHelperLoose(childNodes), _step2; !(_step2 = _iterator2()).done;) {
-      var _ret = _loop();
-
-      if (typeof _ret === "object") return _ret.v;
-    }
-  }
-
-  return node;
-}
-
-function _cloneNode(source, deep, parentNode) {
-  if (deep === void 0) {
-    deep = false;
-  }
-
-  if (parentNode === void 0) {
-    parentNode = null;
-  }
-
-  var node;
-
-  if (isRxElement(source)) {
-    var nodeElement = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
-
-    if (deep) {
-      nodeElement.childNodes = source.childNodes.map(function (x) {
-        return _cloneNode.apply(x, [x, deep, nodeElement]);
-      });
-    }
-
-    node = nodeElement;
-  } else if (isRxDocumentFragment(source)) {
-    var nodeDocumentFragment = new RxDocumentFragment();
-
-    if (deep) {
-      nodeDocumentFragment.childNodes = source.childNodes.map(function (x) {
-        return _cloneNode.apply(x, [x, deep, nodeDocumentFragment]);
-      });
-    }
-
-    node = nodeDocumentFragment;
-  } else if (isRxText(source)) {
-    node = new RxText(parentNode, source.nodeValue);
-  } else if (isRxComment(source)) {
-    node = new RxComment(parentNode, source.nodeValue);
-  } else if (isRxDocument(source)) {
-    var documentElement = new RxDocument();
-
-    if (deep) {
-      documentElement.childNodes = source.childNodes.map(function (x) {
-        return _cloneNode.apply(x, [x, deep, documentElement]);
-      });
-    }
-
-    node = documentElement;
-  } else {
-    throw 'Invalid node type';
-  }
-
-  return node;
-}
-var RxNode = /*#__PURE__*/function () {
-  function RxNode(parentNode) {
-    if (parentNode === void 0) {
-      parentNode = null;
-    }
-
-    this.nodeValue = null;
-    this.parentNode = parentNode;
-    this.nodeType = -1;
-  }
-
-  var _proto = RxNode.prototype;
-
-  _proto.cloneNode = function cloneNode(deep) {
-    if (deep === void 0) {
-      deep = false;
-    }
-
-    return _cloneNode.apply(this, [this, deep]);
-  };
-
-  _proto.serialize = function serialize() {
-    return "";
-  };
-
-  return RxNode;
-}();
-var RxElement = /*#__PURE__*/function (_RxNode) {
-  _inheritsLoose(RxElement, _RxNode);
-
-  function RxElement(parentNode, nodeName, attributes) {
-    var _this;
-
-    if (parentNode === void 0) {
-      parentNode = null;
-    }
-
-    if (attributes === void 0) {
-      attributes = null;
-    }
-
-    _this = _RxNode.call(this, parentNode) || this;
-    _this.nodeType = RxNodeType.ELEMENT_NODE;
-    _this.nodeName = nodeName;
-    _this.attributes = attributes || {};
-    _this.childNodes = [];
-    /*
-        if (SKIP.indexOf(nodeName) === -1) {
-            console.log(parentNode.nodeName, '>', nodeName);
-    }
-    */
-
-    return _this;
-  }
-
-  var _proto2 = RxElement.prototype;
-
-  _proto2.append = function append() {
-    var _this2 = this;
-
-    for (var _len = arguments.length, nodesOrDOMStrings = new Array(_len), _key = 0; _key < _len; _key++) {
-      nodesOrDOMStrings[_key] = arguments[_key];
-    }
-
-    nodesOrDOMStrings = nodesOrDOMStrings.map(function (nodeOrDomString) {
-      var node;
-
-      if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this2, nodeOrDomString);
-      } else {
-        node = nodeOrDomString;
-        node.parentNode = _this2;
-      }
-
-      return node;
-    });
-    Array.prototype.push.apply(this.childNodes, nodesOrDOMStrings);
-    /*
-    for (let nodeOrDomString of nodesOrDOMStrings) {
-            let node;
-            if (typeof nodeOrDomString === 'string') {
-                node = new RxText(this, nodeOrDomString);
-            } else {
-                node = nodeOrDomString;
-            }
-            this.childNodes.push(node);
-    }
-    */
-  };
-
-  _proto2.prepend = function prepend() {
-    var _this3 = this;
-
-    for (var _len2 = arguments.length, nodesOrDOMStrings = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      nodesOrDOMStrings[_key2] = arguments[_key2];
-    }
-
-    nodesOrDOMStrings = nodesOrDOMStrings.map(function (nodeOrDomString) {
-      var node;
-
-      if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this3, nodeOrDomString);
-      } else {
-        node = nodeOrDomString;
-        node.parentNode = _this3;
-      }
-
-      return node;
-    });
-    Array.prototype.unshift.apply(this.childNodes, nodesOrDOMStrings);
-    /*
-        for (let nodeOrDomString of nodesOrDOMStrings) {
-            let node;
-            if (typeof nodeOrDomString === 'string') {
-                node = new RxText(this, nodeOrDomString);
-            } else {
-                node = nodeOrDomString;
-            }
-            this.childNodes.unshift(node);
-    }
-    */
-  };
-
-  _proto2.replaceChildren = function replaceChildren() {
-    var _this4 = this;
-
-    for (var _len3 = arguments.length, nodesOrDOMStrings = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-      nodesOrDOMStrings[_key3] = arguments[_key3];
-    }
-
-    var nodes = nodesOrDOMStrings.map(function (nodeOrDomString) {
-      var node;
-
-      if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this4, nodeOrDomString);
-      } else {
-        node = nodeOrDomString;
-        node.parentNode = _this4;
-      }
-
-      return node;
-    });
-    this.childNodes = nodes;
-  };
-
-  _proto2.querySelectorAll = function querySelectorAll(selector) {
-    var queries = getQueries(selector);
-    var nodes = this.childNodes.filter(function (x) {
-      return true;
-    });
-    console.log(queries);
-    return nodes.length ? nodes : null;
-  };
-
-  _proto2.querySelector = function querySelector(selector) {
-    var queries = getQueries(selector);
-
-    var node = _querySelector(queries, this.childNodes);
-
-    return node;
-  };
-
-  _proto2.hasAttribute = function hasAttribute(attribute) {
-    return Object.keys(this.attributes).indexOf(attribute.toLowerCase()) !== -1;
-  };
-
-  _proto2.getAttribute = function getAttribute(attribute) {
-    return this.attributes[attribute.toLowerCase()] || null;
-  };
-
-  _proto2.setAttribute = function setAttribute(attribute, value) {
-    this.attributes[attribute.toLowerCase()] = value.toString();
-  };
-
-  _proto2.removeAttribute = function removeAttribute(attribute) {
-    delete this.attributes[attribute];
-  };
-
-  _proto2.replaceChild = function replaceChild(newChild, oldChild) {
-    var index = this.childNodes.indexOf(oldChild);
-
-    if (index !== -1) {
-      this.childNodes[index] = newChild;
-      newChild.parentNode = this;
-    } // console.log('replaceChild', this, newChild, oldChild);
-
-
-    return oldChild;
-  };
-
-  _proto2.removeChild = function removeChild(child) {
-    if (!(child instanceof RxNode)) {
-      throw "Uncaught TypeError: Failed to execute 'removeChild' on 'Node': parameter 1 is not of type 'Node'.";
-    }
-
-    var index = this.childNodes.indexOf(child);
-
-    if (index === -1) {
-      throw "Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.";
-    }
-
-    this.childNodes.splice(index, 1); // console.log('removeChild', this.childNodes.length);
-
-    return child;
-  };
-
-  _proto2.insertBefore = function insertBefore(newNode, referenceNode) {
-    if (referenceNode === void 0) {
-      referenceNode = null;
-    }
-
-    var index = referenceNode ? this.childNodes.indexOf(referenceNode) : this.childNodes.length;
-
-    if (index !== -1) {
-      this.childNodes.splice(index, 0, newNode);
-      newNode.parentNode = this;
-    } // console.log('insertBefore', this, newNode, referenceNode);
-
-
-    return newNode;
-  };
-
-  _proto2.cloneNode = function cloneNode(deep) {
-    if (deep === void 0) {
-      deep = false;
-    }
-
-    return _cloneNode.apply(this, [this, deep]);
-  };
-
-  _proto2.addListener = function addListener(eventName, handler) {};
-
-  _proto2.removeListener = function removeListener(eventName, handler) {};
-
-  _proto2.serialize = function serialize() {
-    return "<" + this.nodeName + this.serializeAttributes() + ">" + this.childNodes.map(function (x) {
-      return x.serialize();
-    }).join('') + "</" + this.nodeName + ">";
-  };
-
-  _proto2.serializeAttributes = function serializeAttributes() {
-    var _this5 = this;
-
-    var attributes = '';
-    var keys = Object.keys(this.attributes);
-
-    if (keys.length) {
-      attributes = ' ' + keys.map(function (k) {
-        return k + "=\"" + _this5.attributes[k] + "\"";
-      }).join(' ');
-    }
-
-    return attributes;
-  };
-
-  _createClass(RxElement, [{
-    key: "children",
-    get: function get() {
-      var children = [],
-          i = 0,
-          node,
-          nodes = this.childNodes;
-      node = nodes[i++];
-
-      while (node) {
-        node = nodes[i++];
-
-        if (node.nodeType === RxNodeType.ELEMENT_NODE) {
-          children.push(node);
-        }
-      }
-
-      return children;
-    }
-  }, {
-    key: "childElementCount",
-    get: function get() {
-      var i = 0,
-          count = 0,
-          node,
-          nodes = this.childNodes;
-      node = nodes[i++];
-
-      while (node) {
-        if (node.nodeType === RxNodeType.ELEMENT_NODE) {
-          count++;
-        }
-
-        node = nodes[i++];
-      }
-
-      return count;
-    }
-  }, {
-    key: "firstChild",
-    get: function get() {
-      var node = null;
-
-      if (this.childNodes.length) {
-        node = this.childNodes[0];
-      }
-
-      return node;
-    }
-  }, {
-    key: "firstElementChild",
-    get: function get() {
-      for (var _iterator3 = _createForOfIteratorHelperLoose(this.childNodes), _step3; !(_step3 = _iterator3()).done;) {
-        var node = _step3.value;
-
-        if (isRxElement(node)) {
-          return node;
-        }
-      }
-
-      return null;
-    }
-  }, {
-    key: "lastElementChild",
-    get: function get() {
-      var nodes = this.childNodes;
-
-      for (var i = nodes.length - 1; i > -1; i--) {
-        var node = nodes[i];
-
-        if (isRxElement(node)) {
-          return node;
-        }
-      }
-
-      return null;
-    }
-  }, {
-    key: "previousSibling",
-    get: function get() {
-      var node = null;
-
-      if (this.parentNode) {
-        var index = this.parentNode.childNodes.indexOf(this);
-
-        if (index > 0) {
-          node = this.parentNode.childNodes[index - 1];
-        }
-      }
-
-      return node;
-    }
-  }, {
-    key: "nextSibling",
-    get: function get() {
-      var node = null;
-
-      if (this.parentNode) {
-        var index = this.parentNode.childNodes.indexOf(this);
-
-        if (index !== -1 && index < this.parentNode.childNodes.length - 1) {
-          node = this.parentNode.childNodes[index];
-        }
-      }
-
-      return node;
-    }
-  }, {
-    key: "wholeText",
-    get: function get() {
-      var nodeValue;
-
-      if (this.nodeType === RxNodeType.TEXT_NODE) {
-        return this.nodeValue;
-      }
-
-      return nodeValue;
-    }
-  }, {
-    key: "outerHTML",
-    get: function get() {
-      var html = null;
-
-      if (this.parentNode) {
-        html = this.parentNode.serialize();
-      }
-
-      return html;
-    }
-  }, {
-    key: "classList",
-    get: function get() {
-      var classList = this.attributes.class ? this.attributes.class.split(' ').map(function (c) {
-        return c.trim();
-      }) : [];
-      return classList;
-    }
-  }, {
-    key: "innerText",
-    set: function set(nodeValue) {
-      this.childNodes = [new RxText(this, nodeValue)];
-    },
-    get: function get() {
-      // return this.childNodes.filter((n): n is RxText => isRxText(n)).map(n => n.innerText).join('');
-      return this.childNodes.filter(function (n) {
-        return isRxText(n) || isRxElement(n);
-      }).map(function (n) {
-        return n.innerText;
-      }).join('');
-    }
-  }, {
-    key: "textContent",
-    set: function set(nodeValue) {
-      this.innerText = String(nodeValue);
-    },
-    get: function get() {
-      return this.innerText;
-    }
-  }, {
-    key: "innerHTML",
-    set: function set(html) {
-      var _this6 = this;
-
-      var doc = parse(html);
-      var childNodes = doc.childNodes.map(function (n) {
-        n.parentNode = _this6;
-        return n;
-      });
-      this.childNodes = childNodes;
-    }
-  }]);
-
-  return RxElement;
-}(RxNode);
-var RxText = /*#__PURE__*/function (_RxNode2) {
-  _inheritsLoose(RxText, _RxNode2);
-
-  function RxText(parentNode, nodeValue) {
-    var _this7;
-
-    if (parentNode === void 0) {
-      parentNode = null;
-    }
-
-    _this7 = _RxNode2.call(this, parentNode) || this;
-    _this7.nodeType = RxNodeType.TEXT_NODE;
-    _this7.nodeValue = String(nodeValue); // console.log('RxText', nodeValue);
-
-    return _this7;
-  }
-
-  var _proto3 = RxText.prototype;
-
-  _proto3.serialize = function serialize() {
-    return this.nodeValue;
-  };
-
-  _createClass(RxText, [{
-    key: "outerHTML",
-    get: function get() {
-      var html = null;
-
-      if (this.parentNode) {
-        html = this.parentNode.serialize();
-      }
-
-      return html;
-    }
-  }, {
-    key: "wholeText",
-    get: function get() {
-      return this.nodeValue;
-    }
-  }, {
-    key: "innerText",
-    set: function set(nodeValue) {
-      this.nodeValue = String(nodeValue);
-    },
-    get: function get() {
-      return this.nodeValue;
-    }
-  }, {
-    key: "textContent",
-    set: function set(nodeValue) {
-      this.nodeValue = String(nodeValue);
-    },
-    get: function get() {
-      return this.nodeValue;
-    }
-  }]);
-
-  return RxText;
-}(RxNode);
-var RxComment = /*#__PURE__*/function (_RxNode4) {
-  _inheritsLoose(RxComment, _RxNode4);
-
-  function RxComment(parentNode, nodeValue) {
-    var _this9;
-
-    if (parentNode === void 0) {
-      parentNode = null;
-    }
-
-    _this9 = _RxNode4.call(this, parentNode) || this;
-    _this9.nodeType = RxNodeType.COMMENT_NODE;
-    _this9.nodeValue = String(nodeValue);
-    return _this9;
-  }
-
-  var _proto5 = RxComment.prototype;
-
-  _proto5.serialize = function serialize() {
-    return "<!--" + this.nodeValue + "-->";
-  };
-
-  _createClass(RxComment, [{
-    key: "outerHTML",
-    get: function get() {
-      var html = null;
-
-      if (this.parentNode) {
-        html = this.parentNode.serialize();
-      }
-
-      return html;
-    }
-  }, {
-    key: "wholeText",
-    get: function get() {
-      return this.nodeValue;
-    }
-  }, {
-    key: "innerText",
-    set: function set(nodeValue) {
-      this.nodeValue = String(nodeValue);
-    },
-    get: function get() {
-      return this.nodeValue;
-    }
-  }, {
-    key: "textContent",
-    set: function set(nodeValue) {
-      this.nodeValue = String(nodeValue);
-    },
-    get: function get() {
-      return this.nodeValue;
-    }
-  }]);
-
-  return RxComment;
-}(RxNode);
-var RxProcessingInstruction = /*#__PURE__*/function (_RxNode5) {
-  _inheritsLoose(RxProcessingInstruction, _RxNode5);
-
-  function RxProcessingInstruction(parentNode, nodeValue) {
-    var _this10;
-
-    if (parentNode === void 0) {
-      parentNode = null;
-    }
-
-    _this10 = _RxNode5.call(this, parentNode) || this;
-    _this10.nodeType = RxNodeType.PROCESSING_INSTRUCTION_NODE;
-    _this10.nodeValue = String(nodeValue);
-    return _this10;
-  }
-
-  var _proto6 = RxProcessingInstruction.prototype;
-
-  _proto6.serialize = function serialize() {
-    return "<" + this.nodeValue + ">";
-  };
-
-  return RxProcessingInstruction;
-}(RxNode);
-var RxDocumentType = /*#__PURE__*/function (_RxNode6) {
-  _inheritsLoose(RxDocumentType, _RxNode6);
-
-  function RxDocumentType(parentNode, nodeValue) {
-    var _this11;
-
-    if (parentNode === void 0) {
-      parentNode = null;
-    }
-
-    _this11 = _RxNode6.call(this, parentNode) || this;
-    _this11.nodeType = RxNodeType.DOCUMENT_TYPE_NODE;
-    _this11.nodeValue = String(nodeValue);
-    return _this11;
-  }
-
-  var _proto7 = RxDocumentType.prototype;
-
-  _proto7.serialize = function serialize() {
-    return "<" + this.nodeValue + ">";
-  };
-
-  return RxDocumentType;
-}(RxNode);
-var RxDocumentFragment = /*#__PURE__*/function (_RxElement) {
-  _inheritsLoose(RxDocumentFragment, _RxElement);
-
-  function RxDocumentFragment() {
-    var _this12;
-
-    _this12 = _RxElement.call(this, null, '#document-fragment') || this;
-    _this12.nodeType = RxNodeType.DOCUMENT_FRAGMENT_NODE;
-    _this12.childNodes = [];
-    return _this12;
-  }
-
-  return RxDocumentFragment;
-}(RxElement);
-var RxDocument = /*#__PURE__*/function (_RxElement2) {
-  _inheritsLoose(RxDocument, _RxElement2);
-
-  _createClass(RxDocument, [{
-    key: "hidden",
-    get: function get() {
-      return true;
-    }
-  }, {
-    key: "visibilityState",
-    get: function get() {
-      return 'prerender';
-    }
-  }, {
-    key: "doctype",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxDocumentType(x);
-      });
-    }
-  }, {
-    key: "body",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'body';
-      });
-    }
-  }, {
-    key: "head",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'head';
-      });
-    }
-  }, {
-    key: "title",
-    get: function get() {
-      var title = this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'title';
-      });
-
-      if (title) {
-        return title.innerText;
-      } else {
-        return null;
-      }
-    },
-    set: function set(nodeValue) {
-      var title = this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'title';
-      });
-
-      if (title) {
-        title.innerText = nodeValue;
-      }
-    }
-  }, {
-    key: "documentElement",
-    get: function get() {
-      return this.firstElementChild;
-    }
-  }]);
-
-  function RxDocument() {
-    var _this13;
-
-    _this13 = _RxElement2.call(this, null, '#document') || this;
-    _this13.nodeType = RxNodeType.DOCUMENT_NODE;
-    _this13.childNodes = [];
-    return _this13;
-  }
-
-  var _proto8 = RxDocument.prototype;
-
-  _proto8.createAttribute = function createAttribute() {} // Creates a new Attr object and returns it.
-  ;
-
-  _proto8.createAttributeNS = function createAttributeNS() {} // Creates a new attribute node in a given namespace and returns it.
-  ;
-
-  _proto8.createCDATASection = function createCDATASection() {} // Creates a new CDATA node and returns it.
-  ;
-
-  _proto8.createComment = function createComment(nodeValue) {
-    return new RxComment(null, nodeValue);
-  } // Creates a new comment node and returns it.
-  ;
-
-  _proto8.createDocumentFragment = function createDocumentFragment() {
-    return new RxDocumentFragment();
-  } // Creates a new document fragment.
-  ;
-
-  _proto8.createElement = function createElement(nodeName) {
-    return new RxElement(null, nodeName);
-  } // Creates a new element with the given tag name.
-  ;
-
-  _proto8.createElementNS = function createElementNS(nodeName) {
-    return new RxElement(null, nodeName);
-  } // Creates a new element with the given tag name and namespace URI.
-  ;
-
-  _proto8.createEvent = function createEvent() {} // Creates an event object.
-  ;
-
-  _proto8.createNodeIterator = function createNodeIterator() {} // Creates a NodeIterator object.
-  ;
-
-  _proto8.createProcessingInstruction = function createProcessingInstruction(nodeValue) {
-    return new RxProcessingInstruction(null, nodeValue);
-  } // Creates a new ProcessingInstruction object.
-  ;
-
-  _proto8.createRange = function createRange() {} // Creates a Range object.
-  ;
-
-  _proto8.createTextNode = function createTextNode(nodeValue) {
-    return new RxText(null, nodeValue);
-  } // Creates a text node.
-  ;
-
-  _proto8.createTouchList = function createTouchList() {} // Creates a TouchList object.
-  ;
-
-  _proto8.createTreeWalker = function createTreeWalker() {} // Creates a TreeWalker object.
-  ;
-
-  _proto8.serialize = function serialize() {
-    return "" + this.childNodes.map(function (x) {
-      return x.serialize();
-    }).join('');
-  };
-
-  return RxDocument;
-}(RxElement);var Renderer = /*#__PURE__*/function () {
-  function Renderer() {}
-
-  Renderer.bootstrap = function bootstrap(documentOrHtml) {
-    if (typeof documentOrHtml === 'string') {
-      this.document = parse(documentOrHtml);
-    } else {
-      this.document = documentOrHtml;
-    }
-
-    if (typeof process !== 'undefined') {
-      global.document = this.document;
-    }
-  };
-
-  Renderer.querySelector = function querySelector(selector) {
-    return this.document.querySelector(selector);
-  };
-
-  return Renderer;
-}();var Server = /*#__PURE__*/function (_Platform) {
-  _inheritsLoose(Server, _Platform);
-
-  function Server() {
-    return _Platform.apply(this, arguments) || this;
-  }
-
-  Server.bootstrap = function bootstrap(moduleFactory, html) {
-    if (!html) {
-      throw 'missing html template';
-    }
-
-    Renderer.bootstrap(html);
-
-    if (!moduleFactory) {
-      throw 'missing moduleFactory';
-    }
-
-    if (!moduleFactory.meta) {
-      throw 'missing moduleFactory meta';
-    }
-
-    if (!moduleFactory.meta.bootstrap) {
-      throw 'missing bootstrap';
-    }
-
-    if (!moduleFactory.meta.bootstrap.meta) {
-      throw 'missing bootstrap meta';
-    }
-
-    if (!moduleFactory.meta.bootstrap.meta.selector) {
-      throw 'missing bootstrap meta selector';
-    }
-
-    var meta = this.resolveMeta(moduleFactory);
-    var module = new moduleFactory();
-    module.meta = meta;
-    var instances = module.compile(meta.node, {});
-    module.instances = instances;
-    var root = instances[0];
-    root.pushChanges();
-    return module;
-  };
-
-  Server.querySelector = function querySelector(selector) {
-    return Renderer.document.querySelector(selector);
-  };
-
-  Server.serialize = function serialize() {
-    console.log('Server.serialize');
-
-    if (Renderer.document instanceof RxDocument) {
-      var serialized = Renderer.document.serialize(); // console.log('serialized', serialized);
-
-      return serialized;
-    } else {
-      throw 'Renderer.document is not an instance of RxDocument';
-    }
-  };
-
-  return Server;
-}(rxcomp.Platform);function createCommonjsModule(fn, basedir, module) {
+function createCommonjsModule(fn, basedir, module) {
 	return module = {
 	  path: basedir,
 	  exports: {},
@@ -2581,17 +1400,17 @@ const resolve_url = Url.resolve;
  * @param   Object   opts  Fetch options
  * @return  Promise
  */
-function fetch(url, opts) {
+function fetch$1(url, opts) {
 
 	// allow custom promise
-	if (!fetch.Promise) {
+	if (!fetch$1.Promise) {
 		throw new Error('native promise missing, set fetch.Promise to your favorite alternative');
 	}
 
-	Body.Promise = fetch.Promise;
+	Body.Promise = fetch$1.Promise;
 
 	// wrap http.request into fetch
-	return new fetch.Promise(function (resolve, reject) {
+	return new fetch$1.Promise(function (resolve, reject) {
 		// build request object
 		const request = new Request(url, opts);
 		const options = getNodeRequestOptions(request);
@@ -2655,7 +1474,7 @@ function fetch(url, opts) {
 			const headers = createHeadersLenient(res.headers);
 
 			// HTTP fetch step 5
-			if (fetch.isRedirect(res.statusCode)) {
+			if (fetch$1.isRedirect(res.statusCode)) {
 				// HTTP fetch step 5.2
 				const location = headers.get('Location');
 
@@ -2722,7 +1541,7 @@ function fetch(url, opts) {
 						}
 
 						// HTTP-redirect fetch step 15
-						resolve(fetch(new Request(locationURL, requestOpts)));
+						resolve(fetch$1(new Request(locationURL, requestOpts)));
 						finalize();
 						return;
 				}
@@ -2819,12 +1638,12 @@ function fetch(url, opts) {
  * @param   Number   code  Status code
  * @return  Boolean
  */
-fetch.isRedirect = function (code) {
+fetch$1.isRedirect = function (code) {
 	return code === 301 || code === 302 || code === 303 || code === 307 || code === 308;
 };
 
 // expose Promise
-fetch.Promise = global.Promise;var lib=/*#__PURE__*/Object.freeze({__proto__:null,'default': fetch,Headers: Headers,Request: Request,Response: Response,FetchError: FetchError});var nodeFetch = getCjsExportFromNamespace(lib);var nodePonyfill = createCommonjsModule(function (module, exports) {
+fetch$1.Promise = global.Promise;var lib=/*#__PURE__*/Object.freeze({__proto__:null,'default': fetch$1,Headers: Headers,Request: Request,Response: Response,FetchError: FetchError});var nodeFetch = getCjsExportFromNamespace(lib);var nodePonyfill = createCommonjsModule(function (module, exports) {
 var realFetch = nodeFetch.default || nodeFetch;
 
 var fetch = function (url, options) {
@@ -2844,7 +1663,1518 @@ exports.Response = nodeFetch.Response;
 
 // Needed for TypeScript consumers without esModuleInterop.
 exports.default = fetch;
-});var HttpResponse = /*#__PURE__*/function () {
+});var fetch$2 = nodePonyfill.fetch.bind({});
+
+fetch$2.polyfill = true;
+
+if (!commonjsGlobal.fetch) {
+  commonjsGlobal.fetch = fetch$2;
+  commonjsGlobal.Response = nodePonyfill.Response;
+  commonjsGlobal.Headers = nodePonyfill.Headers;
+  commonjsGlobal.Request = nodePonyfill.Request;
+}function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
+
+function _inheritsLoose(subClass, superClass) {
+  subClass.prototype = Object.create(superClass.prototype);
+  subClass.prototype.constructor = subClass;
+  subClass.__proto__ = superClass;
+}
+
+function _getPrototypeOf(o) {
+  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+    return o.__proto__ || Object.getPrototypeOf(o);
+  };
+  return _getPrototypeOf(o);
+}
+
+function _setPrototypeOf(o, p) {
+  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  };
+
+  return _setPrototypeOf(o, p);
+}
+
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function _construct(Parent, args, Class) {
+  if (_isNativeReflectConstruct()) {
+    _construct = Reflect.construct;
+  } else {
+    _construct = function _construct(Parent, args, Class) {
+      var a = [null];
+      a.push.apply(a, args);
+      var Constructor = Function.bind.apply(Parent, a);
+      var instance = new Constructor();
+      if (Class) _setPrototypeOf(instance, Class.prototype);
+      return instance;
+    };
+  }
+
+  return _construct.apply(null, arguments);
+}
+
+function _isNativeFunction(fn) {
+  return Function.toString.call(fn).indexOf("[native code]") !== -1;
+}
+
+function _wrapNativeSuper(Class) {
+  var _cache = typeof Map === "function" ? new Map() : undefined;
+
+  _wrapNativeSuper = function _wrapNativeSuper(Class) {
+    if (Class === null || !_isNativeFunction(Class)) return Class;
+
+    if (typeof Class !== "function") {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    if (typeof _cache !== "undefined") {
+      if (_cache.has(Class)) return _cache.get(Class);
+
+      _cache.set(Class, Wrapper);
+    }
+
+    function Wrapper() {
+      return _construct(Class, arguments, _getPrototypeOf(this).constructor);
+    }
+
+    Wrapper.prototype = Object.create(Class.prototype, {
+      constructor: {
+        value: Wrapper,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    return _setPrototypeOf(Wrapper, Class);
+  };
+
+  return _wrapNativeSuper(Class);
+}
+
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return self;
+}
+
+function _unsupportedIterableToArray(o, minLen) {
+  if (!o) return;
+  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+  var n = Object.prototype.toString.call(o).slice(8, -1);
+  if (n === "Object" && o.constructor) n = o.constructor.name;
+  if (n === "Map" || n === "Set") return Array.from(o);
+  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+}
+
+function _arrayLikeToArray(arr, len) {
+  if (len == null || len > arr.length) len = arr.length;
+
+  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+  return arr2;
+}
+
+function _createForOfIteratorHelperLoose(o, allowArrayLike) {
+  var it;
+
+  if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
+    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
+      var i = 0;
+      return function () {
+        if (i >= o.length) return {
+          done: true
+        };
+        return {
+          done: false,
+          value: o[i++]
+        };
+      };
+    }
+
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  it = o[Symbol.iterator]();
+  return it.next.bind(it);
+}/*
+export const NO_CHILDS = [
+    'title',
+    'base',
+    'meta',
+    'link',
+    'img',
+    'br',
+    'input',
+];
+
+const SKIP = [
+    'html',
+    'head',
+    'title',
+    'base',
+    'meta',
+    'script',
+    'link',
+    'body',
+];
+*/
+///
+
+/*
+if (true) {
+    document.createComment = nodeValue => {
+        return new RxComment(null, nodeValue);
+    };
+    document.createTextNode = nodeValue => {
+        return new RxText(null, nodeValue);
+    };
+}
+*/
+///
+
+var RxNodeType;
+
+(function (RxNodeType) {
+  RxNodeType[RxNodeType["ELEMENT_NODE"] = 1] = "ELEMENT_NODE";
+  RxNodeType[RxNodeType["TEXT_NODE"] = 3] = "TEXT_NODE";
+  RxNodeType[RxNodeType["CDATA_SECTION_NODE"] = 4] = "CDATA_SECTION_NODE";
+  RxNodeType[RxNodeType["PROCESSING_INSTRUCTION_NODE"] = 7] = "PROCESSING_INSTRUCTION_NODE";
+  RxNodeType[RxNodeType["COMMENT_NODE"] = 8] = "COMMENT_NODE";
+  RxNodeType[RxNodeType["DOCUMENT_NODE"] = 9] = "DOCUMENT_NODE";
+  RxNodeType[RxNodeType["DOCUMENT_TYPE_NODE"] = 10] = "DOCUMENT_TYPE_NODE";
+  RxNodeType[RxNodeType["DOCUMENT_FRAGMENT_NODE"] = 11] = "DOCUMENT_FRAGMENT_NODE";
+})(RxNodeType || (RxNodeType = {}));
+
+var SelectorType;
+
+(function (SelectorType) {
+  SelectorType[SelectorType["None"] = -1] = "None";
+  SelectorType[SelectorType["Id"] = 0] = "Id";
+  SelectorType[SelectorType["Class"] = 1] = "Class";
+  SelectorType[SelectorType["Attribute"] = 2] = "Attribute";
+  SelectorType[SelectorType["TagName"] = 3] = "TagName";
+})(SelectorType || (SelectorType = {}));
+
+function isRxElement(x) {
+  return x.nodeType === RxNodeType.ELEMENT_NODE;
+}
+function isRxText(x) {
+  return x.nodeType === RxNodeType.TEXT_NODE;
+}
+function isRxComment(x) {
+  return x.nodeType === RxNodeType.COMMENT_NODE;
+}
+function isRxDocument(x) {
+  return x.nodeType === RxNodeType.DOCUMENT_NODE;
+}
+function isRxDocumentFragment(x) {
+  return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
+}
+function isRxDocumentType(x) {
+  return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
+}
+function parse(html) {
+  var doc = new RxDocument();
+  var parentNode = doc,
+      node;
+  var parser = new htmlparser2.Parser({
+    onopentag: function onopentag(nodeName, attributes) {
+      // console.log(nodeName);
+      node = new RxElement(parentNode, nodeName, attributes);
+      parentNode.childNodes.push(node);
+      parentNode = node; // if (NO_CHILDS.indexOf(nodeName) === -1) {
+      //	console.log(nodeName);
+      //	parentNode = node;
+      // }
+    },
+    onclosetag: function onclosetag(nodeName) {
+      if (parentNode.parentNode) {
+        parentNode = parentNode.parentNode;
+      }
+    },
+    ontext: function ontext(nodeValue) {
+      // console.log('ontext', nodeValue);
+      // if (nodeValue.length) {
+      var textNode = new RxText(parentNode, nodeValue);
+      parentNode.childNodes.push(textNode); // }
+    },
+    onprocessinginstruction: function onprocessinginstruction(nodeName, nodeValue) {
+      // console.log('onprocessinginstruction', nodeName, nodeValue);
+      if (nodeName === '!doctype') {
+        node = new RxDocumentType(parentNode, nodeValue);
+      } else {
+        node = new RxProcessingInstruction(parentNode, nodeValue);
+      }
+
+      parentNode.childNodes.push(node);
+    },
+    oncomment: function oncomment(nodeValue) {
+      // console.log('oncomment', nodeValue);
+      node = new RxComment(parentNode, nodeValue);
+      parentNode.childNodes.push(node); // parentNode = node;
+    },
+    oncommentend: function oncommentend() {// console.log('oncommentend');
+      // parentNode = parentNode.parentNode;
+    },
+    oncdatastart: function oncdatastart() {
+      console.log('oncdatastart');
+    },
+    oncdataend: function oncdataend() {
+      console.log('oncdataend');
+    },
+    onerror: function onerror(error) {
+      console.log('error', error);
+    }
+  }, {
+    decodeEntities: false,
+    lowerCaseTags: true
+  });
+  parser.write(html);
+  parser.end();
+  return doc;
+}
+function getQueries(selector) {
+  var queries = [];
+  selector.trim().split(' ').forEach(function (x) {
+    x.trim().split('>').forEach(function (x, i) {
+      var regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
+      /*eslint no-useless-escape: "off"*/
+      // const regex = new RegExp(`\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)`, 'g');
+
+      var selectors = [];
+      var matches = x.matchAll(regex);
+
+      for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
+        var match = _step.value;
+
+        if (match[1]) {
+          selectors.push({
+            selector: match[1],
+            type: SelectorType.Class
+          });
+        } else if (match[2]) {
+          selectors.push({
+            selector: match[2],
+            type: SelectorType.Attribute
+          });
+        } else if (match[3]) {
+          selectors.push({
+            selector: match[3],
+            type: SelectorType.TagName
+          });
+        } // console.log('match', match);
+
+      }
+
+      var selector = i > 0 ? {
+        selector: x,
+        selectors: selectors,
+        inner: true
+      } : {
+        selector: x,
+        selectors: selectors,
+        inner: false
+      };
+      queries.push.call(queries, selector);
+    });
+  });
+  return queries;
+}
+
+function _querySelector(queries, childNodes, query) {
+  if (query === void 0) {
+    query = null;
+  }
+
+  var node = null;
+
+  var match = function match(child, selector) {
+    switch (selector.type) {
+      case SelectorType.Class:
+        return child.classList.indexOf(selector.selector) !== -1;
+
+      case SelectorType.Attribute:
+        return Object.keys(child.attributes).indexOf(selector.selector) !== -1;
+
+      case SelectorType.TagName:
+        return child.nodeName === selector.selector;
+
+      default:
+        return false;
+    }
+  };
+
+  if (query || queries.length) {
+    query = query || queries.shift();
+
+    var _loop = function _loop() {
+      var child = _step2.value;
+
+      if (child instanceof RxElement) {
+        var has = query.selectors.reduce(function (p, selector, i) {
+          return p && match(child, selector);
+        }, true);
+
+        if (has) {
+          // console.log(query);
+          if (queries.length) {
+            return {
+              v: _querySelector(queries, child.childNodes)
+            };
+          } else {
+            return {
+              v: child
+            };
+          }
+        } else if (!query.inner) {
+          node = _querySelector(queries, child.childNodes, query);
+        }
+      }
+    };
+
+    for (var _iterator2 = _createForOfIteratorHelperLoose(childNodes), _step2; !(_step2 = _iterator2()).done;) {
+      var _ret = _loop();
+
+      if (typeof _ret === "object") return _ret.v;
+    }
+  }
+
+  return node;
+}
+
+function _cloneNode(source, deep, parentNode) {
+  if (deep === void 0) {
+    deep = false;
+  }
+
+  if (parentNode === void 0) {
+    parentNode = null;
+  }
+
+  var node;
+
+  if (isRxElement(source)) {
+    var nodeElement = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
+
+    if (deep) {
+      nodeElement.childNodes = source.childNodes.map(function (x) {
+        return _cloneNode.apply(x, [x, deep, nodeElement]);
+      });
+    }
+
+    node = nodeElement;
+  } else if (isRxDocumentFragment(source)) {
+    var nodeDocumentFragment = new RxDocumentFragment();
+
+    if (deep) {
+      nodeDocumentFragment.childNodes = source.childNodes.map(function (x) {
+        return _cloneNode.apply(x, [x, deep, nodeDocumentFragment]);
+      });
+    }
+
+    node = nodeDocumentFragment;
+  } else if (isRxText(source)) {
+    node = new RxText(parentNode, source.nodeValue);
+  } else if (isRxComment(source)) {
+    node = new RxComment(parentNode, source.nodeValue);
+  } else if (isRxDocument(source)) {
+    var documentElement = new RxDocument();
+
+    if (deep) {
+      documentElement.childNodes = source.childNodes.map(function (x) {
+        return _cloneNode.apply(x, [x, deep, documentElement]);
+      });
+    }
+
+    node = documentElement;
+  } else {
+    throw 'Invalid node type';
+  }
+
+  return node;
+}
+var RxNode = /*#__PURE__*/function () {
+  function RxNode(parentNode) {
+    if (parentNode === void 0) {
+      parentNode = null;
+    }
+
+    this.nodeValue = null;
+    this.parentNode = parentNode;
+    this.nodeType = -1;
+  }
+
+  var _proto = RxNode.prototype;
+
+  _proto.cloneNode = function cloneNode(deep) {
+    if (deep === void 0) {
+      deep = false;
+    }
+
+    return _cloneNode.apply(this, [this, deep]);
+  };
+
+  _proto.serialize = function serialize() {
+    return "";
+  };
+
+  return RxNode;
+}();
+var RxStyle = /*#__PURE__*/function () {
+  var _proto2 = RxStyle.prototype;
+
+  _proto2.item = function item(index) {
+    var keys = Object.keys(this);
+
+    if (keys.length > index) {
+      return keys[index];
+    } else {
+      return undefined;
+    }
+  };
+
+  _proto2.getPropertyPriority = function getPropertyPriority(key) {
+    var value = this[key];
+
+    if (value && value.indexOf('!important')) {
+      return 'important';
+    } else {
+      return '';
+    }
+  };
+
+  _proto2.getPropertyValue = function getPropertyValue(key) {
+    return this[key];
+  };
+
+  _proto2.setProperty = function setProperty(key, value, important) {
+    this[key] = value + (important === 'important' ? '!important' : '');
+    this.serialize_();
+  };
+
+  _proto2.removeProperty = function removeProperty(key) {
+    delete this[key];
+    this.serialize_();
+  };
+
+  _proto2.serialize_ = function serialize_() {
+    var _this = this;
+
+    this.node.attributes.style = Object.keys(this).map(function (key) {
+      return key + ": " + _this[key] + ";";
+    }).join(' ');
+  };
+
+  _proto2.init = function init() {
+    var _this2 = this,
+        _this$node$attributes;
+
+    var keys = Object.keys(this);
+    keys.forEach(function (key) {
+      return delete _this2[key];
+    });
+
+    if ((_this$node$attributes = this.node.attributes) == null ? void 0 : _this$node$attributes.style) {
+      var regex = /([^:]+):([^;]+);?\s*/gm;
+      var matches = [].concat(this.node.attributes.style.matchAll(regex));
+      matches.forEach(function (match) {
+        var key = match[1];
+        var value = match[2];
+        _this2[key] = value;
+      });
+    }
+  };
+
+  function RxStyle(node) {
+    Object.defineProperty(this, 'node', {
+      value: node,
+      writable: false,
+      enumerable: false
+    });
+    this.init();
+  }
+
+  return RxStyle;
+}();
+var RxClassList = /*#__PURE__*/function (_Array) {
+  _inheritsLoose(RxClassList, _Array);
+
+  function RxClassList(node) {
+    var _this3;
+
+    _this3 = _Array.call(this) || this;
+    _this3.node = node;
+
+    _this3.init();
+
+    return _this3;
+  }
+
+  var _proto3 = RxClassList.prototype;
+
+  _proto3.item = function item(index) {
+    return this[index];
+  };
+
+  _proto3.contains = function contains(name) {
+    return this.indexOf(name) !== -1;
+  };
+
+  _proto3.add = function add() {
+    var _this4 = this;
+
+    for (var _len = arguments.length, names = new Array(_len), _key = 0; _key < _len; _key++) {
+      names[_key] = arguments[_key];
+    }
+
+    names.forEach(function (name) {
+      if (_this4.indexOf(name) !== -1) {
+        _this4.push(name);
+      }
+    });
+    this.serialize_();
+  };
+
+  _proto3.remove = function remove() {
+    var _this5 = this;
+
+    for (var _len2 = arguments.length, names = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      names[_key2] = arguments[_key2];
+    }
+
+    names.forEach(function (name) {
+      var index = _this5.indexOf(name);
+
+      if (index !== -1) {
+        _this5.splice(index, 1);
+      }
+    });
+    this.serialize_();
+  };
+
+  _proto3.toggle = function toggle(name, force) {
+    var index = this.indexOf(name);
+
+    if (force === false) {
+      this.splice(index, 1);
+      this.serialize_();
+      return false;
+    } else if (force === true) {
+      this.push(name);
+      this.serialize_();
+      return true;
+    } else if (index !== -1) {
+      this.splice(index, 1);
+      this.serialize_();
+      return false;
+    } else {
+      this.push(name);
+      this.serialize_();
+      return true;
+    }
+  };
+
+  _proto3.replace = function replace(oldClass, newClass) {
+    var index = this.indexOf(oldClass);
+
+    if (index !== -1) {
+      this.splice(index, 1);
+    }
+
+    this.push(newClass);
+    this.serialize_();
+  };
+
+  _proto3.serialize_ = function serialize_() {
+    this.node.attributes.class = this.join(' ');
+  };
+
+  _proto3.init = function init() {
+    var _this$node$attributes2;
+
+    this.length = 0;
+
+    if ((_this$node$attributes2 = this.node.attributes) == null ? void 0 : _this$node$attributes2.class) {
+      Array.prototype.push.apply(this, this.node.attributes.class.split(' ').map(function (name) {
+        return name.trim();
+      }));
+    }
+  };
+
+  return RxClassList;
+}( /*#__PURE__*/_wrapNativeSuper(Array));
+var RxElement = /*#__PURE__*/function (_RxNode) {
+  _inheritsLoose(RxElement, _RxNode);
+
+  function RxElement(parentNode, nodeName, attributes) {
+    var _this6;
+
+    if (parentNode === void 0) {
+      parentNode = null;
+    }
+
+    if (attributes === void 0) {
+      attributes = null;
+    }
+
+    _this6 = _RxNode.call(this, parentNode) || this;
+    _this6.attributes = {};
+    _this6.nodeType = RxNodeType.ELEMENT_NODE;
+    _this6.nodeName = nodeName;
+
+    if (attributes && typeof attributes === 'object') {
+      _this6.attributes = attributes;
+    }
+
+    _this6.style = new RxStyle(_assertThisInitialized(_this6));
+    _this6.classList = new RxClassList(_assertThisInitialized(_this6));
+    _this6.childNodes = [];
+    /*
+        if (SKIP.indexOf(nodeName) === -1) {
+            console.log(parentNode.nodeName, '>', nodeName);
+    }
+    */
+
+    return _this6;
+  }
+
+  var _proto4 = RxElement.prototype;
+
+  _proto4.append = function append() {
+    var _this7 = this;
+
+    for (var _len3 = arguments.length, nodesOrDOMStrings = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      nodesOrDOMStrings[_key3] = arguments[_key3];
+    }
+
+    nodesOrDOMStrings = nodesOrDOMStrings.map(function (nodeOrDomString) {
+      var node;
+
+      if (typeof nodeOrDomString === 'string') {
+        node = new RxText(_this7, nodeOrDomString);
+      } else {
+        node = nodeOrDomString;
+        node.parentNode = _this7;
+      }
+
+      return node;
+    });
+    Array.prototype.push.apply(this.childNodes, nodesOrDOMStrings);
+    /*
+    for (let nodeOrDomString of nodesOrDOMStrings) {
+            let node;
+            if (typeof nodeOrDomString === 'string') {
+                node = new RxText(this, nodeOrDomString);
+            } else {
+                node = nodeOrDomString;
+            }
+            this.childNodes.push(node);
+    }
+    */
+  };
+
+  _proto4.prepend = function prepend() {
+    var _this8 = this;
+
+    for (var _len4 = arguments.length, nodesOrDOMStrings = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      nodesOrDOMStrings[_key4] = arguments[_key4];
+    }
+
+    nodesOrDOMStrings = nodesOrDOMStrings.map(function (nodeOrDomString) {
+      var node;
+
+      if (typeof nodeOrDomString === 'string') {
+        node = new RxText(_this8, nodeOrDomString);
+      } else {
+        node = nodeOrDomString;
+        node.parentNode = _this8;
+      }
+
+      return node;
+    });
+    Array.prototype.unshift.apply(this.childNodes, nodesOrDOMStrings);
+    /*
+        for (let nodeOrDomString of nodesOrDOMStrings) {
+            let node;
+            if (typeof nodeOrDomString === 'string') {
+                node = new RxText(this, nodeOrDomString);
+            } else {
+                node = nodeOrDomString;
+            }
+            this.childNodes.unshift(node);
+    }
+    */
+  };
+
+  _proto4.replaceChildren = function replaceChildren() {
+    var _this9 = this;
+
+    for (var _len5 = arguments.length, nodesOrDOMStrings = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+      nodesOrDOMStrings[_key5] = arguments[_key5];
+    }
+
+    var nodes = nodesOrDOMStrings.map(function (nodeOrDomString) {
+      var node;
+
+      if (typeof nodeOrDomString === 'string') {
+        node = new RxText(_this9, nodeOrDomString);
+      } else {
+        node = nodeOrDomString;
+        node.parentNode = _this9;
+      }
+
+      return node;
+    });
+    this.childNodes = nodes;
+  };
+
+  _proto4.querySelectorAll = function querySelectorAll(selector) {
+    var queries = getQueries(selector);
+    var nodes = this.childNodes.filter(function (x) {
+      return true;
+    });
+    console.log(queries);
+    return nodes.length ? nodes : null;
+  };
+
+  _proto4.querySelector = function querySelector(selector) {
+    var queries = getQueries(selector);
+
+    var node = _querySelector(queries, this.childNodes);
+
+    return node;
+  };
+
+  _proto4.hasAttribute = function hasAttribute(attribute) {
+    return Object.keys(this.attributes).indexOf(attribute.toLowerCase()) !== -1;
+  };
+
+  _proto4.getAttribute = function getAttribute(attribute) {
+    return this.attributes[attribute.toLowerCase()] || null;
+  };
+
+  _proto4.setAttribute = function setAttribute(attribute, value) {
+    this.attributes[attribute.toLowerCase()] = value.toString();
+
+    if (attribute === 'style') {
+      this.style.init();
+    } else if (attribute === 'class') {
+      this.classList.init();
+    }
+  };
+
+  _proto4.removeAttribute = function removeAttribute(attribute) {
+    delete this.attributes[attribute];
+
+    if (attribute === 'style') {
+      this.style.init();
+    } else if (attribute === 'class') {
+      this.classList.init();
+    }
+  };
+
+  _proto4.replaceChild = function replaceChild(newChild, oldChild) {
+    var index = this.childNodes.indexOf(oldChild);
+
+    if (index !== -1) {
+      this.childNodes[index] = newChild;
+      newChild.parentNode = this;
+    } // console.log('replaceChild', this, newChild, oldChild);
+
+
+    return oldChild;
+  };
+
+  _proto4.removeChild = function removeChild(child) {
+    if (!(child instanceof RxNode)) {
+      throw "Uncaught TypeError: Failed to execute 'removeChild' on 'Node': parameter 1 is not of type 'Node'.";
+    }
+
+    var index = this.childNodes.indexOf(child);
+
+    if (index === -1) {
+      throw "Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.";
+    }
+
+    this.childNodes.splice(index, 1); // console.log('removeChild', this.childNodes.length);
+
+    return child;
+  };
+
+  _proto4.insertBefore = function insertBefore(newNode, referenceNode) {
+    if (referenceNode === void 0) {
+      referenceNode = null;
+    }
+
+    var index = referenceNode ? this.childNodes.indexOf(referenceNode) : this.childNodes.length;
+
+    if (index !== -1) {
+      this.childNodes.splice(index, 0, newNode);
+      newNode.parentNode = this;
+    } // console.log('insertBefore', this, newNode, referenceNode);
+
+
+    return newNode;
+  };
+
+  _proto4.cloneNode = function cloneNode(deep) {
+    if (deep === void 0) {
+      deep = false;
+    }
+
+    return _cloneNode.apply(this, [this, deep]);
+  };
+
+  _proto4.addListener = function addListener(eventName, handler) {};
+
+  _proto4.removeListener = function removeListener(eventName, handler) {};
+
+  _proto4.serialize = function serialize() {
+    return "<" + this.nodeName + this.serializeAttributes() + ">" + this.childNodes.map(function (x) {
+      return x.serialize();
+    }).join('') + "</" + this.nodeName + ">";
+  };
+
+  _proto4.serializeAttributes = function serializeAttributes() {
+    var _this10 = this;
+
+    var attributes = '';
+    var keys = Object.keys(this.attributes);
+
+    if (keys.length) {
+      attributes = ' ' + keys.map(function (k) {
+        return k + "=\"" + _this10.attributes[k] + "\"";
+      }).join(' ');
+    }
+
+    return attributes;
+  };
+
+  _createClass(RxElement, [{
+    key: "children",
+    get: function get() {
+      var children = [],
+          i = 0,
+          node,
+          nodes = this.childNodes;
+      node = nodes[i++];
+
+      while (node) {
+        node = nodes[i++];
+
+        if (node.nodeType === RxNodeType.ELEMENT_NODE) {
+          children.push(node);
+        }
+      }
+
+      return children;
+    }
+  }, {
+    key: "childElementCount",
+    get: function get() {
+      var i = 0,
+          count = 0,
+          node,
+          nodes = this.childNodes;
+      node = nodes[i++];
+
+      while (node) {
+        if (node.nodeType === RxNodeType.ELEMENT_NODE) {
+          count++;
+        }
+
+        node = nodes[i++];
+      }
+
+      return count;
+    }
+  }, {
+    key: "firstChild",
+    get: function get() {
+      var node = null;
+
+      if (this.childNodes.length) {
+        node = this.childNodes[0];
+      }
+
+      return node;
+    }
+  }, {
+    key: "firstElementChild",
+    get: function get() {
+      for (var _iterator3 = _createForOfIteratorHelperLoose(this.childNodes), _step3; !(_step3 = _iterator3()).done;) {
+        var node = _step3.value;
+
+        if (isRxElement(node)) {
+          return node;
+        }
+      }
+
+      return null;
+    }
+  }, {
+    key: "lastChild",
+    get: function get() {
+      var node = null;
+
+      if (this.childNodes.length) {
+        node = this.childNodes[this.childNodes.length - 1];
+      }
+
+      return node;
+    }
+  }, {
+    key: "lastElementChild",
+    get: function get() {
+      var nodes = this.childNodes;
+
+      for (var i = nodes.length - 1; i > -1; i--) {
+        var node = nodes[i];
+
+        if (isRxElement(node)) {
+          return node;
+        }
+      }
+
+      return null;
+    }
+  }, {
+    key: "previousSibling",
+    get: function get() {
+      var node = null;
+
+      if (this.parentNode) {
+        var index = this.parentNode.childNodes.indexOf(this);
+
+        if (index > 0) {
+          node = this.parentNode.childNodes[index - 1];
+        }
+      }
+
+      return node;
+    }
+  }, {
+    key: "nextSibling",
+    get: function get() {
+      var node = null;
+
+      if (this.parentNode) {
+        var index = this.parentNode.childNodes.indexOf(this);
+
+        if (index !== -1 && index < this.parentNode.childNodes.length - 1) {
+          node = this.parentNode.childNodes[index];
+        }
+      }
+
+      return node;
+    }
+  }, {
+    key: "wholeText",
+    get: function get() {
+      var nodeValue;
+
+      if (this.nodeType === RxNodeType.TEXT_NODE) {
+        return this.nodeValue;
+      }
+
+      return nodeValue;
+    }
+  }, {
+    key: "outerHTML",
+    get: function get() {
+      var html = null;
+
+      if (this.parentNode) {
+        html = this.parentNode.serialize();
+      }
+
+      return html;
+    }
+  }, {
+    key: "innerText",
+    set: function set(nodeValue) {
+      this.childNodes = [new RxText(this, nodeValue)];
+    },
+    get: function get() {
+      // return this.childNodes.filter((n): n is RxText => isRxText(n)).map(n => n.innerText).join('');
+      return this.childNodes.filter(function (n) {
+        return isRxText(n) || isRxElement(n);
+      }).map(function (n) {
+        return n.innerText;
+      }).join('');
+    }
+  }, {
+    key: "textContent",
+    set: function set(nodeValue) {
+      this.innerText = String(nodeValue);
+    },
+    get: function get() {
+      return this.innerText;
+    }
+  }, {
+    key: "innerHTML",
+    get: function get() {
+      return this.childNodes.map(function (x) {
+        return x.serialize();
+      }).join('');
+    },
+    set: function set(html) {
+      var _this11 = this;
+
+      var doc = parse(html);
+      var childNodes = doc.childNodes.map(function (n) {
+        n.parentNode = _this11;
+        return n;
+      });
+      this.childNodes = childNodes;
+    }
+  }]);
+
+  return RxElement;
+}(RxNode);
+var RxText = /*#__PURE__*/function (_RxNode2) {
+  _inheritsLoose(RxText, _RxNode2);
+
+  function RxText(parentNode, nodeValue) {
+    var _this12;
+
+    if (parentNode === void 0) {
+      parentNode = null;
+    }
+
+    _this12 = _RxNode2.call(this, parentNode) || this;
+    _this12.nodeType = RxNodeType.TEXT_NODE;
+    _this12.nodeValue = String(nodeValue); // console.log('RxText', nodeValue);
+
+    return _this12;
+  }
+
+  var _proto5 = RxText.prototype;
+
+  _proto5.serialize = function serialize() {
+    return this.nodeValue;
+  };
+
+  _createClass(RxText, [{
+    key: "outerHTML",
+    get: function get() {
+      var html = null;
+
+      if (this.parentNode) {
+        html = this.parentNode.serialize();
+      }
+
+      return html;
+    }
+  }, {
+    key: "wholeText",
+    get: function get() {
+      return this.nodeValue;
+    }
+  }, {
+    key: "innerText",
+    set: function set(nodeValue) {
+      this.nodeValue = String(nodeValue);
+    },
+    get: function get() {
+      return this.nodeValue;
+    }
+  }, {
+    key: "textContent",
+    set: function set(nodeValue) {
+      this.nodeValue = String(nodeValue);
+    },
+    get: function get() {
+      return this.nodeValue;
+    }
+  }]);
+
+  return RxText;
+}(RxNode);
+var RxComment = /*#__PURE__*/function (_RxNode4) {
+  _inheritsLoose(RxComment, _RxNode4);
+
+  function RxComment(parentNode, nodeValue) {
+    var _this14;
+
+    if (parentNode === void 0) {
+      parentNode = null;
+    }
+
+    _this14 = _RxNode4.call(this, parentNode) || this;
+    _this14.nodeType = RxNodeType.COMMENT_NODE;
+    _this14.nodeValue = String(nodeValue);
+    return _this14;
+  }
+
+  var _proto7 = RxComment.prototype;
+
+  _proto7.serialize = function serialize() {
+    return "<!--" + this.nodeValue + "-->";
+  };
+
+  _createClass(RxComment, [{
+    key: "outerHTML",
+    get: function get() {
+      var html = null;
+
+      if (this.parentNode) {
+        html = this.parentNode.serialize();
+      }
+
+      return html;
+    }
+  }, {
+    key: "wholeText",
+    get: function get() {
+      return this.nodeValue;
+    }
+  }, {
+    key: "innerText",
+    set: function set(nodeValue) {
+      this.nodeValue = String(nodeValue);
+    },
+    get: function get() {
+      return this.nodeValue;
+    }
+  }, {
+    key: "textContent",
+    set: function set(nodeValue) {
+      this.nodeValue = String(nodeValue);
+    },
+    get: function get() {
+      return this.nodeValue;
+    }
+  }]);
+
+  return RxComment;
+}(RxNode);
+var RxProcessingInstruction = /*#__PURE__*/function (_RxNode5) {
+  _inheritsLoose(RxProcessingInstruction, _RxNode5);
+
+  function RxProcessingInstruction(parentNode, nodeValue) {
+    var _this15;
+
+    if (parentNode === void 0) {
+      parentNode = null;
+    }
+
+    _this15 = _RxNode5.call(this, parentNode) || this;
+    _this15.nodeType = RxNodeType.PROCESSING_INSTRUCTION_NODE;
+    _this15.nodeValue = String(nodeValue);
+    return _this15;
+  }
+
+  var _proto8 = RxProcessingInstruction.prototype;
+
+  _proto8.serialize = function serialize() {
+    return "<" + this.nodeValue + ">";
+  };
+
+  return RxProcessingInstruction;
+}(RxNode);
+var RxDocumentType = /*#__PURE__*/function (_RxNode6) {
+  _inheritsLoose(RxDocumentType, _RxNode6);
+
+  function RxDocumentType(parentNode, nodeValue) {
+    var _this16;
+
+    if (parentNode === void 0) {
+      parentNode = null;
+    }
+
+    _this16 = _RxNode6.call(this, parentNode) || this;
+    _this16.nodeType = RxNodeType.DOCUMENT_TYPE_NODE;
+    _this16.nodeValue = String(nodeValue);
+    return _this16;
+  }
+
+  var _proto9 = RxDocumentType.prototype;
+
+  _proto9.serialize = function serialize() {
+    return "<" + this.nodeValue + ">";
+  };
+
+  return RxDocumentType;
+}(RxNode);
+var RxDocumentFragment = /*#__PURE__*/function (_RxElement) {
+  _inheritsLoose(RxDocumentFragment, _RxElement);
+
+  function RxDocumentFragment() {
+    var _this17;
+
+    _this17 = _RxElement.call(this, null, '#document-fragment') || this;
+    _this17.nodeType = RxNodeType.DOCUMENT_FRAGMENT_NODE;
+    _this17.childNodes = [];
+    return _this17;
+  }
+
+  return RxDocumentFragment;
+}(RxElement);
+var RxDocument = /*#__PURE__*/function (_RxElement2) {
+  _inheritsLoose(RxDocument, _RxElement2);
+
+  _createClass(RxDocument, [{
+    key: "hidden",
+    get: function get() {
+      return true;
+    }
+  }, {
+    key: "visibilityState",
+    get: function get() {
+      return 'prerender';
+    }
+  }, {
+    key: "doctype",
+    get: function get() {
+      return this.childNodes.find(function (x) {
+        return isRxDocumentType(x);
+      });
+    }
+  }, {
+    key: "body",
+    get: function get() {
+      return this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'body';
+      });
+    }
+  }, {
+    key: "head",
+    get: function get() {
+      return this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'head';
+      });
+    }
+  }, {
+    key: "title",
+    get: function get() {
+      var title = this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'title';
+      });
+
+      if (title) {
+        return title.innerText;
+      } else {
+        return null;
+      }
+    },
+    set: function set(nodeValue) {
+      var title = this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'title';
+      });
+
+      if (title) {
+        title.innerText = nodeValue;
+      }
+    }
+  }, {
+    key: "documentElement",
+    get: function get() {
+      return this.firstElementChild;
+    }
+  }]);
+
+  function RxDocument() {
+    var _this18;
+
+    _this18 = _RxElement2.call(this, null, '#document') || this;
+    _this18.nodeType = RxNodeType.DOCUMENT_NODE;
+    _this18.childNodes = [];
+    return _this18;
+  }
+
+  var _proto10 = RxDocument.prototype;
+
+  _proto10.createAttribute = function createAttribute() {} // Creates a new Attr object and returns it.
+  ;
+
+  _proto10.createAttributeNS = function createAttributeNS() {} // Creates a new attribute node in a given namespace and returns it.
+  ;
+
+  _proto10.createCDATASection = function createCDATASection() {} // Creates a new CDATA node and returns it.
+  ;
+
+  _proto10.createComment = function createComment(nodeValue) {
+    return new RxComment(null, nodeValue);
+  } // Creates a new comment node and returns it.
+  ;
+
+  _proto10.createDocumentFragment = function createDocumentFragment() {
+    return new RxDocumentFragment();
+  } // Creates a new document fragment.
+  ;
+
+  _proto10.createElement = function createElement(nodeName) {
+    return new RxElement(null, nodeName);
+  } // Creates a new element with the given tag name.
+  ;
+
+  _proto10.createElementNS = function createElementNS(nodeName) {
+    return new RxElement(null, nodeName);
+  } // Creates a new element with the given tag name and namespace URI.
+  ;
+
+  _proto10.createEvent = function createEvent() {} // Creates an event object.
+  ;
+
+  _proto10.createNodeIterator = function createNodeIterator() {} // Creates a NodeIterator object.
+  ;
+
+  _proto10.createProcessingInstruction = function createProcessingInstruction(nodeValue) {
+    return new RxProcessingInstruction(null, nodeValue);
+  } // Creates a new ProcessingInstruction object.
+  ;
+
+  _proto10.createRange = function createRange() {} // Creates a Range object.
+  ;
+
+  _proto10.createTextNode = function createTextNode(nodeValue) {
+    return new RxText(null, nodeValue);
+  } // Creates a text node.
+  ;
+
+  _proto10.createTouchList = function createTouchList() {} // Creates a TouchList object.
+  ;
+
+  _proto10.createTreeWalker = function createTreeWalker() {} // Creates a TreeWalker object.
+  ;
+
+  _proto10.serialize = function serialize() {
+    return "" + this.childNodes.map(function (x) {
+      return x.serialize();
+    }).join('');
+  };
+
+  return RxDocument;
+}(RxElement);var Renderer = /*#__PURE__*/function () {
+  function Renderer() {}
+
+  Renderer.bootstrap = function bootstrap(documentOrHtml) {
+    if (typeof documentOrHtml === 'string') {
+      this.document = parse(documentOrHtml);
+    } else {
+      this.document = documentOrHtml;
+    }
+
+    if (typeof process !== 'undefined') {
+      global.document = this.document;
+    }
+  };
+
+  Renderer.querySelector = function querySelector(selector) {
+    return this.document.querySelector(selector);
+  };
+
+  return Renderer;
+}();var Server = /*#__PURE__*/function (_Platform) {
+  _inheritsLoose(Server, _Platform);
+
+  function Server() {
+    return _Platform.apply(this, arguments) || this;
+  }
+
+  Server.bootstrap = function bootstrap(moduleFactory, html) {
+    if (!html) {
+      throw 'missing html template';
+    }
+
+    Renderer.bootstrap(html);
+
+    if (!moduleFactory) {
+      throw 'missing moduleFactory';
+    }
+
+    if (!moduleFactory.meta) {
+      throw 'missing moduleFactory meta';
+    }
+
+    if (!moduleFactory.meta.bootstrap) {
+      throw 'missing bootstrap';
+    }
+
+    if (!moduleFactory.meta.bootstrap.meta) {
+      throw 'missing bootstrap meta';
+    }
+
+    if (!moduleFactory.meta.bootstrap.meta.selector) {
+      throw 'missing bootstrap meta selector';
+    }
+
+    var meta = this.resolveMeta(moduleFactory);
+
+    if (rxcomp.isPlatformServer && meta.node instanceof RxElement) {
+      var _node$parentNode;
+
+      var node = meta.node;
+      var nodeInnerHTML = meta.nodeInnerHTML;
+      var rxcomp_hydrate_ = {
+        selector: moduleFactory.meta.bootstrap.meta.selector,
+        innerHTML: nodeInnerHTML
+      };
+      var scriptNode = new RxElement(null, 'script');
+      var scriptText = new RxText(null, "var rxcomp_hydrate_ = " + JSON.stringify(rxcomp_hydrate_) + ";");
+      scriptNode.append(scriptText);
+      (_node$parentNode = node.parentNode) == null ? void 0 : _node$parentNode.insertBefore(scriptNode, node);
+    }
+
+    var module = new moduleFactory();
+    module.meta = meta;
+    var instances = module.compile(meta.node, {}); // {} as Window
+
+    module.instances = instances;
+    var root = instances[0];
+    root.pushChanges();
+    return module;
+  };
+
+  Server.querySelector = function querySelector(selector) {
+    return Renderer.document.querySelector(selector);
+  };
+
+  Server.serialize = function serialize() {
+    console.log('Server.serialize');
+
+    if (Renderer.document instanceof RxDocument) {
+      var serialized = Renderer.document.serialize(); // console.log('serialized', serialized);
+
+      return serialized;
+    } else {
+      throw 'Renderer.document is not an instance of RxDocument';
+    }
+  };
+
+  return Server;
+}(rxcomp.Platform);var HttpResponse = /*#__PURE__*/function () {
   function HttpResponse(response) {
     this.url = '';
     this.status = 0;
@@ -2886,7 +3216,7 @@ var HttpService = /*#__PURE__*/function () {
     var methods = ['POST', 'PUT', 'PATCH'];
     var response_ = null;
     this.pendingRequests$.next(this.pendingRequests$.getValue() + 1);
-    return rxjs.from(nodePonyfill(url, {
+    return rxjs.from(fetch(url, {
       method: method,
       headers: {
         'Accept': 'application/json',
@@ -2971,16 +3301,10 @@ HttpService.pendingRequests$ = new rxjs.BehaviorSubject(0);var AppComponent = /*
   _proto.onInit = function onInit() {
     var _this = this;
 
-    this.items = new Array(4).fill(0).map(function (x, i) {
-      return {
-        title: "item " + (i + 1),
-        completed: Math.random() > 0.75
-      };
-    });
-    this.flag = true;
-    this.active = false; // console.log('AppComponent.onInit', this);
+    // console.log('AppComponent.onInit', this);
+    this.items = []; // HttpService.get$('https://jsonplaceholder.typicode.com/users/1/todos').pipe(
 
-    HttpService.get$('https://jsonplaceholder.typicode.com/users/1/todos').pipe(operators.first()).subscribe(function (response) {
+    HttpService.get$('http://localhost:5000/data/todos.json').pipe(operators.first()).subscribe(function (response) {
       console.log('AppComponent.items', response);
       _this.items = response.data;
 
@@ -2989,7 +3313,8 @@ HttpService.pendingRequests$ = new rxjs.BehaviorSubject(0);var AppComponent = /*
   };
 
   _proto.onClick = function onClick(item) {
-    console.log('onClick', item);
+    item.completed = !item.completed;
+    this.pushChanges();
   };
 
   return AppComponent;
@@ -3009,14 +3334,9 @@ AppModule.meta = {
   imports: [rxcomp.CoreModule],
   declarations: [],
   bootstrap: AppComponent
-};function renderServer(html) {
-  // console.log(html);
-  // const doc = Renderer.parse(html);
-  // const serialized = doc.serialize();
-  // console.log(doc);
-  // console.log(serialized);
-  // document.getElementById('app').innerHTML = serialized;
-  var module = Server.bootstrap(AppModule, html);
+};// import fetch from 'cross-fetch';
+function renderServer(html) {
+  var module = Server.bootstrap(AppModule, html); // return of(Server.serialize());
 
   return HttpService.pendingRequests$.pipe(operators.filter(function (x) {
     return x === 0;

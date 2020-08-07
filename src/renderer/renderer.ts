@@ -1,4 +1,4 @@
-import { parse, RxDocument } from './node';
+import { parse, RxDocument, RxNode } from './node';
 
 export default class Renderer {
 	static document: Document | RxDocument;
@@ -13,7 +13,7 @@ export default class Renderer {
 		}
 	}
 
-	static querySelector(selector: string) {
+	static querySelector(selector: string): RxNode | Element | null {
 		return this.document.querySelector(selector);
 	}
 }

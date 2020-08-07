@@ -5,13 +5,10 @@ import HttpService from './http/http.service';
 export default class AppComponent extends Component {
 
 	onInit() {
-		this.items = new Array(4).fill(0).map((x, i) => {
-			return { title: `item ${i + 1}`, completed: Math.random() > 0.75 };
-		});
-		this.flag = true;
-		this.active = false;
 		// console.log('AppComponent.onInit', this);
-		HttpService.get$('https://jsonplaceholder.typicode.com/users/1/todos').pipe(
+		this.items = [];
+		// HttpService.get$('https://jsonplaceholder.typicode.com/users/1/todos').pipe(
+		HttpService.get$('http://localhost:5000/data/todos.json').pipe(
 			first(),
 		).subscribe(response => {
 			console.log('AppComponent.items', response);
@@ -21,7 +18,8 @@ export default class AppComponent extends Component {
 	}
 
 	onClick(item: { title: string, completed: boolean }) {
-		console.log('onClick', item);
+		item.completed = !item.completed;
+		this.pushChanges();
 	}
 
 	static meta: IFactoryMeta = {
