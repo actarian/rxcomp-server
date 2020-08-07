@@ -1,40 +1,9 @@
 import { Parser } from 'htmlparser2';
 
-/*
-export const NO_CHILDS = [
-	'title',
-	'base',
-	'meta',
-	'link',
-	'img',
-	'br',
-	'input',
-];
-
-const SKIP = [
-	'html',
-	'head',
-	'title',
-	'base',
-	'meta',
-	'script',
-	'link',
-	'body',
-];
-*/
-
-///
-/*
-if (true) {
-	document.createComment = nodeValue => {
-		return new RxComment(null, nodeValue);
-	};
-	document.createTextNode = nodeValue => {
-		return new RxText(null, nodeValue);
-	};
-}
-*/
-///
+// export const NO_CHILDS = ['title','base','meta','link','img','br','input',];
+// const SKIP = ['html','head','title','base','meta','script','link','body',];
+// document.createComment = nodeValue => { return new RxComment(null, nodeValue); };
+// document.createTextNode = nodeValue => { return new RxText(null, nodeValue); };
 
 export enum RxNodeType {
 	ELEMENT_NODE = 1, //	Un nodo Element come <p> o <div>.
@@ -58,21 +27,27 @@ export enum SelectorType {
 export function isRxElement(x: RxNode): x is RxElement {
 	return x.nodeType === RxNodeType.ELEMENT_NODE;
 }
+
 export function isRxText(x: RxNode): x is RxText {
 	return x.nodeType === RxNodeType.TEXT_NODE;
 }
+
 export function isRxComment(x: RxNode): x is RxComment {
 	return x.nodeType === RxNodeType.COMMENT_NODE;
 }
+
 export function isRxDocument(x: RxNode): x is RxDocument {
 	return x.nodeType === RxNodeType.DOCUMENT_NODE;
 }
+
 export function isRxDocumentFragment(x: RxNode): x is RxDocumentFragment {
 	return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
 }
+
 export function isRxDocumentType(x: RxNode): x is RxDocumentType {
 	return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
 }
+
 export function isRxProcessingInstruction(x: RxNode): x is RxProcessingInstruction {
 	return x.nodeType === RxNodeType.PROCESSING_INSTRUCTION_NODE;
 }
@@ -167,24 +142,29 @@ export function getQueries(selector: string): RxQuery[] {
 			x.trim()
 				.split('>')
 				.forEach((x, i) => {
-					const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
-					/*eslint no-useless-escape: "off"*/
-					// const regex = new RegExp(`\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)`, 'g');
+					// const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
+					// const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
+					const regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
+					/* eslint no-useless-escape: "off" */
 					const selectors = [];
 					const matches = x.matchAll(regex);
 					for (const match of matches) {
 						if (match[1]) {
-							selectors.push({ selector: match[1], type: SelectorType.Class });
+							selectors.push({ selector: match[1], type: SelectorType.Id, negate: true });
 						} else if (match[2]) {
-							selectors.push({
-								selector: match[2],
-								type: SelectorType.Attribute,
-							});
+							selectors.push({ selector: match[2], type: SelectorType.Class, negate: true });
 						} else if (match[3]) {
-							selectors.push({
-								selector: match[3],
-								type: SelectorType.TagName,
-							});
+							selectors.push({ selector: match[3], type: SelectorType.Attribute, negate: true });
+						} else if (match[4]) {
+							selectors.push({ selector: match[4], type: SelectorType.TagName, negate: true });
+						} else if (match[5]) {
+							selectors.push({ selector: match[5], type: SelectorType.Id, negate: false });
+						} else if (match[6]) {
+							selectors.push({ selector: match[6], type: SelectorType.Class, negate: false });
+						} else if (match[7]) {
+							selectors.push({ selector: match[7], type: SelectorType.Attribute, negate: false });
+						} else if (match[8]) {
+							selectors.push({ selector: match[8], type: SelectorType.TagName, negate: false });
 						}
 						// console.log('match', match);
 					}
@@ -198,32 +178,61 @@ export function getQueries(selector: string): RxQuery[] {
 	return queries;
 }
 
-export function querySelectorAll(queries: RxQuery[], childNodes: RxNode[], nodes = []): RxElement[] | null {
-	return null;
+export function matchSelector(child: RxElement, selector: RxSelector): boolean {
+	switch (selector.type) {
+		case SelectorType.Id:
+			return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
+		case SelectorType.Class:
+			return (child.classList.indexOf(selector.selector) !== -1) !== selector.negate;
+		case SelectorType.Attribute:
+			return (Object.keys(child.attributes).indexOf(selector.selector) !== -1) !== selector.negate;
+		case SelectorType.TagName:
+			return (child.nodeName === selector.selector) !== selector.negate;
+		default:
+			return false;
+	}
 }
 
-export function querySelector(queries: RxQuery[], childNodes: RxNode[], query: RxQuery | null = null): RxElement | null {
-	let node = null;
-	const match = (child: RxElement, selector: RxSelector) => {
-		switch (selector.type) {
-			case SelectorType.Class:
-				return child.classList.indexOf(selector.selector) !== -1;
-			case SelectorType.Attribute:
-				return Object.keys(child.attributes).indexOf(selector.selector) !== -1;
-			case SelectorType.TagName:
-				return child.nodeName === selector.selector;
-			default:
-				return false;
-		}
-	};
+export function matchSelectors(child: RxElement, selectors: RxSelector[]): boolean {
+	return selectors.reduce(function (p: boolean, selector: RxSelector) {
+		return p && matchSelector(child, selector);
+	}, true);
+}
+
+export function querySelectorAll(queries: RxQuery[], childNodes: RxNode[], query: RxQuery | null = null, nodes: RxElement[] = []): RxElement[] | null {
 	if (query || queries.length) {
 		query = query || queries.shift() as RxQuery;
 		for (let child of childNodes) {
 			if (child instanceof RxElement) {
-				let has = query.selectors.reduce((p, selector, i) => {
-					return p && match(child as RxElement, selector);
-				}, true);
-				if (has) {
+				if (matchSelectors(child, query.selectors)) {
+					// console.log(query);
+					if (queries.length) {
+						const results: RxElement[] | null = querySelectorAll(queries, child.childNodes);
+						if (results) {
+							Array.prototype.push.apply(nodes, results);
+						}
+					} else {
+						nodes.push(child);
+					}
+				} else if (!query.inner) {
+					const results: RxElement[] | null = querySelectorAll(queries, child.childNodes, query);
+					if (results) {
+						Array.prototype.push.apply(nodes, results);
+					}
+				}
+			}
+		}
+	}
+	return nodes.length ? nodes : null;
+}
+
+export function querySelector(queries: RxQuery[], childNodes: RxNode[], query: RxQuery | null = null): RxElement | null {
+	let node = null;
+	if (query || queries.length) {
+		query = query || queries.shift() as RxQuery;
+		for (let child of childNodes) {
+			if (child instanceof RxElement) {
+				if (matchSelectors(child, query.selectors)) {
 					// console.log(query);
 					if (queries.length) {
 						return querySelector(queries, child.childNodes);
@@ -276,6 +285,7 @@ export function cloneNode(source: RxNode, deep: boolean = false, parentNode: RxE
 export class RxSelector {
 	selector: string = '';
 	type: SelectorType = SelectorType.None;
+	negate: boolean = false;
 	constructor(options: RxSelector) {
 		if (options) {
 			Object.assign(this, options);

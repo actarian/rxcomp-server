@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?f(exports,require('stream'),require('http'),require('url'),require('https'),require('zlib'),require('rxjs/operators'),require('rxcomp'),require('htmlparser2'),require('rxjs')):typeof define==='function'&&define.amd?define(['exports','stream','http','url','https','zlib','rxjs/operators','rxcomp','htmlparser2','rxjs'],f):(g=typeof globalThis!=='undefined'?globalThis:g||self,f((g.main=g.main||{},g.main.server=g.main.server||{},g.main.server.umd={}),g.Stream,g.http,g.Url,g.https,g.zlib,g.rxjs.operators,g.rxcomp,g.htmlparser2,g.rxjs));}(this,(function(exports, Stream, http, Url, https, zlib, operators, rxcomp, htmlparser2, rxjs){'use strict';Stream=Stream&&Object.prototype.hasOwnProperty.call(Stream,'default')?Stream['default']:Stream;http=http&&Object.prototype.hasOwnProperty.call(http,'default')?http['default']:http;Url=Url&&Object.prototype.hasOwnProperty.call(Url,'default')?Url['default']:Url;https=https&&Object.prototype.hasOwnProperty.call(https,'default')?https['default']:https;zlib=zlib&&Object.prototype.hasOwnProperty.call(zlib,'default')?zlib['default']:zlib;var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?f(exports,require('stream'),require('http'),require('url'),require('https'),require('zlib'),require('rxjs/operators'),require('htmlparser2'),require('rxcomp'),require('rxjs')):typeof define==='function'&&define.amd?define(['exports','stream','http','url','https','zlib','rxjs/operators','htmlparser2','rxcomp','rxjs'],f):(g=typeof globalThis!=='undefined'?globalThis:g||self,f((g.main=g.main||{},g.main.server=g.main.server||{},g.main.server.umd={}),g.Stream,g.http,g.Url,g.https,g.zlib,g.rxjs.operators,g.htmlparser2,g.rxcomp,g.rxjs));}(this,(function(exports, Stream, http, Url, https, zlib, operators, htmlparser2, rxcomp, rxjs){'use strict';Stream=Stream&&Object.prototype.hasOwnProperty.call(Stream,'default')?Stream['default']:Stream;http=http&&Object.prototype.hasOwnProperty.call(http,'default')?http['default']:http;Url=Url&&Object.prototype.hasOwnProperty.call(Url,'default')?Url['default']:Url;https=https&&Object.prototype.hasOwnProperty.call(https,'default')?https['default']:https;zlib=zlib&&Object.prototype.hasOwnProperty.call(zlib,'default')?zlib['default']:zlib;var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function createCommonjsModule(fn, basedir, module) {
 	return module = {
@@ -1826,41 +1826,9 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
 
   it = o[Symbol.iterator]();
   return it.next.bind(it);
-}/*
-export const NO_CHILDS = [
-    'title',
-    'base',
-    'meta',
-    'link',
-    'img',
-    'br',
-    'input',
-];
-
-const SKIP = [
-    'html',
-    'head',
-    'title',
-    'base',
-    'meta',
-    'script',
-    'link',
-    'body',
-];
-*/
-///
-
-/*
-if (true) {
-    document.createComment = nodeValue => {
-        return new RxComment(null, nodeValue);
-    };
-    document.createTextNode = nodeValue => {
-        return new RxText(null, nodeValue);
-    };
-}
-*/
-///
+}// const SKIP = ['html','head','title','base','meta','script','link','body',];
+// document.createComment = nodeValue => { return new RxComment(null, nodeValue); };
+// document.createTextNode = nodeValue => { return new RxText(null, nodeValue); };
 
 var RxNodeType;
 
@@ -1967,9 +1935,10 @@ function getQueries(selector) {
   var queries = [];
   selector.trim().split(' ').forEach(function (x) {
     x.trim().split('>').forEach(function (x, i) {
-      var regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
-      /*eslint no-useless-escape: "off"*/
-      // const regex = new RegExp(`\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)`, 'g');
+      // const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
+      // const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
+      var regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
+      /* eslint no-useless-escape: "off" */
 
       var selectors = [];
       var matches = x.matchAll(regex);
@@ -1980,17 +1949,50 @@ function getQueries(selector) {
         if (match[1]) {
           selectors.push({
             selector: match[1],
-            type: SelectorType.Class
+            type: SelectorType.Id,
+            negate: true
           });
         } else if (match[2]) {
           selectors.push({
             selector: match[2],
-            type: SelectorType.Attribute
+            type: SelectorType.Class,
+            negate: true
           });
         } else if (match[3]) {
           selectors.push({
             selector: match[3],
-            type: SelectorType.TagName
+            type: SelectorType.Attribute,
+            negate: true
+          });
+        } else if (match[4]) {
+          selectors.push({
+            selector: match[4],
+            type: SelectorType.TagName,
+            negate: true
+          });
+        } else if (match[5]) {
+          selectors.push({
+            selector: match[5],
+            type: SelectorType.Id,
+            negate: false
+          });
+        } else if (match[6]) {
+          selectors.push({
+            selector: match[6],
+            type: SelectorType.Class,
+            negate: false
+          });
+        } else if (match[7]) {
+          selectors.push({
+            selector: match[7],
+            type: SelectorType.Attribute,
+            negate: false
+          });
+        } else if (match[8]) {
+          selectors.push({
+            selector: match[8],
+            type: SelectorType.TagName,
+            negate: false
           });
         } // console.log('match', match);
 
@@ -2010,6 +2012,29 @@ function getQueries(selector) {
   });
   return queries;
 }
+function matchSelector(child, selector) {
+  switch (selector.type) {
+    case SelectorType.Id:
+      return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
+
+    case SelectorType.Class:
+      return child.classList.indexOf(selector.selector) !== -1 !== selector.negate;
+
+    case SelectorType.Attribute:
+      return Object.keys(child.attributes).indexOf(selector.selector) !== -1 !== selector.negate;
+
+    case SelectorType.TagName:
+      return child.nodeName === selector.selector !== selector.negate;
+
+    default:
+      return false;
+  }
+}
+function matchSelectors(child, selectors) {
+  return selectors.reduce(function (p, selector) {
+    return p && matchSelector(child, selector);
+  }, true);
+}
 
 function _querySelector(queries, childNodes, query) {
   if (query === void 0) {
@@ -2018,54 +2043,24 @@ function _querySelector(queries, childNodes, query) {
 
   var node = null;
 
-  var match = function match(child, selector) {
-    switch (selector.type) {
-      case SelectorType.Class:
-        return child.classList.indexOf(selector.selector) !== -1;
-
-      case SelectorType.Attribute:
-        return Object.keys(child.attributes).indexOf(selector.selector) !== -1;
-
-      case SelectorType.TagName:
-        return child.nodeName === selector.selector;
-
-      default:
-        return false;
-    }
-  };
-
   if (query || queries.length) {
     query = query || queries.shift();
 
-    var _loop = function _loop() {
-      var child = _step2.value;
+    for (var _iterator3 = _createForOfIteratorHelperLoose(childNodes), _step3; !(_step3 = _iterator3()).done;) {
+      var child = _step3.value;
 
       if (child instanceof RxElement) {
-        var has = query.selectors.reduce(function (p, selector, i) {
-          return p && match(child, selector);
-        }, true);
-
-        if (has) {
+        if (matchSelectors(child, query.selectors)) {
           // console.log(query);
           if (queries.length) {
-            return {
-              v: _querySelector(queries, child.childNodes)
-            };
+            return _querySelector(queries, child.childNodes);
           } else {
-            return {
-              v: child
-            };
+            return child;
           }
         } else if (!query.inner) {
           node = _querySelector(queries, child.childNodes, query);
         }
       }
-    };
-
-    for (var _iterator2 = _createForOfIteratorHelperLoose(childNodes), _step2; !(_step2 = _iterator2()).done;) {
-      var _ret = _loop();
-
-      if (typeof _ret === "object") return _ret.v;
     }
   }
 
@@ -2632,8 +2627,8 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
   }, {
     key: "firstElementChild",
     get: function get() {
-      for (var _iterator3 = _createForOfIteratorHelperLoose(this.childNodes), _step3; !(_step3 = _iterator3()).done;) {
-        var node = _step3.value;
+      for (var _iterator4 = _createForOfIteratorHelperLoose(this.childNodes), _step4; !(_step4 = _iterator4()).done;) {
+        var node = _step4.value;
 
         if (isRxElement(node)) {
           return node;
@@ -3076,39 +3071,21 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
   };
 
   return RxDocument;
-}(RxElement);var Renderer = /*#__PURE__*/function () {
-  function Renderer() {}
-
-  Renderer.bootstrap = function bootstrap(documentOrHtml) {
-    if (typeof documentOrHtml === 'string') {
-      this.document = parse(documentOrHtml);
-    } else {
-      this.document = documentOrHtml;
-    }
-
-    if (typeof process !== 'undefined') {
-      global.document = this.document;
-    }
-  };
-
-  Renderer.querySelector = function querySelector(selector) {
-    return this.document.querySelector(selector);
-  };
-
-  return Renderer;
-}();var Server = /*#__PURE__*/function (_Platform) {
+}(RxElement);var Server = /*#__PURE__*/function (_Platform) {
   _inheritsLoose(Server, _Platform);
 
   function Server() {
     return _Platform.apply(this, arguments) || this;
   }
 
+  /**
+   * @param moduleFactory
+   * @description This method returns a Server compiled module
+   */
   Server.bootstrap = function bootstrap(moduleFactory, html) {
-    if (!html) {
-      throw 'missing html template';
+    if (!rxcomp.isPlatformServer) {
+      throw 'missing platform server, node process not found';
     }
-
-    Renderer.bootstrap(html);
 
     if (!moduleFactory) {
       throw 'missing moduleFactory';
@@ -3130,9 +3107,14 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
       throw 'missing bootstrap meta selector';
     }
 
+    if (!html) {
+      throw 'missing html template';
+    }
+
+    var document = this.resolveGlobals(html);
     var meta = this.resolveMeta(moduleFactory);
 
-    if (rxcomp.isPlatformServer && meta.node instanceof RxElement) {
+    if (meta.node instanceof RxElement) {
       var _node$parentNode;
 
       var node = meta.node;
@@ -3149,28 +3131,32 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
 
     var module = new moduleFactory();
     module.meta = meta;
-    var instances = module.compile(meta.node, {}); // {} as Window
-
+    var instances = module.compile(meta.node, {
+      document: document
+    });
     module.instances = instances;
     var root = instances[0];
     root.pushChanges();
     return module;
   };
 
-  Server.querySelector = function querySelector(selector) {
-    return Renderer.document.querySelector(selector);
-  };
-
   Server.serialize = function serialize() {
     console.log('Server.serialize');
 
-    if (Renderer.document instanceof RxDocument) {
-      var serialized = Renderer.document.serialize(); // console.log('serialized', serialized);
+    if (this.document instanceof RxDocument) {
+      var serialized = this.document.serialize(); // console.log('serialized', serialized);
 
       return serialized;
     } else {
-      throw 'Renderer.document is not an instance of RxDocument';
+      throw 'document is not an instance of RxDocument';
     }
+  };
+
+  Server.resolveGlobals = function resolveGlobals(documentOrHtml) {
+    var document = typeof documentOrHtml === 'string' ? parse(documentOrHtml) : documentOrHtml;
+    this.document = document;
+    global.document = this.document;
+    return this.document;
   };
 
   return Server;
@@ -3336,7 +3322,8 @@ AppModule.meta = {
   bootstrap: AppComponent
 };// import fetch from 'cross-fetch';
 function renderServer(html) {
-  var module = Server.bootstrap(AppModule, html); // return of(Server.serialize());
+  var module = Server.bootstrap(AppModule, html);
+  console.log(module); // return of(Server.serialize());
 
   return HttpService.pendingRequests$.pipe(operators.filter(function (x) {
     return x === 0;

@@ -1,4 +1,4 @@
+export { cloneNode, getQueries, isRxComment, isRxDocument, isRxDocumentType, isRxElement, isRxProcessingInstruction, isRxText, matchSelector, matchSelectors, parse, querySelector, querySelectorAll, RxCData, RxComment, RxDocument, RxDocumentType, RxElement, RxNode, RxNodeType, RxProcessingInstruction, RxQuery, RxSelector, RxText, SelectorType } from './nodes/nodes';
 export { default as Server } from './platform/server';
-export { default as Renderer } from './renderer/renderer';
-export { RxElement, RxNodeType, SelectorType, isRxElement, isRxText, isRxComment, isRxDocument, isRxDocumentType, isRxProcessingInstruction, parse, getQueries, querySelectorAll, querySelector, cloneNode, RxSelector, RxQuery, RxNode, RxText, RxCData, RxComment, RxProcessingInstruction, RxDocumentType, RxDocument, } from './renderer/node';
 export { default as ServerModule } from './server.module';
+

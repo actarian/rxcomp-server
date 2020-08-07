@@ -1,13 +1,16 @@
-import { IElement, isPlatformServer, Module, Platform } from 'rxcomp';
-import { RxDocument, RxElement, RxText } from '../renderer/node';
-import Renderer from '../renderer/renderer';
+import { isPlatformServer, Module, Platform } from 'rxcomp';
+import { parse, RxDocument, RxElement, RxText } from '../nodes/nodes';
 
 export default class Server extends Platform {
+
+	/**
+	 * @param moduleFactory
+	 * @description This method returns a Server compiled module
+	 */
 	static bootstrap(moduleFactory?: typeof Module, html?: string) {
-		if (!html) {
-			throw 'missing html template';
+		if (!isPlatformServer) {
+			throw 'missing platform server, node process not found';
 		}
-		Renderer.bootstrap(html);
 		if (!moduleFactory) {
 			throw 'missing moduleFactory';
 		}
@@ -23,8 +26,12 @@ export default class Server extends Platform {
 		if (!moduleFactory.meta.bootstrap.meta.selector) {
 			throw 'missing bootstrap meta selector';
 		}
+		if (!html) {
+			throw 'missing html template';
+		}
+		const document = this.resolveGlobals(html);
 		const meta = this.resolveMeta(moduleFactory);
-		if (isPlatformServer && meta.node instanceof RxElement) {
+		if (meta.node instanceof RxElement) {
 			const node: RxElement = meta.node as RxElement;
 			const nodeInnerHTML = meta.nodeInnerHTML;
 			const rxcomp_hydrate_ = {
@@ -38,25 +45,31 @@ export default class Server extends Platform {
 		}
 		const module = new moduleFactory();
 		module.meta = meta;
-		const instances = module.compile(meta.node, {} as Window); // {} as Window
+		const instances = module.compile(meta.node, { document } as Window);
 		module.instances = instances;
 		const root = instances[0];
 		root.pushChanges();
 		return module;
 	}
 
-	static querySelector(selector: string): IElement | null {
-		return Renderer.document.querySelector(selector) as IElement;
-	}
-
 	static serialize(): string {
 		console.log('Server.serialize');
-		if (Renderer.document instanceof RxDocument) {
-			const serialized = Renderer.document.serialize();
+		if (this.document instanceof RxDocument) {
+			const serialized = this.document.serialize();
 			// console.log('serialized', serialized);
 			return serialized;
 		} else {
-			throw ('Renderer.document is not an instance of RxDocument');
+			throw ('document is not an instance of RxDocument');
 		}
 	}
+
+	protected static document: Document | RxDocument;
+
+	protected static resolveGlobals(documentOrHtml: Document | string): Document | RxDocument {
+		const document: Document | RxDocument = typeof documentOrHtml === 'string' ? parse(documentOrHtml) : documentOrHtml;
+		this.document = document as Document;
+		global.document = this.document;
+		return this.document;
+	}
+
 }
