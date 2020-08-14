@@ -45,6 +45,13 @@
           "input": "../rxcomp/dist/iife/rxcomp.js",
           "output": "docs/js/rxcomp.js",
           "minify": true
+        },
+        {
+          "input": [
+            "node_modules/rxjs/bundles/rxjs.umd.js"
+          ],
+          "output": "docs/js/vendors.js",
+          "minify": true
         }
       ]
     },

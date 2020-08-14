@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-this.rxcomp=this.rxcomp||{};this.rxcomp.server=(function(exports,rxcomp,htmlparser2){'use strict';function _defineProperties(target, props) {
+this.rxcomp=this.rxcomp||{};this.rxcomp.server=(function(exports,htmlparser2,rxcomp,rxjs,operators){'use strict';function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
     descriptor.enumerable = descriptor.enumerable || false;
@@ -24,6 +24,98 @@ function _inheritsLoose(subClass, superClass) {
   subClass.prototype = Object.create(superClass.prototype);
   subClass.prototype.constructor = subClass;
   subClass.__proto__ = superClass;
+}
+
+function _getPrototypeOf(o) {
+  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+    return o.__proto__ || Object.getPrototypeOf(o);
+  };
+  return _getPrototypeOf(o);
+}
+
+function _setPrototypeOf(o, p) {
+  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  };
+
+  return _setPrototypeOf(o, p);
+}
+
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function _construct(Parent, args, Class) {
+  if (_isNativeReflectConstruct()) {
+    _construct = Reflect.construct;
+  } else {
+    _construct = function _construct(Parent, args, Class) {
+      var a = [null];
+      a.push.apply(a, args);
+      var Constructor = Function.bind.apply(Parent, a);
+      var instance = new Constructor();
+      if (Class) _setPrototypeOf(instance, Class.prototype);
+      return instance;
+    };
+  }
+
+  return _construct.apply(null, arguments);
+}
+
+function _isNativeFunction(fn) {
+  return Function.toString.call(fn).indexOf("[native code]") !== -1;
+}
+
+function _wrapNativeSuper(Class) {
+  var _cache = typeof Map === "function" ? new Map() : undefined;
+
+  _wrapNativeSuper = function _wrapNativeSuper(Class) {
+    if (Class === null || !_isNativeFunction(Class)) return Class;
+
+    if (typeof Class !== "function") {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    if (typeof _cache !== "undefined") {
+      if (_cache.has(Class)) return _cache.get(Class);
+
+      _cache.set(Class, Wrapper);
+    }
+
+    function Wrapper() {
+      return _construct(Class, arguments, _getPrototypeOf(this).constructor);
+    }
+
+    Wrapper.prototype = Object.create(Class.prototype, {
+      constructor: {
+        value: Wrapper,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    return _setPrototypeOf(Wrapper, Class);
+  };
+
+  return _wrapNativeSuper(Class);
+}
+
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return self;
 }
 
 function _unsupportedIterableToArray(o, minLen) {
@@ -66,7 +158,112 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
 
   it = o[Symbol.iterator]();
   return it.next.bind(it);
-}(function (RxNodeType) {
+}(function (CacheControlType) {
+  CacheControlType["Public"] = "public";
+  CacheControlType["Private"] = "private";
+  CacheControlType["NoCache"] = "no-cache";
+  CacheControlType["NoStore"] = "no-store";
+})(exports.CacheControlType || (exports.CacheControlType = {}));
+
+var CacheItem = function () {
+  function CacheItem(options) {
+    this.maxAge = 0;
+    this.cacheControl = exports.CacheControlType.Public;
+
+    if (options) {
+      Object.assign(this, options);
+    }
+  }
+
+  var _proto = CacheItem.prototype;
+
+  _proto.set = function set(options) {
+    if (options) {
+      Object.assign(this, options);
+    }
+
+    this.date = new Date();
+    return this;
+  };
+
+  _createClass(CacheItem, [{
+    key: "expired",
+    get: function get() {
+      return this.cacheControl === exports.CacheControlType.NoStore || this.maxAge === 0 || this.date.getTime() + this.maxAge * 1000 < Date.now();
+    }
+  }]);
+
+  return CacheItem;
+}();
+
+var CacheService = function () {
+  function CacheService() {}
+
+  CacheService.delete = function _delete(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var key = type + "_" + name;
+
+    if (this.cache_.has(key)) {
+      this.cache_.delete(key);
+    }
+  };
+
+  CacheService.has = function has(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var key = type + "_" + name;
+    return this.cache_.has(key);
+  };
+
+  CacheService.get = function get(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var value = null;
+    var key = type + "_" + name;
+
+    if (this.cache_.has(key)) {
+      var cacheItem = this.cache_.get(key);
+
+      if (cacheItem) {
+        if (cacheItem.expired) {
+          this.cache_.delete(key);
+        } else {
+          value = JSON.parse(cacheItem.value);
+        }
+      }
+    }
+
+    return value;
+  };
+
+  CacheService.set = function set(type, name, value, maxAge) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    if (maxAge === void 0) {
+      maxAge = 0;
+    }
+
+    var key = type + "_" + name;
+    var cacheItem = new CacheItem().set({
+      value: JSON.stringify(value, null, 0),
+      maxAge: maxAge
+    });
+    this.cache_.set(key, cacheItem);
+    return value;
+  };
+
+  return CacheService;
+}();
+CacheService.cache_ = new Map();(function (RxNodeType) {
   RxNodeType[RxNodeType["ELEMENT_NODE"] = 1] = "ELEMENT_NODE";
   RxNodeType[RxNodeType["TEXT_NODE"] = 3] = "TEXT_NODE";
   RxNodeType[RxNodeType["CDATA_SECTION_NODE"] = 4] = "CDATA_SECTION_NODE";
@@ -160,7 +357,7 @@ function getQueries(selector) {
   var queries = [];
   selector.trim().split(' ').forEach(function (x) {
     x.trim().split('>').forEach(function (x, i) {
-      var regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
+      var regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
       var selectors = [];
       var matches = x.matchAll(regex);
 
@@ -170,17 +367,50 @@ function getQueries(selector) {
         if (match[1]) {
           selectors.push({
             selector: match[1],
-            type: exports.SelectorType.Class
+            type: exports.SelectorType.Id,
+            negate: true
           });
         } else if (match[2]) {
           selectors.push({
             selector: match[2],
-            type: exports.SelectorType.Attribute
+            type: exports.SelectorType.Class,
+            negate: true
           });
         } else if (match[3]) {
           selectors.push({
             selector: match[3],
-            type: exports.SelectorType.TagName
+            type: exports.SelectorType.Attribute,
+            negate: true
+          });
+        } else if (match[4]) {
+          selectors.push({
+            selector: match[4],
+            type: exports.SelectorType.TagName,
+            negate: true
+          });
+        } else if (match[5]) {
+          selectors.push({
+            selector: match[5],
+            type: exports.SelectorType.Id,
+            negate: false
+          });
+        } else if (match[6]) {
+          selectors.push({
+            selector: match[6],
+            type: exports.SelectorType.Class,
+            negate: false
+          });
+        } else if (match[7]) {
+          selectors.push({
+            selector: match[7],
+            type: exports.SelectorType.Attribute,
+            negate: false
+          });
+        } else if (match[8]) {
+          selectors.push({
+            selector: match[8],
+            type: exports.SelectorType.TagName,
+            negate: false
           });
         }
       }
@@ -199,9 +429,67 @@ function getQueries(selector) {
   });
   return queries;
 }
-function querySelectorAll(queries, childNodes, nodes) {
+function matchSelector(child, selector) {
+  switch (selector.type) {
+    case exports.SelectorType.Id:
+      return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
 
-  return null;
+    case exports.SelectorType.Class:
+      return child.classList.indexOf(selector.selector) !== -1 !== selector.negate;
+
+    case exports.SelectorType.Attribute:
+      return Object.keys(child.attributes).indexOf(selector.selector) !== -1 !== selector.negate;
+
+    case exports.SelectorType.TagName:
+      return child.nodeName === selector.selector !== selector.negate;
+
+    default:
+      return false;
+  }
+}
+function matchSelectors(child, selectors) {
+  return selectors.reduce(function (p, selector) {
+    return p && matchSelector(child, selector);
+  }, true);
+}
+function querySelectorAll(queries, childNodes, query, nodes) {
+  if (query === void 0) {
+    query = null;
+  }
+
+  if (nodes === void 0) {
+    nodes = [];
+  }
+
+  if (query || queries.length) {
+    query = query || queries.shift();
+
+    for (var _iterator2 = _createForOfIteratorHelperLoose(childNodes), _step2; !(_step2 = _iterator2()).done;) {
+      var child = _step2.value;
+
+      if (child instanceof RxElement) {
+        if (matchSelectors(child, query.selectors)) {
+          if (queries.length) {
+            var results = querySelectorAll(queries, child.childNodes);
+
+            if (results) {
+              Array.prototype.push.apply(nodes, results);
+            }
+          } else {
+            nodes.push(child);
+          }
+        } else if (!query.inner) {
+          var _results = querySelectorAll(queries, child.childNodes, query);
+
+          if (_results) {
+            Array.prototype.push.apply(nodes, _results);
+          }
+        }
+      }
+    }
+  }
+
+  return nodes.length ? nodes : null;
 }
 
 function _querySelector(queries, childNodes, query) {
@@ -211,53 +499,23 @@ function _querySelector(queries, childNodes, query) {
 
   var node = null;
 
-  var match = function match(child, selector) {
-    switch (selector.type) {
-      case exports.SelectorType.Class:
-        return child.classList.indexOf(selector.selector) !== -1;
-
-      case exports.SelectorType.Attribute:
-        return Object.keys(child.attributes).indexOf(selector.selector) !== -1;
-
-      case exports.SelectorType.TagName:
-        return child.nodeName === selector.selector;
-
-      default:
-        return false;
-    }
-  };
-
   if (query || queries.length) {
     query = query || queries.shift();
 
-    var _loop = function _loop() {
-      var child = _step2.value;
+    for (var _iterator3 = _createForOfIteratorHelperLoose(childNodes), _step3; !(_step3 = _iterator3()).done;) {
+      var child = _step3.value;
 
       if (child instanceof RxElement) {
-        var has = query.selectors.reduce(function (p, selector, i) {
-          return p && match(child, selector);
-        }, true);
-
-        if (has) {
+        if (matchSelectors(child, query.selectors)) {
           if (queries.length) {
-            return {
-              v: _querySelector(queries, child.childNodes)
-            };
+            return _querySelector(queries, child.childNodes);
           } else {
-            return {
-              v: child
-            };
+            return child;
           }
         } else if (!query.inner) {
           node = _querySelector(queries, child.childNodes, query);
         }
       }
-    };
-
-    for (var _iterator2 = _createForOfIteratorHelperLoose(childNodes), _step2; !(_step2 = _iterator2()).done;) {
-      var _ret = _loop();
-
-      if (typeof _ret === "object") return _ret.v;
     }
   }
 
@@ -310,7 +568,7 @@ function _cloneNode(source, deep, parentNode) {
 
     node = documentElement;
   } else {
-    throw 'Invalid node type';
+    throw new Error('Invalid node type');
   }
 
   return node;
@@ -318,6 +576,7 @@ function _cloneNode(source, deep, parentNode) {
 var RxSelector = function RxSelector(options) {
   this.selector = '';
   this.type = exports.SelectorType.None;
+  this.negate = false;
 
   if (options) {
     Object.assign(this, options);
@@ -359,11 +618,194 @@ var RxNode = function () {
 
   return RxNode;
 }();
+var RxStyle = function () {
+  var _proto2 = RxStyle.prototype;
+
+  _proto2.item = function item(index) {
+    var keys = Object.keys(this);
+
+    if (keys.length > index) {
+      return keys[index];
+    } else {
+      return undefined;
+    }
+  };
+
+  _proto2.getPropertyPriority = function getPropertyPriority(key) {
+    var value = this[key];
+
+    if (value && value.indexOf('!important')) {
+      return 'important';
+    } else {
+      return '';
+    }
+  };
+
+  _proto2.getPropertyValue = function getPropertyValue(key) {
+    return this[key];
+  };
+
+  _proto2.setProperty = function setProperty(key, value, important) {
+    this[key] = value + (important === 'important' ? '!important' : '');
+    this.serialize_();
+  };
+
+  _proto2.removeProperty = function removeProperty(key) {
+    delete this[key];
+    this.serialize_();
+  };
+
+  _proto2.serialize_ = function serialize_() {
+    var _this = this;
+
+    this.node.attributes.style = Object.keys(this).map(function (key) {
+      return key + ": " + _this[key] + ";";
+    }).join(' ');
+  };
+
+  _proto2.init = function init() {
+    var _this2 = this,
+        _this$node$attributes;
+
+    var keys = Object.keys(this);
+    keys.forEach(function (key) {
+      return delete _this2[key];
+    });
+
+    if ((_this$node$attributes = this.node.attributes) == null ? void 0 : _this$node$attributes.style) {
+      var regex = /([^:]+):([^;]+);?\s*/gm;
+      var matches = [].concat(this.node.attributes.style.matchAll(regex));
+      matches.forEach(function (match) {
+        var key = match[1];
+        var value = match[2];
+        _this2[key] = value;
+      });
+    }
+  };
+
+  function RxStyle(node) {
+    Object.defineProperty(this, 'node', {
+      value: node,
+      writable: false,
+      enumerable: false
+    });
+    this.init();
+  }
+
+  return RxStyle;
+}();
+var RxClassList = function (_Array) {
+  _inheritsLoose(RxClassList, _Array);
+
+  function RxClassList(node) {
+    var _this3;
+
+    _this3 = _Array.call(this) || this;
+    _this3.node = node;
+
+    _this3.init();
+
+    return _this3;
+  }
+
+  var _proto3 = RxClassList.prototype;
+
+  _proto3.item = function item(index) {
+    return this[index];
+  };
+
+  _proto3.contains = function contains(name) {
+    return this.indexOf(name) !== -1;
+  };
+
+  _proto3.add = function add() {
+    var _this4 = this;
+
+    for (var _len = arguments.length, names = new Array(_len), _key = 0; _key < _len; _key++) {
+      names[_key] = arguments[_key];
+    }
+
+    names.forEach(function (name) {
+      if (_this4.indexOf(name) !== -1) {
+        _this4.push(name);
+      }
+    });
+    this.serialize_();
+  };
+
+  _proto3.remove = function remove() {
+    var _this5 = this;
+
+    for (var _len2 = arguments.length, names = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      names[_key2] = arguments[_key2];
+    }
+
+    names.forEach(function (name) {
+      var index = _this5.indexOf(name);
+
+      if (index !== -1) {
+        _this5.splice(index, 1);
+      }
+    });
+    this.serialize_();
+  };
+
+  _proto3.toggle = function toggle(name, force) {
+    var index = this.indexOf(name);
+
+    if (force === false) {
+      this.splice(index, 1);
+      this.serialize_();
+      return false;
+    } else if (force === true) {
+      this.push(name);
+      this.serialize_();
+      return true;
+    } else if (index !== -1) {
+      this.splice(index, 1);
+      this.serialize_();
+      return false;
+    } else {
+      this.push(name);
+      this.serialize_();
+      return true;
+    }
+  };
+
+  _proto3.replace = function replace(oldClass, newClass) {
+    var index = this.indexOf(oldClass);
+
+    if (index !== -1) {
+      this.splice(index, 1);
+    }
+
+    this.push(newClass);
+    this.serialize_();
+  };
+
+  _proto3.serialize_ = function serialize_() {
+    this.node.attributes.class = this.join(' ');
+  };
+
+  _proto3.init = function init() {
+    var _this$node$attributes2;
+
+    this.length = 0;
+
+    if ((_this$node$attributes2 = this.node.attributes) == null ? void 0 : _this$node$attributes2.class) {
+      Array.prototype.push.apply(this, this.node.attributes.class.split(' ').map(function (name) {
+        return name.trim();
+      }));
+    }
+  };
+
+  return RxClassList;
+}(_wrapNativeSuper(Array));
 var RxElement = function (_RxNode) {
   _inheritsLoose(RxElement, _RxNode);
 
   function RxElement(parentNode, nodeName, attributes) {
-    var _this;
+    var _this6;
 
     if (parentNode === void 0) {
       parentNode = null;
@@ -373,31 +815,38 @@ var RxElement = function (_RxNode) {
       attributes = null;
     }
 
-    _this = _RxNode.call(this, parentNode) || this;
-    _this.nodeType = exports.RxNodeType.ELEMENT_NODE;
-    _this.nodeName = nodeName;
-    _this.attributes = attributes || {};
-    _this.childNodes = [];
-    return _this;
+    _this6 = _RxNode.call(this, parentNode) || this;
+    _this6.attributes = {};
+    _this6.nodeType = exports.RxNodeType.ELEMENT_NODE;
+    _this6.nodeName = nodeName;
+
+    if (attributes && typeof attributes === 'object') {
+      _this6.attributes = attributes;
+    }
+
+    _this6.style = new RxStyle(_assertThisInitialized(_this6));
+    _this6.classList = new RxClassList(_assertThisInitialized(_this6));
+    _this6.childNodes = [];
+    return _this6;
   }
 
-  var _proto2 = RxElement.prototype;
+  var _proto4 = RxElement.prototype;
 
-  _proto2.append = function append() {
-    var _this2 = this;
+  _proto4.append = function append() {
+    var _this7 = this;
 
-    for (var _len = arguments.length, nodesOrDOMStrings = new Array(_len), _key = 0; _key < _len; _key++) {
-      nodesOrDOMStrings[_key] = arguments[_key];
+    for (var _len3 = arguments.length, nodesOrDOMStrings = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      nodesOrDOMStrings[_key3] = arguments[_key3];
     }
 
     nodesOrDOMStrings = nodesOrDOMStrings.map(function (nodeOrDomString) {
       var node;
 
       if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this2, nodeOrDomString);
+        node = new RxText(_this7, nodeOrDomString);
       } else {
         node = nodeOrDomString;
-        node.parentNode = _this2;
+        node.parentNode = _this7;
       }
 
       return node;
@@ -405,21 +854,21 @@ var RxElement = function (_RxNode) {
     Array.prototype.push.apply(this.childNodes, nodesOrDOMStrings);
   };
 
-  _proto2.prepend = function prepend() {
-    var _this3 = this;
+  _proto4.prepend = function prepend() {
+    var _this8 = this;
 
-    for (var _len2 = arguments.length, nodesOrDOMStrings = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      nodesOrDOMStrings[_key2] = arguments[_key2];
+    for (var _len4 = arguments.length, nodesOrDOMStrings = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      nodesOrDOMStrings[_key4] = arguments[_key4];
     }
 
     nodesOrDOMStrings = nodesOrDOMStrings.map(function (nodeOrDomString) {
       var node;
 
       if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this3, nodeOrDomString);
+        node = new RxText(_this8, nodeOrDomString);
       } else {
         node = nodeOrDomString;
-        node.parentNode = _this3;
+        node.parentNode = _this8;
       }
 
       return node;
@@ -427,21 +876,21 @@ var RxElement = function (_RxNode) {
     Array.prototype.unshift.apply(this.childNodes, nodesOrDOMStrings);
   };
 
-  _proto2.replaceChildren = function replaceChildren() {
-    var _this4 = this;
+  _proto4.replaceChildren = function replaceChildren() {
+    var _this9 = this;
 
-    for (var _len3 = arguments.length, nodesOrDOMStrings = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-      nodesOrDOMStrings[_key3] = arguments[_key3];
+    for (var _len5 = arguments.length, nodesOrDOMStrings = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+      nodesOrDOMStrings[_key5] = arguments[_key5];
     }
 
     var nodes = nodesOrDOMStrings.map(function (nodeOrDomString) {
       var node;
 
       if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this4, nodeOrDomString);
+        node = new RxText(_this9, nodeOrDomString);
       } else {
         node = nodeOrDomString;
-        node.parentNode = _this4;
+        node.parentNode = _this9;
       }
 
       return node;
@@ -449,7 +898,7 @@ var RxElement = function (_RxNode) {
     this.childNodes = nodes;
   };
 
-  _proto2.querySelectorAll = function querySelectorAll(selector) {
+  _proto4.querySelectorAll = function querySelectorAll(selector) {
     var queries = getQueries(selector);
     var nodes = this.childNodes.filter(function (x) {
       return true;
@@ -458,7 +907,7 @@ var RxElement = function (_RxNode) {
     return nodes.length ? nodes : null;
   };
 
-  _proto2.querySelector = function querySelector(selector) {
+  _proto4.querySelector = function querySelector(selector) {
     var queries = getQueries(selector);
 
     var node = _querySelector(queries, this.childNodes);
@@ -466,23 +915,35 @@ var RxElement = function (_RxNode) {
     return node;
   };
 
-  _proto2.hasAttribute = function hasAttribute(attribute) {
+  _proto4.hasAttribute = function hasAttribute(attribute) {
     return Object.keys(this.attributes).indexOf(attribute.toLowerCase()) !== -1;
   };
 
-  _proto2.getAttribute = function getAttribute(attribute) {
+  _proto4.getAttribute = function getAttribute(attribute) {
     return this.attributes[attribute.toLowerCase()] || null;
   };
 
-  _proto2.setAttribute = function setAttribute(attribute, value) {
+  _proto4.setAttribute = function setAttribute(attribute, value) {
     this.attributes[attribute.toLowerCase()] = value.toString();
+
+    if (attribute === 'style') {
+      this.style.init();
+    } else if (attribute === 'class') {
+      this.classList.init();
+    }
   };
 
-  _proto2.removeAttribute = function removeAttribute(attribute) {
+  _proto4.removeAttribute = function removeAttribute(attribute) {
     delete this.attributes[attribute];
+
+    if (attribute === 'style') {
+      this.style.init();
+    } else if (attribute === 'class') {
+      this.classList.init();
+    }
   };
 
-  _proto2.replaceChild = function replaceChild(newChild, oldChild) {
+  _proto4.replaceChild = function replaceChild(newChild, oldChild) {
     var index = this.childNodes.indexOf(oldChild);
 
     if (index !== -1) {
@@ -493,22 +954,22 @@ var RxElement = function (_RxNode) {
     return oldChild;
   };
 
-  _proto2.removeChild = function removeChild(child) {
+  _proto4.removeChild = function removeChild(child) {
     if (!(child instanceof RxNode)) {
-      throw "Uncaught TypeError: Failed to execute 'removeChild' on 'Node': parameter 1 is not of type 'Node'.";
+      throw new Error("Uncaught TypeError: Failed to execute 'removeChild' on 'Node': parameter 1 is not of type 'Node'.");
     }
 
     var index = this.childNodes.indexOf(child);
 
     if (index === -1) {
-      throw "Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.";
+      throw new Error("Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.");
     }
 
     this.childNodes.splice(index, 1);
     return child;
   };
 
-  _proto2.insertBefore = function insertBefore(newNode, referenceNode) {
+  _proto4.insertBefore = function insertBefore(newNode, referenceNode) {
     if (referenceNode === void 0) {
       referenceNode = null;
     }
@@ -523,7 +984,7 @@ var RxElement = function (_RxNode) {
     return newNode;
   };
 
-  _proto2.cloneNode = function cloneNode(deep) {
+  _proto4.cloneNode = function cloneNode(deep) {
     if (deep === void 0) {
       deep = false;
     }
@@ -531,25 +992,25 @@ var RxElement = function (_RxNode) {
     return _cloneNode.apply(this, [this, deep]);
   };
 
-  _proto2.addListener = function addListener(eventName, handler) {};
+  _proto4.addListener = function addListener(eventName, handler) {};
 
-  _proto2.removeListener = function removeListener(eventName, handler) {};
+  _proto4.removeListener = function removeListener(eventName, handler) {};
 
-  _proto2.serialize = function serialize() {
+  _proto4.serialize = function serialize() {
     return "<" + this.nodeName + this.serializeAttributes() + ">" + this.childNodes.map(function (x) {
       return x.serialize();
     }).join('') + "</" + this.nodeName + ">";
   };
 
-  _proto2.serializeAttributes = function serializeAttributes() {
-    var _this5 = this;
+  _proto4.serializeAttributes = function serializeAttributes() {
+    var _this10 = this;
 
     var attributes = '';
     var keys = Object.keys(this.attributes);
 
     if (keys.length) {
       attributes = ' ' + keys.map(function (k) {
-        return k + "=\"" + _this5.attributes[k] + "\"";
+        return k + "=\"" + _this10.attributes[k] + "\"";
       }).join(' ');
     }
 
@@ -608,8 +1069,8 @@ var RxElement = function (_RxNode) {
   }, {
     key: "firstElementChild",
     get: function get() {
-      for (var _iterator3 = _createForOfIteratorHelperLoose(this.childNodes), _step3; !(_step3 = _iterator3()).done;) {
-        var node = _step3.value;
+      for (var _iterator4 = _createForOfIteratorHelperLoose(this.childNodes), _step4; !(_step4 = _iterator4()).done;) {
+        var node = _step4.value;
 
         if (isRxElement(node)) {
           return node;
@@ -617,6 +1078,17 @@ var RxElement = function (_RxNode) {
       }
 
       return null;
+    }
+  }, {
+    key: "lastChild",
+    get: function get() {
+      var node = null;
+
+      if (this.childNodes.length) {
+        node = this.childNodes[this.childNodes.length - 1];
+      }
+
+      return node;
     }
   }, {
     key: "lastElementChild",
@@ -686,14 +1158,6 @@ var RxElement = function (_RxNode) {
       return html;
     }
   }, {
-    key: "classList",
-    get: function get() {
-      var classList = this.attributes.class ? this.attributes.class.split(' ').map(function (c) {
-        return c.trim();
-      }) : [];
-      return classList;
-    }
-  }, {
     key: "innerText",
     set: function set(nodeValue) {
       this.childNodes = [new RxText(this, nodeValue)];
@@ -715,12 +1179,17 @@ var RxElement = function (_RxNode) {
     }
   }, {
     key: "innerHTML",
+    get: function get() {
+      return this.childNodes.map(function (x) {
+        return x.serialize();
+      }).join('');
+    },
     set: function set(html) {
-      var _this6 = this;
+      var _this11 = this;
 
       var doc = parse(html);
       var childNodes = doc.childNodes.map(function (n) {
-        n.parentNode = _this6;
+        n.parentNode = _this11;
         return n;
       });
       this.childNodes = childNodes;
@@ -733,21 +1202,21 @@ var RxText = function (_RxNode2) {
   _inheritsLoose(RxText, _RxNode2);
 
   function RxText(parentNode, nodeValue) {
-    var _this7;
+    var _this12;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this7 = _RxNode2.call(this, parentNode) || this;
-    _this7.nodeType = exports.RxNodeType.TEXT_NODE;
-    _this7.nodeValue = String(nodeValue);
-    return _this7;
+    _this12 = _RxNode2.call(this, parentNode) || this;
+    _this12.nodeType = exports.RxNodeType.TEXT_NODE;
+    _this12.nodeValue = String(nodeValue);
+    return _this12;
   }
 
-  var _proto3 = RxText.prototype;
+  var _proto5 = RxText.prototype;
 
-  _proto3.serialize = function serialize() {
+  _proto5.serialize = function serialize() {
     return this.nodeValue;
   };
 
@@ -791,21 +1260,21 @@ var RxCData = function (_RxNode3) {
   _inheritsLoose(RxCData, _RxNode3);
 
   function RxCData(parentNode, nodeValue) {
-    var _this8;
+    var _this13;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this8 = _RxNode3.call(this, parentNode) || this;
-    _this8.nodeType = exports.RxNodeType.CDATA_SECTION_NODE;
-    _this8.nodeValue = String(nodeValue);
-    return _this8;
+    _this13 = _RxNode3.call(this, parentNode) || this;
+    _this13.nodeType = exports.RxNodeType.CDATA_SECTION_NODE;
+    _this13.nodeValue = String(nodeValue);
+    return _this13;
   }
 
-  var _proto4 = RxCData.prototype;
+  var _proto6 = RxCData.prototype;
 
-  _proto4.serialize = function serialize() {
+  _proto6.serialize = function serialize() {
     return this.nodeValue;
   };
 
@@ -849,21 +1318,21 @@ var RxComment = function (_RxNode4) {
   _inheritsLoose(RxComment, _RxNode4);
 
   function RxComment(parentNode, nodeValue) {
-    var _this9;
+    var _this14;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this9 = _RxNode4.call(this, parentNode) || this;
-    _this9.nodeType = exports.RxNodeType.COMMENT_NODE;
-    _this9.nodeValue = String(nodeValue);
-    return _this9;
+    _this14 = _RxNode4.call(this, parentNode) || this;
+    _this14.nodeType = exports.RxNodeType.COMMENT_NODE;
+    _this14.nodeValue = String(nodeValue);
+    return _this14;
   }
 
-  var _proto5 = RxComment.prototype;
+  var _proto7 = RxComment.prototype;
 
-  _proto5.serialize = function serialize() {
+  _proto7.serialize = function serialize() {
     return "<!--" + this.nodeValue + "-->";
   };
 
@@ -907,21 +1376,21 @@ var RxProcessingInstruction = function (_RxNode5) {
   _inheritsLoose(RxProcessingInstruction, _RxNode5);
 
   function RxProcessingInstruction(parentNode, nodeValue) {
-    var _this10;
+    var _this15;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this10 = _RxNode5.call(this, parentNode) || this;
-    _this10.nodeType = exports.RxNodeType.PROCESSING_INSTRUCTION_NODE;
-    _this10.nodeValue = String(nodeValue);
-    return _this10;
+    _this15 = _RxNode5.call(this, parentNode) || this;
+    _this15.nodeType = exports.RxNodeType.PROCESSING_INSTRUCTION_NODE;
+    _this15.nodeValue = String(nodeValue);
+    return _this15;
   }
 
-  var _proto6 = RxProcessingInstruction.prototype;
+  var _proto8 = RxProcessingInstruction.prototype;
 
-  _proto6.serialize = function serialize() {
+  _proto8.serialize = function serialize() {
     return "<" + this.nodeValue + ">";
   };
 
@@ -931,21 +1400,21 @@ var RxDocumentType = function (_RxNode6) {
   _inheritsLoose(RxDocumentType, _RxNode6);
 
   function RxDocumentType(parentNode, nodeValue) {
-    var _this11;
+    var _this16;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this11 = _RxNode6.call(this, parentNode) || this;
-    _this11.nodeType = exports.RxNodeType.DOCUMENT_TYPE_NODE;
-    _this11.nodeValue = String(nodeValue);
-    return _this11;
+    _this16 = _RxNode6.call(this, parentNode) || this;
+    _this16.nodeType = exports.RxNodeType.DOCUMENT_TYPE_NODE;
+    _this16.nodeValue = String(nodeValue);
+    return _this16;
   }
 
-  var _proto7 = RxDocumentType.prototype;
+  var _proto9 = RxDocumentType.prototype;
 
-  _proto7.serialize = function serialize() {
+  _proto9.serialize = function serialize() {
     return "<" + this.nodeValue + ">";
   };
 
@@ -955,12 +1424,12 @@ var RxDocumentFragment = function (_RxElement) {
   _inheritsLoose(RxDocumentFragment, _RxElement);
 
   function RxDocumentFragment() {
-    var _this12;
+    var _this17;
 
-    _this12 = _RxElement.call(this, null, '#document-fragment') || this;
-    _this12.nodeType = exports.RxNodeType.DOCUMENT_FRAGMENT_NODE;
-    _this12.childNodes = [];
-    return _this12;
+    _this17 = _RxElement.call(this, null, '#document-fragment') || this;
+    _this17.nodeType = exports.RxNodeType.DOCUMENT_FRAGMENT_NODE;
+    _this17.childNodes = [];
+    return _this17;
   }
 
   return RxDocumentFragment;
@@ -1029,144 +1498,245 @@ var RxDocument = function (_RxElement2) {
   }]);
 
   function RxDocument() {
-    var _this13;
+    var _this18;
 
-    _this13 = _RxElement2.call(this, null, '#document') || this;
-    _this13.nodeType = exports.RxNodeType.DOCUMENT_NODE;
-    _this13.childNodes = [];
-    return _this13;
+    _this18 = _RxElement2.call(this, null, '#document') || this;
+    _this18.nodeType = exports.RxNodeType.DOCUMENT_NODE;
+    _this18.childNodes = [];
+    return _this18;
   }
 
-  var _proto8 = RxDocument.prototype;
+  var _proto10 = RxDocument.prototype;
 
-  _proto8.createAttribute = function createAttribute() {};
+  _proto10.createAttribute = function createAttribute() {};
 
-  _proto8.createAttributeNS = function createAttributeNS() {};
+  _proto10.createAttributeNS = function createAttributeNS() {};
 
-  _proto8.createCDATASection = function createCDATASection() {};
+  _proto10.createCDATASection = function createCDATASection() {};
 
-  _proto8.createComment = function createComment(nodeValue) {
+  _proto10.createComment = function createComment(nodeValue) {
     return new RxComment(null, nodeValue);
   };
 
-  _proto8.createDocumentFragment = function createDocumentFragment() {
+  _proto10.createDocumentFragment = function createDocumentFragment() {
     return new RxDocumentFragment();
   };
 
-  _proto8.createElement = function createElement(nodeName) {
+  _proto10.createElement = function createElement(nodeName) {
     return new RxElement(null, nodeName);
   };
 
-  _proto8.createElementNS = function createElementNS(nodeName) {
+  _proto10.createElementNS = function createElementNS(nodeName) {
     return new RxElement(null, nodeName);
   };
 
-  _proto8.createEvent = function createEvent() {};
+  _proto10.createEvent = function createEvent() {};
 
-  _proto8.createNodeIterator = function createNodeIterator() {};
+  _proto10.createNodeIterator = function createNodeIterator() {};
 
-  _proto8.createProcessingInstruction = function createProcessingInstruction(nodeValue) {
+  _proto10.createProcessingInstruction = function createProcessingInstruction(nodeValue) {
     return new RxProcessingInstruction(null, nodeValue);
   };
 
-  _proto8.createRange = function createRange() {};
+  _proto10.createRange = function createRange() {};
 
-  _proto8.createTextNode = function createTextNode(nodeValue) {
+  _proto10.createTextNode = function createTextNode(nodeValue) {
     return new RxText(null, nodeValue);
   };
 
-  _proto8.createTouchList = function createTouchList() {};
+  _proto10.createTouchList = function createTouchList() {};
 
-  _proto8.createTreeWalker = function createTreeWalker() {};
+  _proto10.createTreeWalker = function createTreeWalker() {};
 
-  _proto8.serialize = function serialize() {
+  _proto10.serialize = function serialize() {
     return "" + this.childNodes.map(function (x) {
       return x.serialize();
     }).join('');
   };
 
   return RxDocument;
-}(RxElement);var Renderer = function () {
-  function Renderer() {}
+}(RxElement);var Vars = {
+  name: 'rxcomp-server',
+  static: false,
+  development: false,
+  production: true,
+  host: '',
+  resource: '/',
+  api: '/api'
+};var fs = require('fs');
 
-  Renderer.bootstrap = function bootstrap(documentOrHtml) {
-    if (typeof documentOrHtml === 'string') {
-      this.document = parse(documentOrHtml);
-    } else {
-      this.document = documentOrHtml;
-    }
+var ServerResponse = function ServerResponse(options) {
+  if (options) {
+    Object.assign(this, options);
+  }
+};
+var ServerErrorResponse = function ServerErrorResponse(options) {
+  if (options) {
+    Object.assign(this, options);
+  }
+};
 
-    if (typeof process !== 'undefined') {
-      global.document = this.document;
-    }
-  };
-
-  Renderer.querySelector = function querySelector(selector) {
-    return this.document.querySelector(selector);
-  };
-
-  return Renderer;
-}();var Server = function (_Platform) {
+var Server = function (_Platform) {
   _inheritsLoose(Server, _Platform);
 
   function Server() {
     return _Platform.apply(this, arguments) || this;
   }
 
-  Server.bootstrap = function bootstrap(moduleFactory, html) {
-    if (!html) {
-      throw 'missing html template';
+  Server.bootstrap = function bootstrap(moduleFactory, template) {
+    if (!rxcomp.isPlatformServer) {
+      throw new rxcomp.ModuleError('missing platform server, node process not found');
     }
 
-    Renderer.bootstrap(html);
-
     if (!moduleFactory) {
-      throw 'missing moduleFactory';
+      throw new rxcomp.ModuleError('missing moduleFactory');
     }
 
     if (!moduleFactory.meta) {
-      throw 'missing moduleFactory meta';
+      throw new rxcomp.ModuleError('missing moduleFactory meta');
     }
 
     if (!moduleFactory.meta.bootstrap) {
-      throw 'missing bootstrap';
+      throw new rxcomp.ModuleError('missing bootstrap');
     }
 
     if (!moduleFactory.meta.bootstrap.meta) {
-      throw 'missing bootstrap meta';
+      throw new rxcomp.ModuleError('missing bootstrap meta');
     }
 
     if (!moduleFactory.meta.bootstrap.meta.selector) {
-      throw 'missing bootstrap meta selector';
+      throw new rxcomp.ModuleError('missing bootstrap meta selector');
     }
 
+    if (!template) {
+      throw new rxcomp.ModuleError('missing template');
+    }
+
+    var document = this.resolveGlobals(template);
     var meta = this.resolveMeta(moduleFactory);
+
+    if (meta.node instanceof RxElement) {
+      var _node$parentNode;
+
+      var node = meta.node;
+      var nodeInnerHTML = meta.nodeInnerHTML;
+      var rxcomp_hydrate_ = {
+        selector: moduleFactory.meta.bootstrap.meta.selector,
+        innerHTML: nodeInnerHTML
+      };
+      var scriptNode = new RxElement(null, 'script');
+      var scriptText = new RxText(null, "var rxcomp_hydrate_ = " + JSON.stringify(rxcomp_hydrate_) + ";");
+      scriptNode.append(scriptText);
+      (_node$parentNode = node.parentNode) == null ? void 0 : _node$parentNode.insertBefore(scriptNode, node);
+    }
+
     var module = new moduleFactory();
     module.meta = meta;
-    var instances = module.compile(meta.node, {});
+    meta.imports.forEach(function (moduleFactory) {
+      moduleFactory.prototype.constructor.call(module);
+    });
+    var instances = module.compile(meta.node, {
+      document: document
+    });
     module.instances = instances;
     var root = instances[0];
     root.pushChanges();
     return module;
   };
 
-  Server.querySelector = function querySelector(selector) {
-    return Renderer.document.querySelector(selector);
-  };
-
   Server.serialize = function serialize() {
     console.log('Server.serialize');
 
-    if (Renderer.document instanceof RxDocument) {
-      var serialized = Renderer.document.serialize();
+    if (this.document instanceof RxDocument) {
+      var serialized = this.document.serialize();
       return serialized;
     } else {
-      throw 'Renderer.document is not an instance of RxDocument';
+      throw new rxcomp.ModuleError('document is not an instance of RxDocument');
     }
   };
 
+  Server.resolveGlobals = function resolveGlobals(documentOrHtml) {
+    var document = typeof documentOrHtml === 'string' ? parse(documentOrHtml) : documentOrHtml;
+    this.document = document;
+    global.document = this.document;
+    return this.document;
+  };
+
   return Server;
-}(rxcomp.Platform);var factories = [];
+}(rxcomp.Platform);
+Server.bootstrap$ = bootstrap$;
+Server.render$ = render$;
+Server.template$ = template$;
+function bootstrap$(moduleFactory, request) {
+  if (request && request.host) {
+    Vars.host = request.host;
+  }
+
+  return rxjs.from(new Promise(function (resolve, reject) {
+    if (!(request == null ? void 0 : request.template)) {
+      return reject(new Error('ServerError: missing template'));
+    }
+
+    try {
+      Server.bootstrap(moduleFactory, request.template);
+
+      var serialize = function serialize() {
+        return Server.serialize();
+      };
+
+      resolve(new ServerResponse(Object.assign({
+        serialize: serialize
+      }, request)));
+    } catch (error) {
+      reject(new ServerErrorResponse(Object.assign({
+        error: error
+      }, request)));
+    }
+  }));
+}
+function render$(request, renderRequest$) {
+  return rxjs.Observable.create(function (observer) {
+    var cached = CacheService.get('cached', request.url);
+    console.log('cached', !!cached);
+
+    if (cached) {
+      observer.next(cached);
+      return observer.complete();
+    }
+
+    template$(request).pipe(operators.switchMap(function (template) {
+      request.template = template;
+      return renderRequest$(request);
+    })).subscribe(function (success) {
+      CacheService.set('cached', request.url, success, 3600);
+      observer.next(success);
+      observer.complete();
+    }, function (error) {
+      observer.error(error);
+    });
+  });
+}
+function template$(request) {
+  return rxjs.Observable.create(function (observer) {
+    var template = CacheService.get('template', request.template);
+    console.log('template', !!template);
+
+    if (template) {
+      observer.next(template);
+      observer.complete();
+    }
+
+    fs.readFile(request.template, request.charset, function (error, template) {
+      if (error) {
+        observer.error(error);
+      } else {
+        CacheService.set('template', request.template, template);
+        observer.next(template);
+        observer.complete();
+      }
+    });
+  });
+}var factories = [];
 var pipes = [];
 
 var ServerModule = function (_Module) {
@@ -1181,4 +1751,4 @@ var ServerModule = function (_Module) {
 ServerModule.meta = {
   declarations: [].concat(factories, pipes),
   exports: [].concat(factories, pipes)
-};exports.Renderer=Renderer;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=querySelectorAll;return exports;}({},rxcomp,htmlparser2));
+};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=querySelectorAll;exports.render$=render$;exports.template$=template$;return exports;}({},htmlparser2,rxcomp,rxjs,rxjs.operators));

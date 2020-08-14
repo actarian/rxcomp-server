@@ -277,7 +277,7 @@ export function cloneNode(source: RxNode, deep: boolean = false, parentNode: RxE
 		}
 		node = documentElement;
 	} else {
-		throw ('Invalid node type');
+		throw new Error('Invalid node type');
 	}
 	return node;
 }
@@ -694,11 +694,11 @@ export class RxElement extends RxNode {
 	}
 	removeChild(child: RxNode): RxNode {
 		if (!(child instanceof RxNode)) {
-			throw (`Uncaught TypeError: Failed to execute 'removeChild' on 'Node': parameter 1 is not of type 'Node'.`);
+			throw new Error(`Uncaught TypeError: Failed to execute 'removeChild' on 'Node': parameter 1 is not of type 'Node'.`);
 		}
 		const index = this.childNodes.indexOf(child);
 		if (index === -1) {
-			throw (`Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`);
+			throw new Error(`Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`);
 		}
 		this.childNodes.splice(index, 1);
 		// console.log('removeChild', this.childNodes.length);

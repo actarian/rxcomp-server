@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?f(exports,require('stream'),require('http'),require('url'),require('https'),require('zlib'),require('rxjs/operators'),require('htmlparser2'),require('rxcomp'),require('rxjs')):typeof define==='function'&&define.amd?define(['exports','stream','http','url','https','zlib','rxjs/operators','htmlparser2','rxcomp','rxjs'],f):(g=typeof globalThis!=='undefined'?globalThis:g||self,f((g.main=g.main||{},g.main.server=g.main.server||{},g.main.server.umd={}),g.Stream,g.http,g.Url,g.https,g.zlib,g.rxjs.operators,g.htmlparser2,g.rxcomp,g.rxjs));}(this,(function(exports, Stream, http, Url, https, zlib, operators, htmlparser2, rxcomp, rxjs){'use strict';Stream=Stream&&Object.prototype.hasOwnProperty.call(Stream,'default')?Stream['default']:Stream;http=http&&Object.prototype.hasOwnProperty.call(http,'default')?http['default']:http;Url=Url&&Object.prototype.hasOwnProperty.call(Url,'default')?Url['default']:Url;https=https&&Object.prototype.hasOwnProperty.call(https,'default')?https['default']:https;zlib=zlib&&Object.prototype.hasOwnProperty.call(zlib,'default')?zlib['default']:zlib;var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?f(exports,require('stream'),require('http'),require('url'),require('https'),require('zlib'),require('rxjs'),require('rxjs/operators'),require('htmlparser2'),require('rxcomp')):typeof define==='function'&&define.amd?define(['exports','stream','http','url','https','zlib','rxjs','rxjs/operators','htmlparser2','rxcomp'],f):(g=typeof globalThis!=='undefined'?globalThis:g||self,f((g.main=g.main||{},g.main.server=g.main.server||{},g.main.server.umd={}),g.Stream,g.http,g.Url,g.https,g.zlib,g.rxjs,g.rxjs.operators,g.htmlparser2,g.rxcomp));}(this,(function(exports, Stream, http, Url, https, zlib, rxjs, operators, htmlparser2, rxcomp){'use strict';Stream=Stream&&Object.prototype.hasOwnProperty.call(Stream,'default')?Stream['default']:Stream;http=http&&Object.prototype.hasOwnProperty.call(http,'default')?http['default']:http;Url=Url&&Object.prototype.hasOwnProperty.call(Url,'default')?Url['default']:Url;https=https&&Object.prototype.hasOwnProperty.call(https,'default')?https['default']:https;zlib=zlib&&Object.prototype.hasOwnProperty.call(zlib,'default')?zlib['default']:zlib;var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function createCommonjsModule(fn, basedir, module) {
 	return module = {
@@ -30,7 +30,7 @@ const Readable = Stream.Readable;
 const BUFFER = Symbol('buffer');
 const TYPE = Symbol('type');
 
-class Blob {
+class Blob$1 {
 	constructor() {
 		this[TYPE] = '';
 
@@ -52,7 +52,7 @@ class Blob {
 					buffer = Buffer.from(element.buffer, element.byteOffset, element.byteLength);
 				} else if (element instanceof ArrayBuffer) {
 					buffer = Buffer.from(element);
-				} else if (element instanceof Blob) {
+				} else if (element instanceof Blob$1) {
 					buffer = element[BUFFER];
 				} else {
 					buffer = Buffer.from(typeof element === 'string' ? element : String(element));
@@ -117,19 +117,19 @@ class Blob {
 
 		const buffer = this[BUFFER];
 		const slicedBuffer = buffer.slice(relativeStart, relativeStart + span);
-		const blob = new Blob([], { type: arguments[2] });
+		const blob = new Blob$1([], { type: arguments[2] });
 		blob[BUFFER] = slicedBuffer;
 		return blob;
 	}
 }
 
-Object.defineProperties(Blob.prototype, {
+Object.defineProperties(Blob$1.prototype, {
 	size: { enumerable: true },
 	type: { enumerable: true },
 	slice: { enumerable: true }
 });
 
-Object.defineProperty(Blob.prototype, Symbol.toStringTag, {
+Object.defineProperty(Blob$1.prototype, Symbol.toStringTag, {
 	value: 'Blob',
 	writable: false,
 	enumerable: false,
@@ -261,7 +261,7 @@ Body.prototype = {
 		return consumeBody.call(this).then(function (buf) {
 			return Object.assign(
 			// Prevent copying
-			new Blob([], {
+			new Blob$1([], {
 				type: ct.toLowerCase()
 			}), {
 				[BUFFER]: buf
@@ -1176,7 +1176,7 @@ function isAbortSignal(signal) {
  * @param   Object  init   Custom options
  * @return  Void
  */
-class Request {
+class Request$1 {
 	constructor(input) {
 		let init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
@@ -1269,20 +1269,20 @@ class Request {
   * @return  Request
   */
 	clone() {
-		return new Request(this);
+		return new Request$1(this);
 	}
 }
 
-Body.mixIn(Request.prototype);
+Body.mixIn(Request$1.prototype);
 
-Object.defineProperty(Request.prototype, Symbol.toStringTag, {
+Object.defineProperty(Request$1.prototype, Symbol.toStringTag, {
 	value: 'Request',
 	writable: false,
 	enumerable: false,
 	configurable: true
 });
 
-Object.defineProperties(Request.prototype, {
+Object.defineProperties(Request$1.prototype, {
 	method: { enumerable: true },
 	url: { enumerable: true },
 	headers: { enumerable: true },
@@ -1412,7 +1412,7 @@ function fetch$1(url, opts) {
 	// wrap http.request into fetch
 	return new fetch$1.Promise(function (resolve, reject) {
 		// build request object
-		const request = new Request(url, opts);
+		const request = new Request$1(url, opts);
 		const options = getNodeRequestOptions(request);
 
 		const send = (options.protocol === 'https:' ? https : http).request;
@@ -1541,7 +1541,7 @@ function fetch$1(url, opts) {
 						}
 
 						// HTTP-redirect fetch step 15
-						resolve(fetch$1(new Request(locationURL, requestOpts)));
+						resolve(fetch$1(new Request$1(locationURL, requestOpts)));
 						finalize();
 						return;
 				}
@@ -1643,7 +1643,7 @@ fetch$1.isRedirect = function (code) {
 };
 
 // expose Promise
-fetch$1.Promise = global.Promise;var lib=/*#__PURE__*/Object.freeze({__proto__:null,'default': fetch$1,Headers: Headers,Request: Request,Response: Response,FetchError: FetchError});var nodeFetch = getCjsExportFromNamespace(lib);var nodePonyfill = createCommonjsModule(function (module, exports) {
+fetch$1.Promise = global.Promise;var lib=/*#__PURE__*/Object.freeze({__proto__:null,'default': fetch$1,Headers: Headers,Request: Request$1,Response: Response,FetchError: FetchError});var nodeFetch = getCjsExportFromNamespace(lib);var nodePonyfill = createCommonjsModule(function (module, exports) {
 var realFetch = nodeFetch.default || nodeFetch;
 
 var fetch = function (url, options) {
@@ -1826,7 +1826,124 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
 
   it = o[Symbol.iterator]();
   return it.next.bind(it);
-}// const SKIP = ['html','head','title','base','meta','script','link','body',];
+}var CacheControlType;
+
+(function (CacheControlType) {
+  CacheControlType["Public"] = "public";
+  CacheControlType["Private"] = "private";
+  CacheControlType["NoCache"] = "no-cache";
+  CacheControlType["NoStore"] = "no-store";
+})(CacheControlType || (CacheControlType = {}));
+
+var CacheItem = /*#__PURE__*/function () {
+  function CacheItem(options) {
+    this.maxAge = 0;
+    this.cacheControl = CacheControlType.Public;
+
+    if (options) {
+      Object.assign(this, options);
+    }
+  }
+
+  var _proto = CacheItem.prototype;
+
+  _proto.set = function set(options) {
+    if (options) {
+      Object.assign(this, options);
+    }
+
+    this.date = new Date();
+    return this;
+  };
+
+  _createClass(CacheItem, [{
+    key: "expired",
+    get: function get() {
+      return this.cacheControl === CacheControlType.NoStore || this.maxAge === 0 || this.date.getTime() + this.maxAge * 1000 < Date.now();
+    }
+  }]);
+
+  return CacheItem;
+}();
+
+var CacheService = /*#__PURE__*/function () {
+  function CacheService() {}
+
+  CacheService.delete = function _delete(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var key = type + "_" + name;
+
+    if (this.cache_.has(key)) {
+      this.cache_.delete(key);
+    }
+  };
+
+  CacheService.has = function has(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var key = type + "_" + name;
+    return this.cache_.has(key);
+  };
+
+  CacheService.get = function get(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var value = null;
+    var key = type + "_" + name;
+
+    if (this.cache_.has(key)) {
+      var cacheItem = this.cache_.get(key);
+
+      if (cacheItem) {
+        if (cacheItem.expired) {
+          this.cache_.delete(key);
+        } else {
+          value = JSON.parse(cacheItem.value);
+        }
+      }
+    }
+
+    return value;
+  };
+
+  CacheService.set = function set(type, name, value, maxAge) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    if (maxAge === void 0) {
+      maxAge = 0;
+    }
+
+    var key = type + "_" + name;
+    var cacheItem = new CacheItem().set({
+      value: JSON.stringify(value, null, 0),
+      maxAge: maxAge
+    });
+    this.cache_.set(key, cacheItem);
+    return value;
+  };
+
+  return CacheService;
+}();
+CacheService.cache_ = new Map();
+/*
+Cache-Control: max-age=0, private, must-revalidate
+Date: Fri, 14 Aug 2020 20:09:02 GMT
+Expect-CT: max-age=2592000, report-uri="https://api.github.com/_private/browser/errors"
+Status: 200 OK
+Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
+Cache-Control: no-cache
+Connection: keep-alive
+Pragma: no-cache
+*/// const SKIP = ['html','head','title','base','meta','script','link','body',];
 // document.createComment = nodeValue => { return new RxComment(null, nodeValue); };
 // document.createTextNode = nodeValue => { return new RxText(null, nodeValue); };
 
@@ -2113,7 +2230,7 @@ function _cloneNode(source, deep, parentNode) {
 
     node = documentElement;
   } else {
-    throw 'Invalid node type';
+    throw new Error('Invalid node type');
   }
 
   return node;
@@ -2512,13 +2629,13 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
 
   _proto4.removeChild = function removeChild(child) {
     if (!(child instanceof RxNode)) {
-      throw "Uncaught TypeError: Failed to execute 'removeChild' on 'Node': parameter 1 is not of type 'Node'.";
+      throw new Error("Uncaught TypeError: Failed to execute 'removeChild' on 'Node': parameter 1 is not of type 'Node'.");
     }
 
     var index = this.childNodes.indexOf(child);
 
     if (index === -1) {
-      throw "Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.";
+      throw new Error("Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.");
     }
 
     this.childNodes.splice(index, 1); // console.log('removeChild', this.childNodes.length);
@@ -3071,7 +3188,66 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
   };
 
   return RxDocument;
-}(RxElement);var Server = /*#__PURE__*/function (_Platform) {
+}(RxElement);var Vars = {
+  name: 'rxcomp-server',
+  static: false,
+  development: false,
+  production: true,
+  host: '',
+  resource: '/',
+  api: '/api'
+};
+/*
+export const STATIC = window.location.port === '40333' || window.location.host === 'actarian.github.io';
+export const DEVELOPMENT = ['localhost', '127.0.0.1', '0.0.0.0'].indexOf(window.location.host.split(':')[0]) !== -1;
+export const PRODUCTION = !DEVELOPMENT;
+export const ENV = {
+    NAME: 'ws-events',
+    STATIC,
+    DEVELOPMENT,
+    PRODUCTION,
+    RESOURCE: '/Modules/Events/Client/docs/',
+    STATIC_RESOURCE: './',
+    API: '/api',
+    STATIC_API: (DEVELOPMENT && !STATIC) ? '/Modules/Events/Client/docs/api' : './api',
+};
+export function getApiUrl(url, useStatic) {
+    const base = (useStatic || STATIC) ? ENV.STATIC_API : ENV.API;
+    const json = (useStatic || STATIC) ? '.json' : '';
+    return `${base}${url}${json}`;
+}
+export function getResourceRoot() {
+    return STATIC ? ENV.STATIC_RESOURCE : ENV.RESOURCE;
+}
+export function getSlug(url) {
+    if (!url) {
+        return url;
+    }
+    if (url.indexOf(`/${ENV.NAME}`) !== 0) {
+        return url;
+    }
+    if (STATIC) {
+        console.log(url);
+        return url;
+    }
+    url = url.replace(`/${ENV.NAME}`, '');
+    url = url.replace('.html', '');
+    return `/it/it${url}`;
+}
+*/var fs = require('fs');
+
+var ServerResponse = function ServerResponse(options) {
+  if (options) {
+    Object.assign(this, options);
+  }
+};
+var ServerErrorResponse = function ServerErrorResponse(options) {
+  if (options) {
+    Object.assign(this, options);
+  }
+};
+
+var Server = /*#__PURE__*/function (_Platform) {
   _inheritsLoose(Server, _Platform);
 
   function Server() {
@@ -3082,36 +3258,51 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
    * @param moduleFactory
    * @description This method returns a Server compiled module
    */
-  Server.bootstrap = function bootstrap(moduleFactory, html) {
+  Server.bootstrap = function bootstrap(moduleFactory, template) {
     if (!rxcomp.isPlatformServer) {
-      throw 'missing platform server, node process not found';
+      throw new rxcomp.ModuleError('missing platform server, node process not found');
     }
 
     if (!moduleFactory) {
-      throw 'missing moduleFactory';
+      throw new rxcomp.ModuleError('missing moduleFactory');
     }
 
     if (!moduleFactory.meta) {
-      throw 'missing moduleFactory meta';
+      throw new rxcomp.ModuleError('missing moduleFactory meta');
     }
 
     if (!moduleFactory.meta.bootstrap) {
-      throw 'missing bootstrap';
+      throw new rxcomp.ModuleError('missing bootstrap');
     }
 
     if (!moduleFactory.meta.bootstrap.meta) {
-      throw 'missing bootstrap meta';
+      throw new rxcomp.ModuleError('missing bootstrap meta');
     }
 
     if (!moduleFactory.meta.bootstrap.meta.selector) {
-      throw 'missing bootstrap meta selector';
+      throw new rxcomp.ModuleError('missing bootstrap meta selector');
     }
 
-    if (!html) {
-      throw 'missing html template';
+    if (!template) {
+      throw new rxcomp.ModuleError('missing template');
     }
+    /*
+    if (typeof ((ReadableStream.prototype as any)[Symbol.asyncIterator]) === 'undefined') {
+        (ReadableStream.prototype as any)[Symbol.asyncIterator] = async function* () {
+            const reader = this.getReader()
+            while (1) {
+                const r = await reader.read();
+                if (r.done) {
+                    return r.value;
+                }
+                yield r.value;
+            }
+        }
+    }
+    */
 
-    var document = this.resolveGlobals(html);
+
+    var document = this.resolveGlobals(template);
     var meta = this.resolveMeta(moduleFactory);
 
     if (meta.node instanceof RxElement) {
@@ -3131,6 +3322,9 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
 
     var module = new moduleFactory();
     module.meta = meta;
+    meta.imports.forEach(function (moduleFactory) {
+      moduleFactory.prototype.constructor.call(module);
+    });
     var instances = module.compile(meta.node, {
       document: document
     });
@@ -3148,7 +3342,7 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
 
       return serialized;
     } else {
-      throw 'document is not an instance of RxDocument';
+      throw new rxcomp.ModuleError('document is not an instance of RxDocument');
     }
   };
 
@@ -3160,145 +3354,2798 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
   };
 
   return Server;
-}(rxcomp.Platform);var HttpResponse = /*#__PURE__*/function () {
-  function HttpResponse(response) {
-    this.url = '';
-    this.status = 0;
-    this.statusText = '';
-    this.ok = false;
-    this.redirected = false;
-    this.data = null;
-
-    if (response) {
-      this.url = response.url;
-      this.status = response.status;
-      this.statusText = response.statusText;
-      this.ok = response.ok;
-      this.redirected = response.redirected;
-    }
+}(rxcomp.Platform);
+Server.bootstrap$ = bootstrap$;
+Server.render$ = render$;
+Server.template$ = template$;
+function bootstrap$(moduleFactory, request) {
+  if (request && request.host) {
+    Vars.host = request.host;
   }
 
-  _createClass(HttpResponse, [{
-    key: "static",
-    get: function get() {
-      return this.url.indexOf('.json') === this.url.length - 5;
-    }
-  }]);
-
-  return HttpResponse;
-}();
-
-var HttpService = /*#__PURE__*/function () {
-  function HttpService() {}
-
-  HttpService.http$ = function http$(method, url, data, format) {
-    var _this = this;
-
-    if (format === void 0) {
-      format = 'json';
+  return rxjs.from(new Promise(function (resolve, reject) {
+    if (!(request == null ? void 0 : request.template)) {
+      return reject(new Error('ServerError: missing template'));
     }
 
-    method = url.indexOf('.json') !== -1 ? 'GET' : method;
-    var methods = ['POST', 'PUT', 'PATCH'];
-    var response_ = null;
-    this.pendingRequests$.next(this.pendingRequests$.getValue() + 1);
-    return rxjs.from(fetch(url, {
-      method: method,
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: methods.indexOf(method) !== -1 ? JSON.stringify(data) : undefined
-    }).then(function (response) {
-      response_ = new HttpResponse(response);
+    try {
+      // const module = Server.bootstrap(moduleFactory, request.template);
+      Server.bootstrap(moduleFactory, request.template);
 
-      if (typeof response[format] === 'function') {
-        return response[format]().then(function (json) {
-          response_.data = json;
+      var serialize = function serialize() {
+        return Server.serialize();
+      };
 
-          if (response.ok) {
-            return Promise.resolve(response_);
-          } else {
-            return Promise.reject(response_);
-          }
-        });
+      resolve(new ServerResponse(Object.assign({
+        serialize: serialize
+      }, request)));
+    } catch (error) {
+      reject(new ServerErrorResponse(Object.assign({
+        error: error
+      }, request)));
+    }
+  }));
+}
+function render$(request, renderRequest$) {
+  return rxjs.Observable.create(function (observer) {
+    var cached = CacheService.get('cached', request.url);
+    console.log('cached', !!cached);
+
+    if (cached) {
+      observer.next(cached);
+      return observer.complete();
+    }
+
+    template$(request).pipe(operators.switchMap(function (template) {
+      // console.log('template!', template);
+      request.template = template;
+      return renderRequest$(request);
+    })).subscribe(function (success) {
+      CacheService.set('cached', request.url, success, 3600);
+      observer.next(success);
+      observer.complete();
+    }, function (error) {
+      observer.error(error);
+    });
+  });
+}
+function template$(request) {
+  return rxjs.Observable.create(function (observer) {
+    var template = CacheService.get('template', request.template);
+    console.log('template', !!template);
+
+    if (template) {
+      observer.next(template);
+      observer.complete();
+    }
+
+    fs.readFile(request.template, request.charset, function (error, template) {
+      if (error) {
+        observer.error(error);
       } else {
-        return Promise.reject(response_);
+        CacheService.set('template', request.template, template);
+        observer.next(template);
+        observer.complete();
       }
-    })).pipe(operators.catchError(function (error) {
-      console.log('error', error);
-      return rxjs.throwError(_this.getError(error, response_));
-    }), operators.finalize(function () {
-      _this.pendingRequests$.next(_this.pendingRequests$.getValue() - 1);
-    }));
-  };
+    });
+  });
+}var HttpEventType;
 
-  HttpService.get$ = function get$(url, data, format) {
-    var query = this.query(data);
-    return this.http$('GET', "" + url + query, undefined, format);
-  };
-
-  HttpService.delete$ = function delete$(url) {
-    return this.http$('DELETE', url);
-  };
-
-  HttpService.post$ = function post$(url, data) {
-    return this.http$('POST', url, data);
-  };
-
-  HttpService.put$ = function put$(url, data) {
-    return this.http$('PUT', url, data);
-  };
-
-  HttpService.patch$ = function patch$(url, data) {
-    return this.http$('PATCH', url, data);
-  };
-
-  HttpService.query = function query(data) {
-    return ''; // todo
-  };
-
-  HttpService.getError = function getError(object, response) {
-    var error = typeof object === 'object' ? object : {};
-
-    if (!error.statusCode) {
-      error.statusCode = response ? response.status : 0;
-    }
-
-    if (!error.statusMessage) {
-      error.statusMessage = response ? response.statusText : object;
-    } // console.log('HttpService.getError', error, object);
-
-
-    return error;
-  };
-
-  return HttpService;
-}();
-HttpService.pendingRequests$ = new rxjs.BehaviorSubject(0);var AppComponent = /*#__PURE__*/function (_Component) {
-  _inheritsLoose(AppComponent, _Component);
-
-  function AppComponent() {
-    return _Component.apply(this, arguments) || this;
-  }
-
-  var _proto = AppComponent.prototype;
-
-  _proto.onInit = function onInit() {
+(function (HttpEventType) {
+  HttpEventType[HttpEventType["Sent"] = 0] = "Sent";
+  HttpEventType[HttpEventType["UploadProgress"] = 1] = "UploadProgress";
+  HttpEventType[HttpEventType["ResponseHeader"] = 2] = "ResponseHeader";
+  HttpEventType[HttpEventType["DownloadProgress"] = 3] = "DownloadProgress";
+  HttpEventType[HttpEventType["Response"] = 4] = "Response";
+  HttpEventType[HttpEventType["User"] = 5] = "User";
+  HttpEventType[HttpEventType["ResponseError"] = 6] = "ResponseError";
+})(HttpEventType || (HttpEventType = {}));var HttpHeaders = /*#__PURE__*/function () {
+  function HttpHeaders(options) {
     var _this = this;
 
-    // console.log('AppComponent.onInit', this);
-    this.items = []; // HttpService.get$('https://jsonplaceholder.typicode.com/users/1/todos').pipe(
+    this.headers_ = new Map();
+    var headers = this.headers_;
 
-    HttpService.get$('http://localhost:5000/data/todos.json').pipe(operators.first()).subscribe(function (response) {
-      console.log('AppComponent.items', response);
-      _this.items = response.data;
+    if (options instanceof HttpHeaders) {
+      options.headers_.forEach(function (value, key) {
+        headers.set(key, value);
+      });
+    } else if (typeof (options == null ? void 0 : options.forEach) === 'function') {
+      options.forEach(function (value, key) {
+        headers.set(key, value.split(', '));
+      });
+    } else if (typeof options === 'object') {
+      Object.keys(options).forEach(function (key) {
+        var values = options[key];
 
-      _this.pushChanges();
+        if (typeof values === 'string') {
+          values = [values];
+        }
+
+        if (headers.has(key)) {
+          values.forEach(function (value) {
+            return _this.append(key, value);
+          });
+        } else {
+          headers.set(key, values);
+        }
+      });
+    } else if (typeof options === 'string') {
+      options.split('\n').forEach(function (line) {
+        var index = line.indexOf(':');
+
+        if (index > 0) {
+          var key = line.slice(0, index);
+          var value = line.slice(index + 1).trim();
+
+          if (headers.has(key)) {
+            _this.append(key, value);
+          } else {
+            headers.set(key, [value]);
+          }
+        }
+      });
+    }
+
+    if (!headers.has('Accept')) {
+      headers.set('Accept', ['application/json', 'text/plain', '*/*']);
+    }
+
+    if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', ['application/json']);
+    }
+  }
+
+  var _proto = HttpHeaders.prototype;
+
+  _proto.has = function has(key) {
+    return this.headers_.has(key);
+  };
+
+  _proto.get = function get(key) {
+    var values = this.headers_.get(key);
+    return values ? values.join(', ') : null;
+  };
+
+  _proto.set = function set(key, value) {
+    var clone = this.clone_();
+    clone.headers_.set(key, value.split(', '));
+    return clone;
+  };
+
+  _proto.append = function append(key, value) {
+    var clone = this.clone_();
+    var values = clone.headers_.has(key) ? clone.headers_.get(key) || [] : [];
+    values.push(value);
+    clone.headers_.set(key, values);
+    return clone;
+  };
+
+  _proto.delete = function _delete(key) {
+    var clone = this.clone_();
+    clone.headers_.delete(key);
+    return clone;
+  };
+
+  _proto.forEach = function forEach(callback, thisArg) {
+    var _this2 = this;
+
+    this.headers_.forEach(function (v, k) {
+      callback(v.join(', '), k, _this2);
     });
   };
 
-  _proto.onClick = function onClick(item) {
+  _proto.serialize = function serialize() {
+    var headers = [];
+    this.forEach(function (value, key) {
+      headers.push([key, value]);
+    });
+    return headers;
+  };
+
+  _proto.clone_ = function clone_() {
+    var clone = new HttpHeaders();
+    this.headers_.forEach(function (value, key) {
+      clone.headers_.set(key, value);
+    });
+    return clone;
+  };
+
+  return HttpHeaders;
+}();
+/*
+export class HttpHeaders implements Headers {
+
+    private headers: Map<string, string[]> = new Map<string, string[]>();;
+    private normalizedNames: Map<string, string> = new Map();
+
+    constructor(headers?: IHttpHeaders) {
+        if (typeof headers === 'string') {
+            headers.split('\n').forEach(line => {
+                const index = line.indexOf(':');
+                if (index > 0) {
+                    const name = line.slice(0, index);
+                    const key = name.toLowerCase();
+                    const value = line.slice(index + 1).trim();
+                    if (!this.normalizedNames.has(key)) {
+                        this.normalizedNames.set(key, name);
+                    }
+                    if (this.headers.has(key)) {
+                        this.headers.get(key)!.push(value);
+                    } else {
+                        this.headers.set(key, [value]);
+                    }
+                }
+            });
+        } else if (typeof headers === 'object') {
+            Object.keys(headers).forEach(name => {
+                let values: string | string[] = headers[name];
+                const key = name.toLowerCase();
+                if (typeof values === 'string') {
+                    values = [values];
+                }
+                if (values.length > 0) {
+                    this.headers.set(key, values);
+                    if (!this.normalizedNames.has(key)) {
+                        this.normalizedNames.set(key, name);
+                    }
+                }
+            });
+        }
+    }
+
+    append(name: string, value: string): void {
+        this.applyUpdate({ name, value, operation: 'append' });
+    }
+
+    delete(name: string): void {
+        this.applyUpdate({ name, operation: 'delete' });
+    }
+
+    get(name: string): string | null {
+        const values = this.headers.get(name.toLowerCase());
+        return values && values.length > 0 ? values[0] : null;
+    }
+
+    has(name: string): boolean {
+        // this.init();
+        return this.headers.has(name.toLowerCase());
+    }
+
+    set(name: string, value: string | string[]): void {
+        this.applyUpdate({ name, value, operation: 'set' });
+    }
+
+    // forEach(callback: (name: string, values: string[]) => void):void {
+    // 	this.init();
+    //	Array.from(this.normalizedNames.keys()).forEach(key => callback(this.normalizedNames.get(key)!, this.headers.get(key)!));
+    // }
+
+    forEach(callback: (value: string, key: string, parent: Headers) => void, thisArg?: any): void {
+        Array.from(this.normalizedNames.keys()).forEach(key => {
+            const value = this.headers.get(key)!;
+            callback((Array.isArray(value) ? value.join(',') : value), this.normalizedNames.get(key)!, this);
+        });
+    }
+
+    serialize(): Headers | string[][] | Record<string, string> | undefined {
+        const headers: string[][] = [];
+        Object.keys(this.headers.keys()).forEach(key => {
+            const value = this.headers.get(key);
+            if (value) {
+                headers.push([key, ...value]);
+            }
+        });
+        return headers;
+    }
+
+    private clone(update: any): HttpHeaders {
+        const headers: IHttpHeaders = {};
+        Object.keys(this.headers.keys()).forEach(key => {
+            const value = this.headers.get(key);
+            if (value) {
+                headers[key] = value;
+            }
+        });
+        this.applyUpdate(update);
+        return new HttpHeaders(headers);
+    }
+
+    private applyUpdate(update: any): void {
+        const key = update.name.toLowerCase();
+        switch (update.operation) {
+            case 'appen':
+            case 'set':
+                let value = update.value!;
+                if (typeof value === 'string') {
+                    value = [value];
+                }
+                if (value.length === 0) {
+                    return;
+                }
+                if (!this.normalizedNames.has(key)) {
+                    this.normalizedNames.set(key, update.name);
+                }
+                const base = (update.op === 'append' ? this.headers.get(key) : undefined) || [];
+                base.push(...value);
+                this.headers.set(key, base);
+                break;
+            case 'delete':
+                const toDelete = update.value as string | undefined;
+                if (!toDelete) {
+                    this.headers.delete(key);
+                    this.normalizedNames.delete(key);
+                } else {
+                    let existing = this.headers.get(key);
+                    if (!existing) {
+                        return;
+                    }
+                    existing = existing.filter(value => toDelete.indexOf(value) === -1);
+                    if (existing.length === 0) {
+                        this.headers.delete(key);
+                        this.normalizedNames.delete(key);
+                    } else {
+                        this.headers.set(key, existing);
+                    }
+                }
+                break;
+        }
+    }
+
+}
+*/
+
+/*
+export class HttpHeaders {
+
+    private headers!: Map<string, string[]>;
+    private normalizedNames: Map<string, string> = new Map();
+    private lazyInit!: HttpHeaders | Function | null;
+    private lazyUpdate: Update[] | null = null;
+
+    constructor(headers?: string | { [name: string]: string | string[] }) {
+        if (!headers) {
+            this.headers = new Map<string, string[]>();
+        } else if (typeof headers === 'string') {
+            this.lazyInit = () => {
+                this.headers = new Map<string, string[]>();
+                headers.split('\n').forEach(line => {
+                    const index = line.indexOf(':');
+                    if (index > 0) {
+                        const name = line.slice(0, index);
+                        const key = name.toLowerCase();
+                        const value = line.slice(index + 1).trim();
+                        this.maybeSetNormalizedName(name, key);
+                        if (this.headers.has(key)) {
+                            this.headers.get(key)!.push(value);
+                        } else {
+                            this.headers.set(key, [value]);
+                        }
+                    }
+                });
+            };
+        } else {
+            this.lazyInit = () => {
+                this.headers = new Map<string, string[]>();
+                Object.keys(headers).forEach(name => {
+                    let values: string | string[] = headers[name];
+                    const key = name.toLowerCase();
+                    if (typeof values === 'string') {
+                        values = [values];
+                    }
+                    if (values.length > 0) {
+                        this.headers.set(key, values);
+                        this.maybeSetNormalizedName(name, key);
+                    }
+                });
+            };
+        }
+    }
+
+    has(name: string): boolean {
+        this.init();
+        return this.headers.has(name.toLowerCase());
+    }
+
+    get(name: string): string | null {
+        this.init();
+        const values = this.headers.get(name.toLowerCase());
+        return values && values.length > 0 ? values[0] : null;
+    }
+
+    keys(): string[] {
+        this.init();
+        return Array.from(this.normalizedNames.values());
+    }
+
+    getAll(name: string): string[] | null {
+        this.init();
+        return this.headers.get(name.toLowerCase()) || null;
+    }
+
+    append(name: string, value: string | string[]): HttpHeaders {
+        return this.clone({ name, value, operation: 'a' });
+    }
+
+    set(name: string, value: string | string[]): HttpHeaders {
+        return this.clone({ name, value, operation: 's' });
+    }
+
+    delete(name: string, value?: string | string[]): HttpHeaders {
+        return this.clone({ name, value, operation: 'd' });
+    }
+
+    private maybeSetNormalizedName(name: string, key: string): void {
+        if (!this.normalizedNames.has(key)) {
+            this.normalizedNames.set(key, name);
+        }
+    }
+
+    private init(): void {
+        if (!!this.lazyInit) {
+            if (this.lazyInit instanceof HttpHeaders) {
+                this.copyFrom(this.lazyInit);
+            } else {
+                this.lazyInit();
+            }
+            this.lazyInit = null;
+            if (!!this.lazyUpdate) {
+                this.lazyUpdate.forEach(update => this.applyUpdate(update));
+                this.lazyUpdate = null;
+            }
+        }
+    }
+
+    private copyFrom(other: HttpHeaders) {
+        other.init();
+        Array.from(other.headers.keys()).forEach(key => {
+            this.headers.set(key, other.headers.get(key)!);
+            this.normalizedNames.set(key, other.normalizedNames.get(key)!);
+        });
+    }
+
+    private clone(update: Update): HttpHeaders {
+        const clone = new HttpHeaders();
+        clone.lazyInit =
+            (!!this.lazyInit && this.lazyInit instanceof HttpHeaders) ? this.lazyInit : this;
+        clone.lazyUpdate = (this.lazyUpdate || []).concat([update]);
+        return clone;
+    }
+
+    private applyUpdate(update: Update): void {
+        const key = update.name.toLowerCase();
+        switch (update.operation) {
+            case 'a':
+            case 's':
+                let value = update.value!;
+                if (typeof value === 'string') {
+                    value = [value];
+                }
+                if (value.length === 0) {
+                    return;
+                }
+                this.maybeSetNormalizedName(update.name, key);
+                const base = (update.op === 'a' ? this.headers.get(key) : undefined) || [];
+                base.push(...value);
+                this.headers.set(key, base);
+                break;
+            case 'd':
+                const toDelete = update.value as string | undefined;
+                if (!toDelete) {
+                    this.headers.delete(key);
+                    this.normalizedNames.delete(key);
+                } else {
+                    let existing = this.headers.get(key);
+                    if (!existing) {
+                        return;
+                    }
+                    existing = existing.filter(value => toDelete.indexOf(value) === -1);
+                    if (existing.length === 0) {
+                        this.headers.delete(key);
+                        this.normalizedNames.delete(key);
+                    } else {
+                        this.headers.set(key, existing);
+                    }
+                }
+                break;
+        }
+    }
+
+    forEach(fn: (name: string, values: string[]) => void) {
+        this.init();
+        Array.from(this.normalizedNames.keys()).forEach(key => fn(this.normalizedNames.get(key)!, this.headers.get(key)!));
+    }
+
+}
+*/var HttpErrorResponse = /*#__PURE__*/function (_Error) {
+  _inheritsLoose(HttpErrorResponse, _Error);
+
+  function HttpErrorResponse(options) {
+    var _this;
+
+    _this = _Error.call(this, (options == null ? void 0 : options.message) || 'Unknown Error') || this;
+    _this.status = 0;
+    _this.statusText = 'Unknown Error';
+    _this.ok = false;
+    _this.type = HttpEventType.ResponseError;
+    _this.message = 'Unknown Error';
+    _this.name = 'HttpErrorResponse';
+
+    if (options) {
+      _this.headers = new HttpHeaders(options.headers);
+      _this.status = options.status || _this.status;
+      _this.statusText = options.statusText || _this.statusText;
+      _this.url = options.url || _this.url;
+      _this.error = options.error || _this.error;
+      _this.name = options.name || _this.name;
+      _this.request = options.request || null;
+    }
+
+    return _this;
+  }
+
+  var _proto = HttpErrorResponse.prototype;
+
+  _proto.clone = function clone(options) {
+    options = Object.assign({
+      headers: this.headers,
+      status: this.status,
+      statusText: this.statusText,
+      url: this.url,
+      error: this.error,
+      message: this.message,
+      name: this.name,
+      request: this.request
+    }, options || {});
+    var clone = new HttpErrorResponse(options);
+    return clone;
+  };
+
+  return HttpErrorResponse;
+}( /*#__PURE__*/_wrapNativeSuper(Error));
+/*
+export class HttpErrorResponse<T> extends HttpResponseBase implements Error {
+    readonly name = 'HttpErrorResponse';
+    readonly message: string;
+    readonly error: any | null;
+    readonly ok = false;
+    constructor(errorResponse: IHttpErrorResponse, response: HttpResponse<T> | null = null) {
+        super(errorResponse, 0, 'Unknown Error');
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, HttpErrorResponse);
+        }
+        if (this.status >= 200 && this.status < 300) {
+            this.message = `Http failure during parsing for ${errorResponse.url || '(unknown url)'}`;
+        } else {
+            this.message = `Http failure response for ${errorResponse.url || '(unknown url)'}: ${errorResponse.status} ${errorResponse.statusText}`;
+        }
+        this.error = errorResponse.error || null;
+    }
+}
+*/var HttpResponse = /*#__PURE__*/function () {
+  function HttpResponse(options) {
+    this.status = 200;
+    this.statusText = 'OK';
+    this.type = HttpEventType.Response;
+    this.body = null;
+
+    if (options) {
+      this.headers = new HttpHeaders(options.headers);
+      this.status = options.status || this.status;
+      this.statusText = options.statusText || this.statusText;
+      this.url = options.url || this.url;
+      this.body = options.body || this.body;
+    }
+
+    this.ok = this.status >= 200 && this.status < 300;
+  }
+
+  var _proto2 = HttpResponse.prototype;
+
+  _proto2.clone = function clone(options) {
+    options = Object.assign({
+      headers: this.headers,
+      status: this.status,
+      statusText: this.statusText,
+      url: this.url,
+      ok: this.ok,
+      type: this.type,
+      body: this.body
+    }, options || {});
+    var clone = new HttpResponse(options);
+    return clone;
+  };
+
+  return HttpResponse;
+}();
+/*
+// !!!
+export default class HttpResponse {
+    data?: any;
+    url: string = '';
+    status: number = 0;
+    statusText: string = '';
+    ok: boolean = false;
+    redirected: boolean = false;
+    get static() {
+        return this.url!.indexOf('.json') === this.url!.length - 5;
+    }
+    constructor(response: Response) {
+        this.data = null;
+        if (response) {
+            this.url = response.url;
+            this.status = response.status;
+            this.statusText = response.statusText;
+            this.ok = response.ok;
+            this.redirected = response.redirected;
+        }
+    }
+}
+*/var HttpFetchHandler = /*#__PURE__*/function () {
+  function HttpFetchHandler() {
+    this.response_ = null;
+  }
+
+  var _proto = HttpFetchHandler.prototype;
+
+  _proto.handle = function handle(request) {
+    var _this = this;
+
+    if (!request.method) {
+      throw new Error("missing method");
+    }
+
+    var requestInfo = request.urlWithParams;
+    var requestInit = request.toInitRequest(); // const fetchRequest: Request = request.toFetchRequest__();
+    // console.log('fetchRequest', fetchRequest);
+    // fetchRequest.headers.forEach((value, key) => console.log('HttpFetchHandler.handle', key, value));
+    // request = request.clone({ headers: fetchRequest.headers });
+    // console.log('HttpFetchHandler.handle', 'requestInfo', requestInfo, 'requestInit', requestInit);
+
+    return rxjs.from(fetch(requestInfo, requestInit) // fetch(fetchRequest)
+    .then(function (response) {
+      return _this.getProgress(response, request);
+    }).then(function (response) {
+      return _this.getResponse(response, request);
+    })).pipe(operators.catchError(function (error) {
+      var errorResponse = {
+        error: error
+      };
+
+      if (_this.response_) {
+        errorResponse.headers = _this.response_.headers;
+        errorResponse.status = _this.response_.status;
+        errorResponse.statusText = _this.response_.statusText;
+        errorResponse.url = _this.response_.url;
+        errorResponse.request = request;
+      }
+
+      var httpErrorResponse = new HttpErrorResponse(errorResponse); // console.log('httpErrorResponse', httpErrorResponse);
+
+      rxcomp.nextError$.next(httpErrorResponse);
+      return rxjs.of(_this.response_); // return throwError(httpErrorResponse);
+    }), operators.finalize(function () {
+      _this.response_ = null;
+    }));
+  }
+  /*
+  onProgress(value: Uint8Array, done: boolean, request, reader, progress) {
+      console.log("value:", value);
+      if (value || done) {
+          console.log("upload complete, request.bodyUsed:", request.bodyUsed);
+          progress.value = progress.max;
+          return reader.closed.then(() => fileUpload);
+      };
+      console.log("upload progress:", value);
+      if (progress.value < file.size) {
+          progress.value += 1;
+      }
+      return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
+  };
+   getProgress_(request) {
+      const uploadProgress = new ReadableStream({
+          start(controller) {
+              console.log("starting upload, request.bodyUsed:", request.bodyUsed);
+              controller.enqueue(request.bodyUsed);
+          },
+          pull(controller) {
+              if (request.bodyUsed) {
+                  controller.close();
+              }
+              controller.enqueue(request.bodyUsed);
+              console.log("pull, request.bodyUsed:", request.bodyUsed);
+          },
+          cancel(reason) {
+              console.log(reason);
+          }
+      });
+       const [fileUpload, reader] = [
+          upload(request).catch(e => {
+              reader.cancel();
+              console.log(e);
+              throw e
+          }), uploadProgress.getReader()
+      ];
+  }
+  */
+  ;
+
+  _proto.getProgress = function getProgress(response, request) {
+    var _this2 = this;
+
+    // console.log('HttpFetchHandler.setProgress', request.reportProgress, response.body);
+    var clonedBody = response.clone().body;
+
+    if (rxcomp.isPlatformBrowser && request.reportProgress && clonedBody) {
+      var reader = clonedBody.getReader();
+      var contentLength = response.headers && response.headers.has('Content-Length') ? +(response.headers.get('Content-Length') || 0) : 0;
+      return new Promise(function (resolve, reject) {
+        /*
+        let receivedLength = 0; // received that many bytes at the moment
+        const chunks: Uint8Array[] = []; // array of received binary chunks (comprises the body)
+        const getChunk = () => {
+            return reader.read().then(({ done, value }) => {
+                if (!done) {
+                    if (value) {
+                        chunks.push(value);
+                        receivedLength += value.length || 0;
+                        console.log(`HttpFetchHandler.setProgress ${(receivedLength / contentLength * 100).toFixed(2)}% ${receivedLength} of ${contentLength}`);
+                    }
+                    getChunk();
+                } else {
+                    reader.cancel();
+                    resolve(response);
+                    if (false) {
+                        // Step 4: concatenate chunks into single Uint8Array
+                        const chunksAll = new Uint8Array(receivedLength); // (4.1)
+                        let position = 0;
+                        for (let chunk of chunks) {
+                            chunksAll.set(chunk, position); // (4.2)
+                            position += chunk.length;
+                        }
+                        // Step 5: decode into a string
+                        const result = new TextDecoder("utf-8").decode(chunksAll);
+                        // We're done!
+                        const data = JSON.parse(result);
+                        console.log('HttpFetchHandler.setProgress data', data);
+                        resolve(response);
+                    }
+                }
+            }).catch(error => {
+                reader.cancel();
+                reject(error);
+            });
+        };
+        getChunk();
+        */
+        var progress = {
+          progress: 0,
+          percent: 0,
+          current: 0,
+          total: 0
+        };
+
+        var onProgress = function onProgress(value, done) {
+          var receivedLength = progress.current;
+
+          if (!done) {
+            if (value) {
+              receivedLength += value.length || 0;
+              progress.total = contentLength;
+              progress.current = receivedLength;
+              progress.progress = receivedLength / contentLength;
+              progress.percent = progress.progress * 100;
+            } // console.log('progress', progress);
+
+
+            return reader.read().then(function (_ref) {
+              var value = _ref.value,
+                  done = _ref.done;
+              return onProgress(value, done);
+            });
+          } else {
+            progress.total = contentLength;
+            progress.current = contentLength;
+            progress.progress = 1;
+            progress.percent = 100; // console.log('progress', progress);
+
+            return reader.closed.then(function () {
+              return response.clone();
+            });
+          }
+        };
+
+        reader.read().then(function (_ref2) {
+          var value = _ref2.value,
+              done = _ref2.done;
+          return onProgress(value, done);
+        }).then(function (response) {
+          _this2.response_ = new HttpResponse(response);
+
+          if (typeof response[request.responseType] === 'function') {
+            return response[request.responseType]().then(function (json) {
+              _this2.response_ = new HttpResponse(Object.assign(_this2.response_, {
+                body: json
+              }));
+
+              if (response.ok) {
+                return resolve(_this2.response_);
+              } else {
+                return reject(_this2.response_);
+              }
+            });
+          } else {
+            return reject(_this2.response_);
+          }
+        }).catch(function (err) {
+          return console.log("upload error:", err);
+        });
+      });
+    } else {
+      return Promise.resolve(response);
+    }
+  };
+
+  _proto.getResponse = function getResponse(response, request) {
+    this.response_ = new HttpResponse(response);
+
+    if (rxcomp.isPlatformBrowser && request.reportProgress && response.body) {
+      return Promise.resolve(this.response_);
+    } else {
+      return this.getResponseType(response, request);
+    }
+  };
+
+  _proto.getResponseType = function getResponseType(response, request) {
+    var _this3 = this;
+
+    return new Promise(function (resolve, reject) {
+      _this3.response_ = new HttpResponse(response);
+
+      if (typeof response[request.responseType] === 'function') {
+        return response[request.responseType]().then(function (json) {
+          _this3.response_ = new HttpResponse(Object.assign(_this3.response_, {
+            body: json
+          }));
+
+          if (response.ok) {
+            return resolve(_this3.response_);
+          } else {
+            return reject(_this3.response_);
+          }
+        });
+      } else {
+        return reject(_this3.response_);
+      }
+    });
+  };
+
+  _proto.getReadableStream = function getReadableStream(response, request) {
+    var reader = response.body.getReader();
+    var readableStream = new ReadableStream({
+      start: function start(controller) {
+        // console.log("starting upload, request.bodyUsed:", request.bodyUsed);
+        // controller.enqueue(request.bodyUsed);
+        // The following function handles each data chunk
+        var push = function push() {
+          // "done" is a Boolean and value a "Uint8Array"
+          reader.read().then(function (_ref3) {
+            var done = _ref3.done,
+                value = _ref3.value;
+
+            // Is there no more data to read?
+            if (done) {
+              // Tell the browser that we have finished sending data
+              controller.close();
+              return;
+            } // Get the data and send it to the browser via the controller
+
+
+            controller.enqueue(value);
+            push();
+          });
+        };
+
+        push();
+      }
+    });
+    return readableStream;
+  };
+
+  return HttpFetchHandler;
+}();var HttpInterceptorHandler = /*#__PURE__*/function () {
+  function HttpInterceptorHandler(next, interceptor) {
+    this.next = next;
+    this.interceptor = interceptor;
+  }
+
+  var _proto = HttpInterceptorHandler.prototype;
+
+  _proto.handle = function handle(req) {
+    return this.interceptor.intercept(req, this.next);
+  };
+
+  return HttpInterceptorHandler;
+}();
+var HttpInterceptors = [];
+var fetchHandler = new HttpFetchHandler();
+var HttpInterceptingHandler = /*#__PURE__*/function () {
+  function HttpInterceptingHandler() {
+    this.chain = null;
+  }
+
+  var _proto3 = HttpInterceptingHandler.prototype;
+
+  _proto3.handle = function handle(req) {
+    if (this.chain === null) {
+      var interceptors = HttpInterceptors;
+      this.chain = interceptors.reduceRight(function (next, interceptor) {
+        return new HttpInterceptorHandler(next, interceptor);
+      }, fetchHandler);
+    }
+
+    return this.chain.handle(req);
+  };
+
+  return HttpInterceptingHandler;
+}();var HttpUrlEncodingCodec = /*#__PURE__*/function () {
+  function HttpUrlEncodingCodec() {}
+
+  var _proto = HttpUrlEncodingCodec.prototype;
+
+  _proto.encodeKey = function encodeKey(key) {
+    return encodeParam_(key);
+  };
+
+  _proto.encodeValue = function encodeValue(value) {
+    return encodeParam_(value);
+  };
+
+  _proto.decodeKey = function decodeKey(key) {
+    return decodeURIComponent(key);
+  };
+
+  _proto.decodeValue = function decodeValue(value) {
+    return decodeURIComponent(value);
+  };
+
+  return HttpUrlEncodingCodec;
+}();
+var HttpParams = /*#__PURE__*/function () {
+  function HttpParams(options, encoder) {
+    if (encoder === void 0) {
+      encoder = new HttpUrlEncodingCodec();
+    }
+
+    this.params_ = new Map();
+    this.encoder = encoder;
+    var params = this.params_;
+
+    if (options instanceof HttpParams) {
+      options.params_.forEach(function (value, key) {
+        params.set(key, value);
+      });
+    } else if (typeof options === 'object') {
+      Object.keys(options).forEach(function (key) {
+        var value = options[key];
+        params.set(key, Array.isArray(value) ? value : [value]);
+      });
+    } else if (typeof options === 'string') {
+      parseRawParams_(params, options, this.encoder);
+    } // ?updates=null&cloneFrom=null&encoder=%5Bobject%20Object%5D&params_=%5Bobject%20Map%5D
+
+  }
+
+  var _proto2 = HttpParams.prototype;
+
+  _proto2.keys = function keys() {
+    return Array.from(this.params_.keys());
+  };
+
+  _proto2.has = function has(key) {
+    return this.params_.has(key);
+  };
+
+  _proto2.get = function get(key) {
+    var value = this.params_.get(key);
+    return value ? value[0] : null;
+  };
+
+  _proto2.getAll = function getAll(key) {
+    return this.params_.get(key) || null;
+  };
+
+  _proto2.set = function set(key, value) {
+    var clone = this.clone_();
+    clone.params_.set(key, [value]);
+    return clone;
+  };
+
+  _proto2.append = function append(key, value) {
+    var clone = this.clone_();
+
+    if (clone.has(key)) {
+      var values = clone.params_.get(key) || [];
+      values.push(value);
+      clone.params_.set(key, values);
+    } else {
+      clone.params_.set(key, [value]);
+    }
+
+    return clone;
+  };
+
+  _proto2.delete = function _delete(key) {
+    var clone = this.clone_();
+    clone.params_.delete(key);
+    return clone;
+  };
+
+  _proto2.toString = function toString() {
+    var _this = this;
+
+    return this.keys().map(function (key) {
+      var values = _this.params_.get(key);
+
+      return _this.encoder.encodeKey(key) + (values ? '=' + values.map(function (x) {
+        return _this.encoder.encodeValue(x);
+      }).join('&') : '');
+    }).filter(function (keyValue) {
+      return keyValue !== '';
+    }).join('&');
+  };
+
+  _proto2.clone_ = function clone_() {
+    var clone = new HttpParams(undefined, this.encoder);
+    this.params_.forEach(function (value, key) {
+      clone.params_.set(key, value);
+    });
+    return clone;
+  };
+
+  return HttpParams;
+}();
+
+function parseRawParams_(params, queryString, encoder) {
+  if (queryString.length > 0) {
+    var keyValueParams = queryString.split('&');
+    keyValueParams.forEach(function (keyValue) {
+      var index = keyValue.indexOf('=');
+
+      var _ref = index == -1 ? [encoder.decodeKey(keyValue), ''] : [encoder.decodeKey(keyValue.slice(0, index)), encoder.decodeValue(keyValue.slice(index + 1))],
+          key = _ref[0],
+          value = _ref[1];
+
+      var values = params.get(key) || [];
+      values.push(value);
+      params.set(key, values);
+    });
+  }
+
+  return params;
+}
+
+function encodeParam_(v) {
+  return encodeURIComponent(v).replace(/%40/gi, '@').replace(/%3A/gi, ':').replace(/%24/gi, '$').replace(/%2C/gi, ',').replace(/%3B/gi, ';').replace(/%2B/gi, '+').replace(/%3D/gi, '=').replace(/%3F/gi, '?').replace(/%2F/gi, '/');
+}var HttpRequest = /*#__PURE__*/function () {
+  function HttpRequest(method, url, third, fourth) {
+    this.url = url;
+    this.reportProgress = false;
+    this.withCredentials = false;
+    this.observe = 'body';
+    this.responseType = 'json'; // !!! remove, rethink
+
+    var isStaticFile = /\.(json|xml|txt)(\?.*)?$/.test(url);
+    this.method = isStaticFile ? 'GET' : method.toUpperCase();
+    var options;
+
+    if (methodHasBody(this.method) || !!fourth) {
+      this.body = third !== undefined ? third : null;
+      options = fourth;
+    } else {
+      options = third;
+    }
+
+    if (options) {
+      this.reportProgress = !!options.reportProgress;
+      this.withCredentials = !!options.withCredentials;
+      this.observe = options.observe || this.observe;
+
+      if (options.responseType) {
+        this.responseType = options.responseType;
+      }
+
+      if (options.headers) {
+        this.headers = new HttpHeaders(options.headers);
+      }
+
+      if (options.params) {
+        this.params = new HttpParams(options.params);
+      }
+    }
+
+    if (!this.headers) {
+      this.headers = new HttpHeaders();
+    }
+
+    if (!this.params) {
+      this.params = new HttpParams();
+    }
+
+    var params = this.params.toString();
+    var index = url.indexOf('?');
+    var sep = index === -1 ? '?' : index < url.length - 1 ? '&' : '';
+    this.urlWithParams = url + (params.length ? sep + params : params);
+  }
+
+  var _proto = HttpRequest.prototype;
+
+  _proto.serializeBody = function serializeBody() {
+    if (this.body === null) {
+      return null;
+    }
+
+    if (isArrayBuffer(this.body) || isBlob$1(this.body) || isFormData(this.body) || typeof this.body === 'string') {
+      return this.body;
+    }
+
+    if (this.body instanceof HttpParams) {
+      return this.body.toString();
+    }
+
+    if (typeof this.body === 'object' || typeof this.body === 'boolean' || Array.isArray(this.body)) {
+      return JSON.stringify(this.body);
+    }
+
+    return this.body.toString();
+  };
+
+  _proto.detectContentTypeHeader = function detectContentTypeHeader() {
+    if (this.body === null) {
+      return null;
+    }
+
+    if (isFormData(this.body)) {
+      return null;
+    }
+
+    if (isBlob$1(this.body)) {
+      return this.body.type || null;
+    }
+
+    if (isArrayBuffer(this.body)) {
+      return null;
+    }
+
+    if (typeof this.body === 'string') {
+      return 'text/plain';
+    }
+
+    if (this.body instanceof HttpParams) {
+      return 'application/x-www-form-urlencoded;charset=UTF-8';
+    }
+
+    if (typeof this.body === 'object' || typeof this.body === 'number' || Array.isArray(this.body)) {
+      return 'application/json';
+    }
+
+    return null;
+  };
+
+  _proto.toInitRequest = function toInitRequest() {
+    return {
+      method: this.method,
+      headers: this.headers.serialize(),
+      body: this.serializeBody(),
+      mode: 'same-origin',
+      credentials: 'same-origin',
+      cache: 'default',
+      redirect: 'error'
+    };
+  };
+
+  _proto.toFetchRequest__ = function toFetchRequest__() {
+    return new Request(this.urlWithParams, this.toInitRequest());
+    /*
+    Request.cache Read only
+    Contains the cache mode of the request (e.g., default, reload, no-cache).
+    Request.context Read only
+    Contains the context of the request (e.g., audio, image, iframe, etc.)
+    Request.credentials Read only
+    Contains the credentials of the request (e.g., omit, same-origin, include). The default is same-origin.
+    Request.destination Read only
+    Returns a string from the RequestDestination enum describing the request's destination. This is a string indicating the type of content being requested.
+    Request.headers Read only
+    Contains the associated Headers object of the request.
+    Request.integrity Read only
+    Contains the subresource integrity value of the request (e.g., sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=).
+    Request.method Read only
+    Contains the request's method (GET, POST, etc.)
+    Request.mode Read only
+    Contains the mode of the request (e.g., cors, no-cors, same-origin, navigate.)
+    Request.redirect Read only
+    Contains the mode for how redirects are handled. It may be one of follow, error, or manual.
+    Request.referrer Read only
+    Contains the referrer of the request (e.g., client).
+    Request.referrerPolicy Read only
+    Contains the referrer policy of the request (e.g., no-referrer).
+    Request.url Read only
+    Contains the URL of the request.
+    Request implements Body, so it also inherits the following properties:
+    body Read only
+    A simple getter used to expose a ReadableStream of the body contents.
+    bodyUsed Read only
+    Stores a Boolean that declares whether the body has been used in a response yet.
+    */
+  };
+
+  _proto.clone = function clone(options) {
+    options = Object.assign({
+      headers: this.headers,
+      reportProgress: this.reportProgress,
+      params: this.params,
+      responseType: this.responseType,
+      withCredentials: this.withCredentials,
+      observe: this.observe,
+      body: this.body,
+      url: this.url,
+      method: this.method
+    }, options || {});
+    var clone = new HttpRequest(this.method, this.url, this.body, options);
+    return clone;
+  };
+
+  return HttpRequest;
+}();
+
+function methodHasBody(method) {
+  switch (method) {
+    case 'DELETE':
+    case 'GET':
+    case 'HEAD':
+    case 'OPTIONS':
+    case 'JSONP':
+      return false;
+
+    default:
+      return true;
+  }
+}
+
+function isArrayBuffer(value) {
+  return typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer;
+}
+
+function isBlob$1(value) {
+  return typeof Blob !== 'undefined' && value instanceof Blob;
+}
+
+function isFormData(value) {
+  return typeof FormData !== 'undefined' && value instanceof FormData;
+}var HttpClient = /*#__PURE__*/function () {
+  function HttpClient() {}
+
+  HttpClient.incrementPendingRequest = function incrementPendingRequest() {
+    HttpClient.pendingRequests$.next(HttpClient.pendingRequests$.getValue() + 1);
+  };
+
+  HttpClient.decrementPendingRequest = function decrementPendingRequest() {
+    HttpClient.pendingRequests$.next(HttpClient.pendingRequests$.getValue() - 1);
+  };
+
+  HttpClient.request$ = function request$(first, url, options) {
+    var _this = this;
+
+    if (options === void 0) {
+      options = {};
+    }
+
+    var request;
+
+    if (first instanceof HttpRequest) {
+      request = first;
+    } else {
+      var headers = undefined;
+
+      if (options.headers instanceof HttpHeaders) {
+        headers = options.headers;
+      } else {
+        headers = new HttpHeaders(options.headers);
+      }
+
+      var params = undefined;
+
+      if (options.params) {
+        params = new HttpParams(options.params);
+      }
+
+      request = new HttpRequest(first, url, options.body !== undefined ? options.body : null, {
+        headers: headers,
+        params: params,
+        reportProgress: options.reportProgress,
+        responseType: options.responseType || 'json',
+        withCredentials: options.withCredentials
+      });
+    } // console.log('HttpClient.request$', request);
+
+
+    HttpClient.incrementPendingRequest();
+    var events$ = rxjs.of(request).pipe(operators.concatMap(function (request) {
+      return _this.handler.handle(request);
+    }), // tap((response: HttpEvent<any>) => console.log('HttpClient.response', response)),
+    operators.finalize(function () {
+      return HttpClient.decrementPendingRequest();
+    }));
+
+    if (first instanceof HttpRequest || options.observe === 'events') {
+      return events$.pipe(operators.catchError(function (error) {
+        console.log('error', error);
+        return rxjs.throwError(_this.getError(error, null, request));
+      }));
+    }
+
+    var response$ = events$.pipe(operators.filter(function (event) {
+      return event instanceof HttpResponse;
+    }));
+    var response_;
+    var observe$ = response$.pipe(operators.map(function (response) {
+      response_ = response;
+
+      switch (options.observe || 'body') {
+        case 'body':
+          switch (request.responseType) {
+            case 'arraybuffer':
+              if (response.body !== null && !(response.body instanceof ArrayBuffer)) {
+                throw new Error('Response is not an ArrayBuffer.');
+              }
+
+              return response.body;
+
+            case 'blob':
+              if (response.body !== null && !(response.body instanceof Blob)) {
+                throw new Error('Response is not a Blob.');
+              }
+
+              return response.body;
+
+            case 'text':
+              if (response.body !== null && typeof response.body !== 'string') {
+                throw new Error('Response is not a string.');
+              }
+
+              return response.body;
+
+            case 'json':
+            default:
+              return response.body;
+          }
+
+        case 'response':
+          return response;
+
+        default:
+          throw new Error("Unreachable: unhandled observe type " + options.observe + "}");
+      }
+    }), operators.catchError(function (error) {
+      console.log('error', error);
+      return rxjs.throwError(_this.getError(error, response_, request));
+    }));
+    return observe$;
+  };
+
+  HttpClient.delete$ = function delete$(url, options) {
+    if (options === void 0) {
+      options = {};
+    }
+
+    return this.request$('DELETE', url, options);
+  };
+
+  HttpClient.get$ = function get$(url, options) {
+    if (options === void 0) {
+      options = {};
+    }
+
+    return this.request$('GET', url, options);
+  };
+
+  HttpClient.head$ = function head$(url, options) {
+    if (options === void 0) {
+      options = {};
+    }
+
+    return this.request$('HEAD', url, options);
+  };
+
+  HttpClient.jsonp$ = function jsonp$(url, callbackParam) {
+    return this.request$('JSONP', url, {
+      params: new HttpParams().append(callbackParam, 'JSONP_CALLBACK'),
+      observe: 'body',
+      responseType: 'json'
+    });
+  };
+
+  HttpClient.options$ = function options$(url, options) {
+    if (options === void 0) {
+      options = {};
+    }
+
+    return this.request$('OPTIONS', url, options);
+  };
+
+  HttpClient.patch$ = function patch$(url, body, options) {
+    if (options === void 0) {
+      options = {};
+    }
+
+    return this.request$('PATCH', url, optionsWithBody_(options, body));
+  };
+
+  HttpClient.post$ = function post$(url, body, options) {
+    if (options === void 0) {
+      options = {};
+    }
+
+    return this.request$('POST', url, optionsWithBody_(options, body));
+  };
+
+  HttpClient.put$ = function put$(url, body, options) {
+    if (options === void 0) {
+      options = {};
+    }
+
+    return this.request$('PUT', url, optionsWithBody_(options, body));
+  };
+
+  HttpClient.getError = function getError(error, response, request) {
+    if (!error.status) {
+      error.statusCode = (response == null ? void 0 : response.status) || 0;
+    }
+
+    if (!error.statusMessage) {
+      error.statusMessage = (response == null ? void 0 : response.statusText) || 'Unknown Error';
+    }
+
+    var options = {
+      error: error,
+      status: error.status,
+      statusText: error.statusText,
+      message: error.message,
+      request: request
+    };
+
+    if (response) {
+      options.headers = response.headers;
+      options.status = options.status || response.status;
+      options.statusText = options.statusText || response.statusText;
+      options.url = response.url;
+    }
+
+    return new HttpErrorResponse(options);
+  };
+
+  return HttpClient;
+}();
+HttpClient.pendingRequests$ = new rxjs.BehaviorSubject(0); // static handler: HttpHandler = new HttpFetchHandler();
+
+HttpClient.handler = new HttpInterceptingHandler();
+
+function optionsWithBody_(options, body) {
+  return Object.assign({}, options, {
+    body: body
+  });
+}
+/*
+
+export class HttpClient {
+
+    constructor(private handler: HttpHandler) { }
+
+    request<R>(request: HttpRequest<any>): Observable<HttpEvent<R>>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<ArrayBuffer>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<Blob>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<string>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        params?: HttpParams | { [param: string]: string | string[] }, observe: 'events',
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<ArrayBuffer>>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Blob>>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<string>>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        reportProgress?: boolean, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<any>>;
+    request<R>(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        reportProgress?: boolean, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<R>>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<ArrayBuffer>>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Blob>>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<string>>;
+    request(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        reportProgress?: boolean, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Object>>;
+    request<R>(method: string, url: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        reportProgress?: boolean, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<R>>;
+    request(method: string, url: string, options?: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        responseType?: 'json',
+        reportProgress?: boolean,
+        withCredentials?: boolean,
+    }): Observable<Object>;
+    request<R>(method: string, url: string, options?: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        responseType?: 'json',
+        reportProgress?: boolean,
+        withCredentials?: boolean,
+    }): Observable<R>;
+    request(method: string, url: string, options?: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        params?: HttpParams | { [param: string]: string | string[] },
+        observe?: HttpObserve,
+        reportProgress?: boolean,
+        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
+        withCredentials?: boolean,
+    }): Observable<any>;
+    request(first: string | HttpRequest<any>, url?: string, options: {
+        body?: any,
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: HttpObserveType,
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
+        withCredentials?: boolean,
+    } = {}): Observable<any> {
+        let request: HttpRequest<any>;
+        if (first instanceof HttpRequest) {
+            request = first;
+        } else {
+            let headers: HttpHeaders | undefined = undefined;
+            if (options.headers instanceof HttpHeaders) {
+                headers = options.headers;
+            } else {
+                headers = new HttpHeaders(options.headers);
+            }
+            let params: HttpParams | undefined = undefined;
+            if (!!options.params) {
+                if (options.params instanceof HttpParams) {
+                    params = options.params;
+                } else {
+                    params = new HttpParams({ fromObject: options.params } as HttpParamsOptions);
+                }
+            }
+            request = new HttpRequest(first, url!, (options.body !== undefined ? options.body : null), {
+                headers,
+                params,
+                reportProgress: options.reportProgress,
+                responseType: options.responseType || 'json',
+                withCredentials: options.withCredentials,
+            });
+        }
+        const events$: Observable<HttpEvent<any>> = of(request).pipe(concatMap((request: HttpRequest<any>) => this.handler.handle(request)));
+        if (first instanceof HttpRequest || options.observe === 'events') {
+            return events$;
+        }
+        const response$: Observable<HttpResponse<any>> = <Observable<HttpResponse<any>>>events$.pipe(
+            filter((event: HttpEvent<any>) => event instanceof HttpResponse),
+        );
+        switch (options.observe || 'body') {
+            case 'body':
+                switch (request.responseType) {
+                    case 'arraybuffer':
+                        return response$.pipe(map((res: HttpResponse<any>) => {
+                            if (res.body !== null && !(res.body instanceof ArrayBuffer)) {
+                                throw new Error('Response is not an ArrayBuffer.');
+                            }
+                            return res.body;
+                        }));
+                    case 'blob':
+                        return response$.pipe(map((res: HttpResponse<any>) => {
+                            if (res.body !== null && !(res.body instanceof Blob)) {
+                                throw new Error('Response is not a Blob.');
+                            }
+                            return res.body;
+                        }));
+                    case 'text':
+                        return response$.pipe(map((res: HttpResponse<any>) => {
+                            if (res.body !== null && typeof res.body !== 'string') {
+                                throw new Error('Response is not a string.');
+                            }
+                            return res.body;
+                        }));
+                    case 'json':
+                    default:
+                        return response$.pipe(map((res: HttpResponse<any>) => res.body));
+                }
+            case 'response':
+                return response$;
+            default:
+                throw new Error(`Unreachable: unhandled observe type ${options.observe}}`);
+        }
+    }
+
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<ArrayBuffer>;
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<Blob>;
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<string>;
+
+
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<ArrayBuffer>>;
+
+
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Blob>>;
+
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<string>>;
+
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Object>>;
+
+
+    delete<T>(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<T>>;
+
+
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<ArrayBuffer>>;
+
+
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Blob>>;
+
+
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<string>>;
+
+
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Object>>;
+
+
+    delete<T>(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<T>>;
+
+
+    delete(url: string, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<Object>;
+
+
+    delete<T>(url: string, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<T>;
+
+
+    delete(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: HttpObserveType,
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
+        withCredentials?: boolean,
+    } = {}): Observable<any> {
+        return this.request<any>('DELETE', url, options as any);
+    }
+
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<ArrayBuffer>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<Blob>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<string>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<ArrayBuffer>>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Blob>>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<string>>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Object>>;
+
+
+    get<T>(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<T>>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<ArrayBuffer>>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Blob>>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<string>>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Object>>;
+
+
+    get<T>(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<T>>;
+
+
+    get(url: string, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<Object>;
+
+
+    get<T>(url: string, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<T>;
+
+
+    get(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: HttpObserveType,
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
+        withCredentials?: boolean,
+    } = {}): Observable<any> {
+        return this.request<any>('GET', url, options as any);
+    }
+
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<ArrayBuffer>;
+
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<Blob>;
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<string>;
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<ArrayBuffer>>;
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Blob>>;
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<string>>;
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Object>>;
+
+
+    head<T>(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<T>>;
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<ArrayBuffer>>;
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Blob>>;
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<string>>;
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Object>>;
+
+
+    head<T>(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<T>>;
+
+
+    head(url: string, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<Object>;
+
+
+    head<T>(url: string, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<T>;
+
+
+    head(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: HttpObserveType,
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
+        withCredentials?: boolean,
+    } = {}): Observable<any> {
+        return this.request<any>('HEAD', url, options as any);
+    }
+
+
+    jsonp(url: string, callbackParam: string): Observable<Object>;
+
+
+    jsonp<T>(url: string, callbackParam: string): Observable<T>;
+
+
+    jsonp<T>(url: string, callbackParam: string): Observable<T> {
+        return this.request<any>('JSONP', url, {
+            params: new HttpParams().append(callbackParam, 'JSONP_CALLBACK'),
+            observe: 'body',
+            responseType: 'json',
+        });
+    }
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<ArrayBuffer>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<Blob>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<string>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<ArrayBuffer>>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Blob>>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<string>>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Object>>;
+
+
+    options<T>(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<T>>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<ArrayBuffer>>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Blob>>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<string>>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Object>>;
+
+
+    options<T>(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<T>>;
+
+
+    options(url: string, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<Object>;
+
+
+    options<T>(url: string, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<T>;
+
+
+    options(url: string, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: HttpObserveType,
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
+        withCredentials?: boolean,
+    } = {}): Observable<any> {
+        return this.request<any>('OPTIONS', url, options as any);
+    }
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<ArrayBuffer>;
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<Blob>;
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<string>;
+
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<ArrayBuffer>>;
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Blob>>;
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<string>>;
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Object>>;
+
+
+    patch<T>(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<T>>;
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<ArrayBuffer>>;
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Blob>>;
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<string>>;
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Object>>;
+
+
+    patch<T>(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<T>>;
+
+
+    patch$(url: string, body: any | null, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<Object>;
+
+
+    patch<T>(url: string, body: any | null, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<T>;
+
+
+    patch$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: HttpObserveType,
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
+        withCredentials?: boolean,
+    } = {}): Observable<any> {
+        return this.request<any>('PATCH', url, optionsWithBody_<T>(options, body));
+    }
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<ArrayBuffer>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<Blob>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<string>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<ArrayBuffer>>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Blob>>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<string>>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Object>>;
+
+
+    post<T>(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<T>>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<ArrayBuffer>>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Blob>>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<string>>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Object>>;
+
+
+    post<T>(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<T>>;
+
+
+    post$(url: string, body: any | null, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<Object>;
+
+
+    post<T>(url: string, body: any | null, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<T>;
+
+
+    post$(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: HttpObserveType,
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
+        withCredentials?: boolean,
+    } = {}): Observable<any> {
+        return this.request<any>('POST', url, optionsWithBody_<T>(options, body));
+    }
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<ArrayBuffer>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<Blob>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<string>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<ArrayBuffer>>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Blob>>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<string>>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<Object>>;
+
+
+    put<T>(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpEvent<T>>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'arraybuffer',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<ArrayBuffer>>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'blob',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Blob>>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean, responseType: 'text',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<string>>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<Object>>;
+
+
+    put<T>(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<HttpResponse<T>>;
+
+
+    put(url: string, body: any | null, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<Object>;
+
+
+    put<T>(url: string, body: any | null, options?: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: 'body',
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'json',
+        withCredentials?: boolean,
+    }): Observable<T>;
+
+
+    put(url: string, body: any | null, options: {
+        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
+        observe?: HttpObserveType,
+        params?: HttpParams | { [param: string]: string | string[] },
+        reportProgress?: boolean,
+        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
+        withCredentials?: boolean,
+    } = {}): Observable<any> {
+        return this.request<any>('PUT', url, optionsWithBody_<T>(options, body));
+    }
+}
+
+*/var CustomInterceptor = /*#__PURE__*/function () {
+  function CustomInterceptor() {}
+
+  var _proto = CustomInterceptor.prototype;
+
+  _proto.intercept = function intercept(request, next) {
+
+    var clonedRequest = request.clone({
+      url: request.url
+    }); // console.log('CustomInterceptor.clonedRequest', clonedRequest);
+
+    return next.handle(clonedRequest);
+  };
+
+  return CustomInterceptor;
+}();
+var interceptor = new CustomInterceptor();
+HttpInterceptors.push(interceptor);
+
+var AppComponent = /*#__PURE__*/function (_Component) {
+  _inheritsLoose(AppComponent, _Component);
+
+  function AppComponent() {
+    var _this;
+
+    _this = _Component.apply(this, arguments) || this;
+    _this.items = [];
+    _this.error = null;
+    return _this;
+  }
+
+  var _proto2 = AppComponent.prototype;
+
+  _proto2.onInit = function onInit() {
+    var _this2 = this;
+
+    // console.log('AppComponent.onInit', this);
+
+    /*
+    const payload = { query: `{ hello }` };
+    */
+
+    /*
+    const payload = { query: `{ roll(dices: ${3}, sides: ${6}) }` };
+    */
+
+    /*
+    const payload = {
+        query: `query ($dices: Int!, $sides: Int) {
+        roll(dices: $dices, sides: $sides)
+    }`, variables: { dices: 3, sides: 6 }
+    };
+    */
+    var payload = {
+      query: "{ getTodos { id, title, completed } }"
+    };
+    /*
+    HttpClient.post$<IResponseData>(`${Vars.host}${Vars.api}`, payload, {
+        params: { query: `{ getTodos { id, title, completed } }` },
+        reportProgress: true
+    }).pipe(
+    */
+
+    HttpClient.post$("" + Vars.host + Vars.api, payload).pipe(operators.first()).subscribe(function (response) {
+      _this2.items = response.data.getTodos;
+
+      _this2.pushChanges(); // console.log('AppComponent.getTodos', this.items);
+
+    }, function (error) {
+      return console.log;
+    }); // HttpService.get$(`https://jsonplaceholder.typicode.com/users/1/todos`).pipe(
+
+    /*
+    HttpService.get$(`${Vars.host}/data/todos.json`).pipe(
+        first(),
+    ).subscribe(response => {
+        // console.log('AppComponent.items', response);
+        this.items = response.data;
+        this.pushChanges();
+    });
+    */
+
+    rxcomp.errors$.pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (error) {
+      _this2.error = error;
+
+      _this2.pushChanges();
+    });
+  };
+
+  _proto2.onClick = function onClick(item) {
     item.completed = !item.completed;
     this.pushChanges();
   };
@@ -3321,13 +6168,77 @@ AppModule.meta = {
   declarations: [],
   bootstrap: AppComponent
 };// import fetch from 'cross-fetch';
-function renderServer(html) {
-  var module = Server.bootstrap(AppModule, html);
-  console.log(module); // return of(Server.serialize());
+function renderRequest$(request) {
+  return Server.bootstrap$(AppModule, request).pipe(operators.switchMap(function (response) {
+    return HttpClient.pendingRequests$.pipe(operators.filter(function (count) {
+      return count === 0;
+    }), operators.map(function () {
+      response.body = response.serialize();
+      return response;
+    }), operators.first());
+  }));
+  /*
+  return from(new Promise((resolve, reject) => {
+      if (!request?.template) {
+          return reject(new Error('ServerError: template not found!'));
+      }
+      try {
+          const module = Server.bootstrap(AppModule, html);
+          resolve(module);
+      } catch (error) {
+          reject(error);
+      }
+  })).pipe(
+      switchMap(() => HttpClient.pendingRequests$),
+      filter(x => x === 0),
+      map(() => Server.serialize()),
+      first(),
+  );
+  */
 
-  return HttpService.pendingRequests$.pipe(operators.filter(function (x) {
+  /*
+  const module = Server.bootstrap(AppModule, html);
+  console.log(module);
+  // return of(Server.serialize());
+  return HttpClient.pendingRequests$.pipe(
+      filter(x => x === 0),
+      map(x => Server.serialize()),
+      first(),
+  );
+  */
+} // !!! remove html only request;
+
+function renderServer(html, request) {
+  if (request && request.host) {
+    Vars.host = request.host;
+  }
+
+  return rxjs.from(new Promise(function (resolve, reject) {
+    if (!(request == null ? void 0 : request.template)) {
+      return reject(new Error('ServerError: template not found!'));
+    }
+
+    try {
+      var module = Server.bootstrap(AppModule, html);
+      resolve(module);
+    } catch (error) {
+      reject(error);
+    }
+  })).pipe(operators.switchMap(function () {
+    return HttpClient.pendingRequests$;
+  }), operators.filter(function (x) {
     return x === 0;
-  }), operators.map(function (x) {
+  }), operators.map(function () {
     return Server.serialize();
   }), operators.first());
-}exports.renderServer=renderServer;Object.defineProperty(exports,'__esModule',{value:true});})));
+  /*
+  const module = Server.bootstrap(AppModule, html);
+  console.log(module);
+  // return of(Server.serialize());
+  return HttpClient.pendingRequests$.pipe(
+      filter(x => x === 0),
+      map(x => Server.serialize()),
+      first(),
+  );
+  */
+}exports.renderRequest$=renderRequest$;exports.renderServer=renderServer;Object.defineProperty(exports,'__esModule',{value:true});})));

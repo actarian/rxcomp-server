@@ -1,39 +1,54 @@
 const express = require('express');
 const https = require('https');
-const fs = require('fs');
 const bodyParser = require('body-parser');
 const serveStatic = require('serve-static');
 const path = require('path');
-const { renderServer } = require('./main.server.umd.js');
+const { useApi } = require('./api/api.js');
+const { Server } = require('../dist/cjs/src/rxcomp-server');
+const { renderRequest$ } = require('./main.server.umd.js');
 // const router = express.Router();
 
 const PORT = process.env.PORT || 5000;
+const ROOT = `../docs/`;
+
+const Vars = {
+	port: PORT,
+	host: `http://localhost:${PORT}`,
+	charset: 'utf8',
+	root: ROOT,
+	template: path.join(__dirname, `${ROOT}index.html`),
+};
 
 const app = express();
 
 app.disable('x-powered-by');
 
 app.get('/', (request, response) => {
-	fs.readFile(path.join(__dirname, '../docs/index.html'), 'utf8', function(error, html) {
-		if (error) {
-			throw error;
-		}
-		// console.log('html', html);
-		renderServer(html).subscribe(renderedHtml => {
-			// console.log('renderedHtml', renderedHtml);
-			response.send(renderedHtml);
-		});
-	});
-	// response.sendFile(path.join(__dirname, '../../docs/index.html'));
-	// response.render('docs/index');
+	const serverRequest = { url: request.url, template: Vars.template, host: Vars.host, charset: Vars.charset };
+	Server.render$(serverRequest, renderRequest$).subscribe(
+		success => {
+			// console.log('success', success);
+			response.send(success.body);
+		},
+		error => {
+			// console.log('error', error);
+			response.send(JSON.stringify(error, null, 2));
+		},
+	);
+	// renderPath(response, Object.assign({}, Vars, { url: request.url }));
 });
 
-// app.use(express.static(path.join(__dirname, '../docs/')));
-app.use('/', serveStatic(path.join(__dirname, '../docs/')));
-app.use('/rxcomp-server', serveStatic(path.join(__dirname, '../docs/')));
+app.use('/api', useApi());
+// app.use(express.static(path.join(__dirname, `../docs/`)));
+app.use('/', serveStatic(path.join(__dirname, `../docs/`)));
+app.use('/rxcomp-server', serveStatic(path.join(__dirname, `../docs/`)));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
+
+app.listen(Vars.port, () => {
+	console.log(`Running server at ${Vars.host}`);
+});
 
 // app.use(express.favicon());
 /*
@@ -50,16 +65,16 @@ app.get('/', (request, response) => response.render('pages/index'));
 
 /*
 app.get('/', function(request, response) {
-	fs.readFile(path.join(__dirname, '../docs/index.html'), 'utf8', function(error, html) {
+	fs.readFile(path.join(__dirname, `../docs/index.html`), Vars.charset, function(error, html) {
 		if (error) {
 			throw error;
 		}
 		console.log('html', html);
-		const renderedHtml = renderServer(html);
-		console.log('renderedHtml', renderedHtml);
-		response.send(renderedHtml);
+		const body = renderServer(html);
+		console.log('body', body);
+		response.send(body);
 	});
-	// response.sendFile(path.join(__dirname, '../../docs/index.html'));
+	// response.sendFile(path.join(__dirname, `../../docs/index.html`));
 	// response.render('docs/index');
 });
 */
@@ -72,22 +87,22 @@ router.use((request, response, next) => {
 });
 
 router.get('/', (request, response, next) => {
-	fs.readFile(path.join(__dirname, '../docs/index.html'), 'utf8', function(error, html) {
+	fs.readFile(path.join(__dirname, `../docs/index.html`), Vars.charset, function(error, html) {
 		if (error) {
 			throw error;
 		}
 		console.log('html', html);
-		const renderedHtml = renderServer(html);
-		console.log('renderedHtml', renderedHtml);
-		response.send(renderedHtml);
+		const body = renderServer(html);
+		console.log('body', body);
+		response.send(body);
 	});
-	// response.sendFile(path.join(__dirname, '../../docs/index.html'));
+	// response.sendFile(path.join(__dirname, `../../docs/index.html`));
 	// response.render('docs/index');
 });
 */
 
 /*
-app.post('/api/token/rtc', function (request, response) {
+app.post(`/api/token/rtc`, function (request, response) {
 	const payload = request.body || {};
 	const duration = 3600;
 	const timestamp = Math.floor(Date.now() / 1000);
@@ -100,7 +115,7 @@ app.post('/api/token/rtc', function (request, response) {
 	}));
 });
 
-app.post('/api/token/rtm', function (request, response) {
+app.post(`/api/token/rtm`, function (request, response) {
 	const payload = request.body || {};
 	const duration = 3600;
 	const timestamp = Math.floor(Date.now() / 1000);
@@ -114,18 +129,14 @@ app.post('/api/token/rtm', function (request, response) {
 });
 */
 
-app.listen(PORT, () => {
-	console.log(`Listening on ${PORT}`);
-});
-
 /*
 https
 	.createServer({
-		cert: fs.readFileSync(path.join(__dirname, '../../certs/server.crt'), 'utf8'),
-		key: fs.readFileSync(path.join(__dirname, '../../certs/server.key'), 'utf8')
+		cert: fs.readFileSync(path.join(__dirname, `../../certs/server.crt`), Vars.charset),
+		key: fs.readFileSync(path.join(__dirname, `../../certs/server.key`), Vars.charset)
 	}, app)
-	.listen(PORT, function() {
-		console.log(`Example app listening on port ${PORT}! Go to https://192.168.1.2:${PORT}/`);
+	.listen(Vars.port, function() {
+		console.log(`Example app listening on port ${Vars.port}! Go to https://192.168.1.2:${Vars.port}/`);
 	});
 */
 

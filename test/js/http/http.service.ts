@@ -1,49 +1,36 @@
 import { BehaviorSubject, from, Observable, throwError } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
-
-export class HttpResponse {
-
-	data?: any;
-	url: string = '';
-	status: number = 0;
-	statusText: string = '';
-	ok: boolean = false;
-	redirected: boolean = false;
-
-	get static() {
-		return this.url!.indexOf('.json') === this.url!.length - 5;
-	}
-
-	constructor(response: Response) {
-		this.data = null;
-		if (response) {
-			this.url = response.url;
-			this.status = response.status;
-			this.statusText = response.statusText;
-			this.ok = response.ok;
-			this.redirected = response.redirected;
-		}
-	}
-}
+import { HttpErrorResponse, IHttpErrorResponse } from './http-error-response';
+import { HttpMethodType, HttpRequest } from './http-request';
+import { HttpResponse } from './http-response';
 
 export default class HttpService {
 
 	static pendingRequests$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
 
-	static http$(method: string, url: string, data?: any, format: string = 'json'): Observable<any> {
+	static incrementPendingRequest() {
+		HttpService.pendingRequests$.next(HttpService.pendingRequests$.getValue() + 1);
+	}
+
+	static decrementPendingRequest() {
+		HttpService.pendingRequests$.next(HttpService.pendingRequests$.getValue() - 1);
+	}
+
+	static http$<T>(method: HttpMethodType, url: string, data?: any, format: string = 'json'): Observable<any> {
 		method = url.indexOf('.json') !== -1 ? 'GET' : method;
-		const methods = ['POST', 'PUT', 'PATCH'];
-		let response_: HttpResponse | null = null;
+		const methods: HttpMethodType[] = ['POST', 'PUT', 'PATCH'];
+		let response_: HttpResponse<T> | null = null;
 		this.pendingRequests$.next(this.pendingRequests$.getValue() + 1);
-		return from(fetch(url, {
+		const request: HttpRequest<T> = new HttpRequest<T>({
 			method: method,
 			headers: {
 				'Accept': 'application/json',
 				'Content-Type': 'application/json',
 			},
 			body: methods.indexOf(method) !== -1 ? JSON.stringify(data) : undefined
-		}).then((response: Response) => {
-			response_ = new HttpResponse(response);
+		});
+		return from(fetch(url, request).then((response: Response) => {
+			response_ = new HttpResponse<T>(response);
 			if (typeof (response as any)[format] === 'function') {
 				return (response as any)[format]().then((json: any) => {
 					response_!.data = json;
@@ -59,7 +46,7 @@ export default class HttpService {
 		})).pipe(
 			catchError(error => {
 				console.log('error', error);
-				return throwError(this.getError(error, response_));
+				return throwError(this.getError(error, response_, request));
 			}),
 			finalize(() => {
 				this.pendingRequests$.next(this.pendingRequests$.getValue() - 1);
@@ -92,16 +79,27 @@ export default class HttpService {
 		return ''; // todo
 	}
 
-	static getError(object: any, response: HttpResponse | null): any {
-		let error = typeof object === 'object' ? object : {};
-		if (!error.statusCode) {
-			error.statusCode = response ? response.status : 0;
+	static getError<T>(error: any, response: HttpResponse<T> | null, request: HttpRequest<T> | null): HttpErrorResponse<T> {
+		if (!error.status) {
+			error.statusCode = response?.status || 0;
 		}
 		if (!error.statusMessage) {
-			error.statusMessage = response ? response.statusText : object;
+			error.statusMessage = response?.statusText || 'Unknown Error';
 		}
-		// console.log('HttpService.getError', error, object);
-		return error;
+		const options: IHttpErrorResponse<T> = {
+			error,
+			status: error.status,
+			statusText: error.statusText,
+			message: error.message,
+			request,
+		};
+		if (response) {
+			options.headers = response.headers;
+			options.status = options.status || response.status;
+			options.statusText = options.statusText || response.statusText;
+			options.url = response.url;
+		}
+		return new HttpErrorResponse<T>(options);
 	}
 
 }
