@@ -3,17 +3,17 @@
     "browser": {
       "compile": [
         {
-          "input": "test/*.html",
+          "input": "www/browser/*.html",
           "output": "docs/",
           "minify": false
         },
         {
-          "input": "test/css/main.scss",
+          "input": "www/browser/css/main.scss",
           "output": "docs/css/main.css",
           "minify": true
         },
         {
-          "input": "test/js/main.browser.ts",
+          "input": "www/browser/src/main.browser.ts",
           "output": {
             "file": "docs/js/main.js",
             "format": "iife"
@@ -24,11 +24,48 @@
             "rxcomp": "rxcomp"
           },
           "minify": true
+        }
+      ],
+      "bundle": [
+        {
+          "input": [
+            "node_modules/rxjs/bundles/rxjs.umd.js",
+            "../rxcomp/dist/iife/rxcomp.js"
+          ],
+          "output": "docs/js/vendors.js",
+          "minify": true
+        }
+      ]
+    },
+    "www": {
+      "compile": [
+        {
+          "input": "www/browser/*.html",
+          "output": "www/dist/development/browser/",
+          "minify": false
         },
         {
-          "input": "test/js/main.server.ts",
+          "input": "www/browser/css/main.scss",
+          "output": "www/dist/development/browser/css/main.css",
+          "minify": true
+        },
+        {
+          "input": "www/browser/src/main.browser.ts",
           "output": {
-            "file": "server/main.server.umd.js",
+            "file": "www/dist/development/browser/js/main.js",
+            "format": "iife"
+          },
+          "globals": {
+            "rxjs": "rxjs",
+            "rxjs/operators": "rxjs.operators",
+            "rxcomp": "rxcomp"
+          },
+          "minify": true
+        },
+        {
+          "input": "www/browser/src/main.server.ts",
+          "output": {
+            "file": "www/dist/development/server/main.js",
             "format": "umd"
           },
           "globals": {
@@ -42,15 +79,11 @@
       ],
       "bundle": [
         {
-          "input": "../rxcomp/dist/iife/rxcomp.js",
-          "output": "docs/js/rxcomp.js",
-          "minify": true
-        },
-        {
           "input": [
-            "node_modules/rxjs/bundles/rxjs.umd.js"
+            "node_modules/rxjs/bundles/rxjs.umd.js",
+            "../rxcomp/dist/iife/rxcomp.js"
           ],
-          "output": "docs/js/vendors.js",
+          "output": "www/dist/development/browser/js/vendors.js",
           "minify": true
         }
       ]

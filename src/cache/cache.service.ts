@@ -1,3 +1,12 @@
+import { Observable, Observer } from "rxjs";
+
+const fs = require('fs');
+
+export enum CacheMode {
+	Memory = 'memory',
+	File = 'file',
+}
+
 export enum CacheControlType {
 	Public = 'public', // The response may be stored by any cache, even if the response is normally non-cacheable.
 	Private = 'private', // The response may be stored only by a browser's cache, even if the response is normally non-cacheable. If you mean to not store the response in any cache, use no-store instead. This directive is not effective in preventing caches from storing your response.
@@ -14,7 +23,7 @@ export interface ICacheItem {
 
 export class CacheItem {
 	value: any;
-	date!: Date;
+	date: Date = new Date();
 	maxAge: number = 0;
 	cacheControl: CacheControlType = CacheControlType.Public;
 	get expired(): boolean {
@@ -24,55 +33,198 @@ export class CacheItem {
 	}
 	constructor(options?: ICacheItem) {
 		if (options) {
-			Object.assign(this, options);
+			this.value = options.value;
+			this.date = options.date ? new Date(options.date) : this.date;
+			this.maxAge = options.maxAge || this.maxAge;
+			this.cacheControl = options.cacheControl || this.cacheControl;
 		}
-	}
-	set(options?: ICacheItem): CacheItem {
-		if (options) {
-			Object.assign(this, options);
-		}
-		this.date = new Date();
-		return this;
 	}
 }
 
 export default class CacheService {
 
-	private static cache_: Map<string, CacheItem> = new Map<string, CacheItem>();
-
-	static delete(type: string = 'cache', name: string): void {
-		const key: string = `${type}_${name}`;
-		if (this.cache_.has(key)) {
-			this.cache_.delete(key);
-		}
-	}
+	private static cache_: Map<string, string> = new Map<string, string>();
+	static mode: CacheMode = CacheMode.Memory;
+	static folder: string;
 
 	static has(type: string = 'cache', name: string): boolean {
-		const key: string = `${type}_${name}`;
-		return this.cache_.has(key);
+		let has: boolean = false;
+		switch (this.mode) {
+			case CacheMode.File:
+				has = this.hasFile(type, name);
+				break;
+			case CacheMode.Memory:
+			default:
+				const key: string = `${type}_${name}`;
+				has = this.cache_.has(key);
+		}
+		return has;
 	}
 
 	static get(type: string = 'cache', name: string): any {
-		let value = null;
+		let value = null, cacheItem: CacheItem | null;
 		const key: string = `${type}_${name}`;
-		if (this.cache_.has(key)) {
-			const cacheItem: CacheItem = this.cache_.get(key) as CacheItem;
-			if (cacheItem) {
-				if (cacheItem.expired) {
-					this.cache_.delete(key);
-				} else {
-					value = JSON.parse(cacheItem.value);
+		switch (this.mode) {
+			case CacheMode.File:
+				if (this.hasFile(type, name)) {
+					cacheItem = this.readFile(type, name);
+					if (cacheItem) {
+						if (cacheItem.expired) {
+							this.unlinkFile(type, name);
+						} else {
+							value = cacheItem?.value;
+						}
+					}
 				}
-			}
+				break;
+			case CacheMode.Memory:
+			default:
+				if (this.cache_.has(key)) {
+					const data: string | undefined = this.cache_.get(key);
+					if (data) {
+						cacheItem = new CacheItem(JSON.parse(data));
+						if (cacheItem) {
+							if (cacheItem.expired) {
+								this.cache_.delete(key);
+							} else {
+								value = cacheItem.value;
+							}
+						}
+					}
+				}
 		}
 		return value;
 	}
 
 	static set(type: string = 'cache', name: string, value: any, maxAge: number = 0): any {
 		const key: string = `${type}_${name}`;
-		const cacheItem: CacheItem = new CacheItem().set({ value: JSON.stringify(value, null, 0), maxAge });
-		this.cache_.set(key, cacheItem);
+		const cacheItem: CacheItem = new CacheItem({ value, maxAge });
+		switch (this.mode) {
+			case CacheMode.File:
+				this.writeFile(type, name, cacheItem);
+				break;
+			case CacheMode.Memory:
+			default:
+				const serialized: string = this.serialize(cacheItem);
+				console.log(serialized);
+				this.cache_.set(key, serialized);
+		}
 		return value;
+	}
+
+	static delete(type: string = 'cache', name: string): void {
+		switch (this.mode) {
+			case CacheMode.File:
+				this.unlinkFile(type, name);
+				break;
+			case CacheMode.Memory:
+			default:
+				const key: string = `${type}_${name}`;
+				if (this.cache_.has(key)) {
+					this.cache_.delete(key);
+				}
+		}
+	}
+
+	protected static getPath(type: string = 'cache', name: string): string {
+		const path: string = `_${type}_${name}`.replace(/(\/|\?|\#|\&)+/g, function (substring: string, group: string) {
+			return encodeURIComponent(group);
+		});
+		return `${this.folder}${path}`;
+	}
+
+	protected static hasFile(type: string = 'cache', name: string): boolean {
+		let has: boolean = false;
+		const key: string = this.getPath(type, name);
+		try {
+			if (fs.existsSync(key)) {
+				has = true;
+			}
+		} catch (error) {
+			throw error;
+		}
+		return has;
+	}
+
+	protected static readFile(type: string = 'cache', name: string): CacheItem | null {
+		let cacheItem: CacheItem | null = null;
+		const key: string = this.getPath(type, name);
+		try {
+			const json: string = fs.readFileSync(key, 'utf8');
+			cacheItem = new CacheItem(JSON.parse(json));
+		} catch (error) {
+			throw error;
+		}
+		return cacheItem;
+	}
+
+	protected static writeFile(type: string = 'cache', name: string, cacheItem: CacheItem): CacheItem {
+		const key: string = this.getPath(type, name);
+		try {
+			const json: string = this.serialize(cacheItem);
+			fs.writeFileSync(key, json, 'utf8');
+		} catch (error) {
+			throw error;
+		}
+		return cacheItem;
+	}
+
+	protected static unlinkFile(type: string = 'cache', name: string): void {
+		const key: string = this.getPath(type, name);
+		try {
+			if (fs.existsSync(key)) {
+				fs.unlinkSync(key);
+			}
+		} catch (error) {
+			throw error;
+		}
+	}
+
+	protected static readFile$(type: string = 'cache', name: string): Observable<CacheItem> {
+		const service = this;
+		return Observable.create(function (observer: Observer<CacheItem>) {
+			const key: string = `${service.folder}_${type}_${name}`;
+			fs.readFile(key, 'utf8', function (error: NodeJS.ErrnoException, json: string) {
+				if (error) {
+					observer.error(error);
+				} else {
+					const cacheItem: CacheItem = new CacheItem(JSON.parse(json));
+					observer.next(cacheItem);
+					observer.complete();
+				}
+			});
+		});
+	}
+
+	protected static writeFile$(type: string = 'cache', name: string, cacheItem: CacheItem): Observable<CacheItem> {
+		const service = this;
+		return Observable.create(function (observer: Observer<CacheItem>) {
+			const key: string = `${service.folder}_${type}_${name}`;
+			const json: string = service.serialize(cacheItem);
+			fs.writeFile(key, json, 'utf8', function (error: NodeJS.ErrnoException) {
+				if (error) {
+					observer.error(error);
+				} else {
+					observer.next(cacheItem);
+					observer.complete();
+				}
+			});
+		});
+	}
+
+	protected static serialize(item: any): string {
+		const cache: Map<any, boolean> = new Map<any, boolean>();
+		const serialized: string = JSON.stringify(item, (key: string, value: any) => {
+			if (value && typeof value === 'object') {
+				if (cache.has(value)) {
+					return;
+				}
+				cache.set(value, true);
+			}
+			return value;
+		}, 0);
+		cache.clear();
+		return serialized;
 	}
 
 }

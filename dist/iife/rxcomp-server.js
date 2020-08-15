@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-this.rxcomp=this.rxcomp||{};this.rxcomp.server=(function(exports,htmlparser2,rxcomp,rxjs,operators){'use strict';function _defineProperties(target, props) {
+this.rxcomp=this.rxcomp||{};this.rxcomp.server=(function(exports,rxjs,htmlparser2,rxcomp,operators){'use strict';function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
     descriptor.enumerable = descriptor.enumerable || false;
@@ -158,7 +158,16 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
 
   it = o[Symbol.iterator]();
   return it.next.bind(it);
-}(function (CacheControlType) {
+}var fs = require('fs');
+
+var CacheMode;
+
+(function (CacheMode) {
+  CacheMode["Memory"] = "memory";
+  CacheMode["File"] = "file";
+})(CacheMode || (CacheMode = {}));
+
+(function (CacheControlType) {
   CacheControlType["Public"] = "public";
   CacheControlType["Private"] = "private";
   CacheControlType["NoCache"] = "no-cache";
@@ -167,24 +176,17 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
 
 var CacheItem = function () {
   function CacheItem(options) {
+    this.date = new Date();
     this.maxAge = 0;
     this.cacheControl = exports.CacheControlType.Public;
 
     if (options) {
-      Object.assign(this, options);
+      this.value = options.value;
+      this.date = options.date ? new Date(options.date) : this.date;
+      this.maxAge = options.maxAge || this.maxAge;
+      this.cacheControl = options.cacheControl || this.cacheControl;
     }
   }
-
-  var _proto = CacheItem.prototype;
-
-  _proto.set = function set(options) {
-    if (options) {
-      Object.assign(this, options);
-    }
-
-    this.date = new Date();
-    return this;
-  };
 
   _createClass(CacheItem, [{
     key: "expired",
@@ -199,25 +201,25 @@ var CacheItem = function () {
 var CacheService = function () {
   function CacheService() {}
 
-  CacheService.delete = function _delete(type, name) {
-    if (type === void 0) {
-      type = 'cache';
-    }
-
-    var key = type + "_" + name;
-
-    if (this.cache_.has(key)) {
-      this.cache_.delete(key);
-    }
-  };
-
   CacheService.has = function has(type, name) {
     if (type === void 0) {
       type = 'cache';
     }
 
-    var key = type + "_" + name;
-    return this.cache_.has(key);
+    var has = false;
+
+    switch (this.mode) {
+      case CacheMode.File:
+        has = this.hasFile(type, name);
+        break;
+
+      case CacheMode.Memory:
+      default:
+        var key = type + "_" + name;
+        has = this.cache_.has(key);
+    }
+
+    return has;
   };
 
   CacheService.get = function get(type, name) {
@@ -225,19 +227,46 @@ var CacheService = function () {
       type = 'cache';
     }
 
-    var value = null;
+    var value = null,
+        cacheItem;
     var key = type + "_" + name;
 
-    if (this.cache_.has(key)) {
-      var cacheItem = this.cache_.get(key);
+    switch (this.mode) {
+      case CacheMode.File:
+        if (this.hasFile(type, name)) {
+          cacheItem = this.readFile(type, name);
 
-      if (cacheItem) {
-        if (cacheItem.expired) {
-          this.cache_.delete(key);
-        } else {
-          value = JSON.parse(cacheItem.value);
+          if (cacheItem) {
+            if (cacheItem.expired) {
+              this.unlinkFile(type, name);
+            } else {
+              var _cacheItem;
+
+              value = (_cacheItem = cacheItem) == null ? void 0 : _cacheItem.value;
+            }
+          }
         }
-      }
+
+        break;
+
+      case CacheMode.Memory:
+      default:
+        if (this.cache_.has(key)) {
+          var data = this.cache_.get(key);
+
+          if (data) {
+            cacheItem = new CacheItem(JSON.parse(data));
+
+            if (cacheItem) {
+              if (cacheItem.expired) {
+                this.cache_.delete(key);
+              } else {
+                value = cacheItem.value;
+              }
+            }
+          }
+        }
+
     }
 
     return value;
@@ -253,17 +282,189 @@ var CacheService = function () {
     }
 
     var key = type + "_" + name;
-    var cacheItem = new CacheItem().set({
-      value: JSON.stringify(value, null, 0),
+    var cacheItem = new CacheItem({
+      value: value,
       maxAge: maxAge
     });
-    this.cache_.set(key, cacheItem);
+
+    switch (this.mode) {
+      case CacheMode.File:
+        this.writeFile(type, name, cacheItem);
+        break;
+
+      case CacheMode.Memory:
+      default:
+        var serialized = this.serialize(cacheItem);
+        console.log(serialized);
+        this.cache_.set(key, serialized);
+    }
+
     return value;
+  };
+
+  CacheService.delete = function _delete(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    switch (this.mode) {
+      case CacheMode.File:
+        this.unlinkFile(type, name);
+        break;
+
+      case CacheMode.Memory:
+      default:
+        var key = type + "_" + name;
+
+        if (this.cache_.has(key)) {
+          this.cache_.delete(key);
+        }
+
+    }
+  };
+
+  CacheService.getPath = function getPath(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var path = ("_" + type + "_" + name).replace(/(\/|\?|\#|\&)+/g, function (substring, group) {
+      return encodeURIComponent(group);
+    });
+    return "" + this.folder + path;
+  };
+
+  CacheService.hasFile = function hasFile(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var has = false;
+    var key = this.getPath(type, name);
+
+    try {
+      if (fs.existsSync(key)) {
+        has = true;
+      }
+    } catch (error) {
+      throw error;
+    }
+
+    return has;
+  };
+
+  CacheService.readFile = function readFile(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var cacheItem = null;
+    var key = this.getPath(type, name);
+
+    try {
+      var json = fs.readFileSync(key, 'utf8');
+      cacheItem = new CacheItem(JSON.parse(json));
+    } catch (error) {
+      throw error;
+    }
+
+    return cacheItem;
+  };
+
+  CacheService.writeFile = function writeFile(type, name, cacheItem) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var key = this.getPath(type, name);
+
+    try {
+      var json = this.serialize(cacheItem);
+      fs.writeFileSync(key, json, 'utf8');
+    } catch (error) {
+      throw error;
+    }
+
+    return cacheItem;
+  };
+
+  CacheService.unlinkFile = function unlinkFile(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var key = this.getPath(type, name);
+
+    try {
+      if (fs.existsSync(key)) {
+        fs.unlinkSync(key);
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  CacheService.readFile$ = function readFile$(type, name) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var service = this;
+    return rxjs.Observable.create(function (observer) {
+      var key = service.folder + "_" + type + "_" + name;
+      fs.readFile(key, 'utf8', function (error, json) {
+        if (error) {
+          observer.error(error);
+        } else {
+          var cacheItem = new CacheItem(JSON.parse(json));
+          observer.next(cacheItem);
+          observer.complete();
+        }
+      });
+    });
+  };
+
+  CacheService.writeFile$ = function writeFile$(type, name, cacheItem) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var service = this;
+    return rxjs.Observable.create(function (observer) {
+      var key = service.folder + "_" + type + "_" + name;
+      var json = service.serialize(cacheItem);
+      fs.writeFile(key, json, 'utf8', function (error) {
+        if (error) {
+          observer.error(error);
+        } else {
+          observer.next(cacheItem);
+          observer.complete();
+        }
+      });
+    });
+  };
+
+  CacheService.serialize = function serialize(item) {
+    var cache = new Map();
+    var serialized = JSON.stringify(item, function (key, value) {
+      if (value && typeof value === 'object') {
+        if (cache.has(value)) {
+          return;
+        }
+
+        cache.set(value, true);
+      }
+
+      return value;
+    }, 0);
+    cache.clear();
+    return serialized;
   };
 
   return CacheService;
 }();
-CacheService.cache_ = new Map();(function (RxNodeType) {
+CacheService.cache_ = new Map();
+CacheService.mode = CacheMode.Memory;(function (RxNodeType) {
   RxNodeType[RxNodeType["ELEMENT_NODE"] = 1] = "ELEMENT_NODE";
   RxNodeType[RxNodeType["TEXT_NODE"] = 3] = "TEXT_NODE";
   RxNodeType[RxNodeType["CDATA_SECTION_NODE"] = 4] = "CDATA_SECTION_NODE";
@@ -1555,16 +1756,23 @@ var RxDocument = function (_RxElement2) {
   };
 
   return RxDocument;
-}(RxElement);var Vars = {
-  name: 'rxcomp-server',
-  static: false,
-  development: false,
-  production: true,
-  host: '',
-  resource: '/',
-  api: '/api'
-};var fs = require('fs');
+}(RxElement);var fs$1 = require('fs');
 
+var ServerRequest = function ServerRequest(options) {
+  if (options) {
+    Object.assign(this, options);
+  }
+
+  this.vars = Object.assign({
+    host: 'http://localhost:5000',
+    port: 5000,
+    charset: 'utf8',
+    template: "./index.html",
+    cacheMode: CacheMode.Memory,
+    cache: './cache/',
+    root: './dist/browser/'
+  }, this.vars || {});
+};
 var ServerResponse = function ServerResponse(options) {
   if (options) {
     Object.assign(this, options);
@@ -1664,38 +1872,21 @@ var Server = function (_Platform) {
 
   return Server;
 }(rxcomp.Platform);
-Server.bootstrap$ = bootstrap$;
 Server.render$ = render$;
 Server.template$ = template$;
-function bootstrap$(moduleFactory, request) {
-  if (request && request.host) {
-    Vars.host = request.host;
-  }
-
-  return rxjs.from(new Promise(function (resolve, reject) {
-    if (!(request == null ? void 0 : request.template)) {
-      return reject(new Error('ServerError: missing template'));
-    }
-
-    try {
-      Server.bootstrap(moduleFactory, request.template);
-
-      var serialize = function serialize() {
-        return Server.serialize();
-      };
-
-      resolve(new ServerResponse(Object.assign({
-        serialize: serialize
-      }, request)));
-    } catch (error) {
-      reject(new ServerErrorResponse(Object.assign({
-        error: error
-      }, request)));
-    }
-  }));
-}
-function render$(request, renderRequest$) {
+Server.bootstrap$ = bootstrap$;
+function render$(iRequest, renderRequest$) {
   return rxjs.Observable.create(function (observer) {
+    var request = new ServerRequest(iRequest);
+
+    if (request.vars.cacheMode) {
+      CacheService.mode = request.vars.cacheMode;
+    }
+
+    if (request.vars.cache) {
+      CacheService.folder = request.vars.cache;
+    }
+
     var cached = CacheService.get('cached', request.url);
     console.log('cached', !!cached);
 
@@ -1718,23 +1909,54 @@ function render$(request, renderRequest$) {
 }
 function template$(request) {
   return rxjs.Observable.create(function (observer) {
-    var template = CacheService.get('template', request.template);
-    console.log('template', !!template);
+    var src = request.vars.template;
 
-    if (template) {
-      observer.next(template);
-      observer.complete();
-    }
+    if (src) {
+      var template = CacheService.get('template', src);
+      console.log('template', !!template);
 
-    fs.readFile(request.template, request.charset, function (error, template) {
-      if (error) {
-        observer.error(error);
-      } else {
-        CacheService.set('template', request.template, template);
+      if (template) {
         observer.next(template);
         observer.complete();
       }
-    });
+
+      fs$1.readFile(src, request.vars.charset, function (error, template) {
+        if (error) {
+          observer.error(error);
+        } else {
+          CacheService.set('template', src, template);
+          observer.next(template);
+          observer.complete();
+        }
+      });
+    } else {
+      observer.error(new Error('ServerError: missing template'));
+    }
+  });
+}
+function bootstrap$(moduleFactory, request) {
+  console.log('bootstrap$', request);
+  return rxjs.Observable.create(function (observer) {
+    if (!request.template) {
+      return observer.error(new Error('ServerError: missing template'));
+    }
+
+    try {
+      Server.bootstrap(moduleFactory, request.template);
+
+      var serialize = function serialize() {
+        return Server.serialize();
+      };
+
+      observer.next(new ServerResponse(Object.assign({
+        serialize: serialize
+      }, request)));
+      observer.complete();
+    } catch (error) {
+      observer.error(new ServerErrorResponse(Object.assign({
+        error: error
+      }, request)));
+    }
   });
 }var factories = [];
 var pipes = [];
@@ -1751,4 +1973,4 @@ var ServerModule = function (_Module) {
 ServerModule.meta = {
   declarations: [].concat(factories, pipes),
   exports: [].concat(factories, pipes)
-};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=querySelectorAll;exports.render$=render$;exports.template$=template$;return exports;}({},htmlparser2,rxcomp,rxjs,rxjs.operators));
+};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerRequest=ServerRequest;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=querySelectorAll;exports.render$=render$;exports.template$=template$;return exports;}({},rxjs,htmlparser2,rxcomp,rxjs.operators));

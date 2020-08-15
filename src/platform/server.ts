@@ -1,16 +1,31 @@
 import { isPlatformServer, Module, ModuleError, Platform } from 'rxcomp';
-import { from, Observable, Observer } from 'rxjs';
+import { Observable, Observer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { Vars } from '../../test/js/vars';
-import CacheService from '../cache/cache.service';
+import CacheService, { CacheControlType, CacheMode } from '../cache/cache.service';
 import { parse, RxDocument, RxElement, RxText } from '../nodes/nodes';
 const fs = require('fs');
 
+export interface IServerVars {
+	name?: string;
+	host?: string;
+	port?: number;
+	charset?: string;
+	template?: string;
+	cacheMode?: CacheMode;
+	cache?: string;
+	root?: string;
+	resource?: string;
+	api?: string;
+	static?: boolean;
+	development?: boolean;
+	production?: boolean;
+	[key: string]: any;
+}
+
 export interface IServerRequest {
 	url: string;
-	template: string;
-	host?: string;
-	charset?: string;
+	template?: string;
+	vars?: IServerVars;
 }
 
 export interface IServerResponse extends IServerRequest {
@@ -26,15 +41,36 @@ export interface IServerErrorResponse extends IServerRequest {
 	statusMessage?: string;
 }
 
-export class ServerResponse implements IServerResponse {
-	template!: string;
+export class ServerRequest implements IServerRequest {
 	url!: string;
-	host?: string;
-	charset?: string;
+	template!: string;
+	vars!: IServerVars;
+	constructor(options?: IServerRequest) {
+		if (options) {
+			Object.assign(this, options);
+		}
+		this.vars = Object.assign({
+			host: 'http://localhost:5000',
+			port: 5000,
+			charset: 'utf8',
+			template: `./index.html`,
+			cacheMode: CacheMode.Memory,
+			cache: './cache/',
+			root: './dist/browser/',
+		}, this.vars || {});
+	}
+}
+
+export class ServerResponse implements IServerResponse {
+	url!: string;
+	template!: string;
+	vars!: IServerVars;
 	serialize!: () => string;
 	body!: string;
 	statusCode?: number;
 	statusMessage?: string;
+	maxAge?: number;
+	cacheControl?: CacheControlType;
 	constructor(options?: IServerResponse) {
 		if (options) {
 			Object.assign(this, options);
@@ -43,10 +79,8 @@ export class ServerResponse implements IServerResponse {
 }
 
 export class ServerErrorResponse implements IServerErrorResponse {
-	template!: string;
 	url!: string;
-	host?: string;
-	charset?: string;
+	vars!: IServerVars;
 	error!: Error;
 	statusCode?: number;
 	statusMessage?: string;
@@ -145,33 +179,21 @@ export default class Server extends Platform {
 		return this.document;
 	}
 
-	static bootstrap$ = bootstrap$;
 	static render$ = render$;
 	static template$ = template$;
+	static bootstrap$ = bootstrap$;
 
 }
 
-export function bootstrap$(moduleFactory: typeof Module, request?: IServerRequest): Observable<ServerResponse> {
-	if (request && request.host) {
-		Vars.host = request.host;
-	}
-	return from(new Promise<ServerResponse>((resolve, reject) => {
-		if (!request?.template) {
-			return reject(new Error('ServerError: missing template'));
-		}
-		try {
-			// const module = Server.bootstrap(moduleFactory, request.template);
-			Server.bootstrap(moduleFactory, request.template);
-			const serialize = () => Server.serialize();
-			resolve(new ServerResponse(Object.assign({ serialize }, request) as IServerResponse));
-		} catch (error) {
-			reject(new ServerErrorResponse(Object.assign({ error }, request) as IServerErrorResponse));
-		}
-	}));
-}
-
-export function render$(request: IServerRequest, renderRequest$: (request?: IServerRequest) => Observable<ServerResponse>): Observable<ServerResponse> {
+export function render$(iRequest: IServerRequest, renderRequest$: (request: ServerRequest) => Observable<ServerResponse>): Observable<ServerResponse> {
 	return Observable.create(function (observer: Observer<ServerResponse>) {
+		const request: ServerRequest = new ServerRequest(iRequest);
+		if (request.vars.cacheMode) {
+			CacheService.mode = request.vars.cacheMode;
+		}
+		if (request.vars.cache) {
+			CacheService.folder = request.vars.cache;
+		}
 		const cached = CacheService.get('cached', request.url);
 		console.log('cached', !!cached);
 		if (cached) {
@@ -197,22 +219,45 @@ export function render$(request: IServerRequest, renderRequest$: (request?: ISer
 	});
 }
 
-export function template$(request: IServerRequest): Observable<string> {
+export function template$(request: ServerRequest): Observable<string> {
 	return Observable.create(function (observer: Observer<string>) {
-		const template = CacheService.get('template', request.template);
-		console.log('template', !!template);
-		if (template) {
-			observer.next(template);
-			observer.complete();
-		}
-		fs.readFile(request.template, request.charset, function (error: NodeJS.ErrnoException, template: string) {
-			if (error) {
-				observer.error(error);
-			} else {
-				CacheService.set('template', request.template, template);
+		const src = request.vars.template;
+		if (src) {
+			const template = CacheService.get('template', src);
+			console.log('template', !!template);
+			if (template) {
 				observer.next(template);
 				observer.complete();
 			}
-		});
+			fs.readFile(src, request.vars.charset, function (error: NodeJS.ErrnoException, template: string) {
+				if (error) {
+					observer.error(error);
+				} else {
+					CacheService.set('template', src, template);
+					observer.next(template);
+					observer.complete();
+				}
+			});
+		} else {
+			observer.error(new Error('ServerError: missing template'));
+		}
+	});
+}
+
+export function bootstrap$(moduleFactory: typeof Module, request: ServerRequest): Observable<ServerResponse> {
+	console.log('bootstrap$', request);
+	return Observable.create(function (observer: Observer<ServerResponse>) {
+		if (!request.template) {
+			return observer.error(new Error('ServerError: missing template'));
+		}
+		try {
+			// const module = Server.bootstrap(moduleFactory, request.template);
+			Server.bootstrap(moduleFactory, request.template);
+			const serialize = () => Server.serialize();
+			observer.next(new ServerResponse(Object.assign({ serialize }, request) as IServerResponse));
+			observer.complete();
+		} catch (error) {
+			observer.error(new ServerErrorResponse(Object.assign({ error }, request) as IServerErrorResponse));
+		}
 	});
 }

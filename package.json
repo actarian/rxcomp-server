@@ -33,7 +33,7 @@
     "build": "gulp build --target dist",
     "docs": "typedoc --options typedoc.json",
     "docs2": "typedoc --out docs/documentation src/rxcomp-server.ts --mode modules --theme default --includeDeclarations --excludeExternals --excludePrivate --excludeNotExported",
-    "serve": "node server/server.js"
+    "serve": "node www/server/index.js"
   },
   "dependencies": {
     "htmlparser2": "~4.1.0",
