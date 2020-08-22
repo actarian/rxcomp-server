@@ -474,7 +474,243 @@ Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
 Cache-Control: no-cache
 Connection: keep-alive
 Pragma: no-cache
-*/(function (RxNodeType) {
+*/var RxDOMStringList = /*#__PURE__*/function (_Array) {
+  _inheritsLoose(RxDOMStringList, _Array);
+
+  function RxDOMStringList() {
+    return _Array.apply(this, arguments) || this;
+  }
+
+  var _proto = RxDOMStringList.prototype;
+
+  /*
+  private list_: string[] = [];
+  get length(): number {
+      return this.list_.length;
+  }
+  */
+  _proto.contains = function contains(string) {
+    // return this.list_.indexOf(string) !== -1;
+    return this.indexOf(string) !== -1;
+  };
+
+  _proto.item = function item(index) {
+    // if (index > 0 && index < this.list_.length) {
+    if (index > 0 && index < this.length) {
+      // return this.list_[index];
+      return this[index];
+    } else {
+      return null;
+    }
+  };
+
+  return RxDOMStringList;
+}( /*#__PURE__*/_wrapNativeSuper(Array));
+var RxLocation = /*#__PURE__*/function () {
+  function RxLocation() {
+    /*
+    private hash_: string = '';
+    get hash(): string { return this.hash_; }
+    set hash(hash: string) { this.hash_ = hash; updateLocation_(this); }
+         private host_: string = '';
+    get host(): string { return this.host_; }
+    set host(host: string) { this.host_ = host; updateLocation_(this); }
+         private hostname_: string = '';
+    get hostname(): string { return this.hostname_; }
+    set hostname(hostname: string) { this.hostname_ = hostname; updateLocation_(this); }
+         private pathname_: string = '';
+    get pathname(): string { return this.pathname_; }
+    set pathname(pathname: string) { this.pathname_ = pathname; updateLocation_(this); }
+         private port_: string = '';
+    get port(): string { return this.port_; }
+    set port(port: string) { this.port_ = port; updateLocation_(this); }
+         private protocol_: string = '';
+    get protocol(): string { return this.protocol_; }
+    set protocol(protocol: string) { this.protocol_ = protocol; updateLocation_(this); }
+         private search_: string = '';
+    get search(): string { return this.search_; }
+    set search(search: string) { this.search_ = search; updateLocation_(this); }
+    */
+    this.hash = '';
+    this.host = '';
+    this.hostname = '';
+    this.pathname = '';
+    this.port = '';
+    this.protocol = '';
+    this.search = '';
+    this.href_ = '';
+    this.ancestorOrigins_ = new RxDOMStringList();
+  }
+
+  var _proto2 = RxLocation.prototype;
+
+  _proto2.assign = function assign(url) {
+    this.href = url;
+  };
+
+  _proto2.reload = function reload() {};
+
+  _proto2.replace = function replace(url) {
+    this.href = url;
+  };
+
+  _proto2.toString = function toString() {
+    return this.href;
+  };
+
+  _createClass(RxLocation, [{
+    key: "href",
+    get: function get() {
+      var href = this.protocol + "//" + this.host + (this.port.length ? ":" + this.port : "") + this.pathname + this.search + this.hash;
+      this.href_ = href;
+      return href;
+    },
+    set: function set(href) {
+      if (this.href_ !== href) {
+        this.href_ = href;
+        var regExp = /^((http\:|https\:)?\/\/|\/)?([^\/\:]+)?(\:([^\/]+))?(\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
+        var matches = href.matchAll(regExp);
+
+        for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
+          var match = _step.value;
+
+          /*
+          0 Match	0.	https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins?pippo=shuter&a=dsok#asoka
+          1 Group 1.	https://
+          2 Group 2.	https:
+          3 Group 3.	developer.mozilla.org
+          4 Group 4.	:8080
+          5 Group 5.	8080
+          6 Group 5.	/en-US/docs/Web/API/Location/ancestorOrigins
+          7 Group 6.	?pippo=shuter&a=dsok
+          8 Group 7.	#asoka
+          */
+
+          /*
+          this.protocol_ = match[2] || '';
+          this.host_ = this.hostname_ = match[3] || '';
+          this.port_ = match[5] || '';
+          this.pathname_ = match[6] || '';
+          this.search_ = match[7] || '';
+          this.hash_ = match[8] || '';
+          */
+          this.protocol = match[2] || '';
+          this.host = this.hostname = match[3] || '';
+          this.port = match[5] || '';
+          this.pathname = match[6] || '';
+          this.search = match[7] || '';
+          this.hash = match[8] || '';
+        }
+      }
+    }
+  }, {
+    key: "origin",
+    get: function get() {
+      return this.protocol + "//" + this.host + (this.port.length ? ":" + this.port : "");
+    }
+  }, {
+    key: "ancestorOrigins",
+    get: function get() {
+      return this.ancestorOrigins_;
+    }
+  }], [{
+    key: "location",
+    get: function get() {
+      if (this.location_) {
+        return this.location_;
+      } else {
+        return this.location_ = new RxLocation();
+      }
+    }
+  }]);
+
+  return RxLocation;
+}();
+/*
+function updateLocation_(location: ILocation): void {
+    location.href = location.href;
+}
+*/var RxHistory = /*#__PURE__*/function () {
+  function RxHistory() {
+    this.currentIndex_ = 0;
+    this.history_ = [];
+    this.scrollRestoration = 'auto';
+  }
+
+  var _proto = RxHistory.prototype;
+
+  _proto.back = function back() {
+    if (this.currentIndex_ > 0) {
+      this.currentIndex_--;
+      var item = this.history_[this.currentIndex_];
+      if (item.url) RxLocation.location.href = item.url;
+    }
+  };
+
+  _proto.forward = function forward() {
+    if (this.currentIndex_ < this.history_.length - 1) {
+      this.currentIndex_++;
+      var item = this.history_[this.currentIndex_];
+      if (item.url) RxLocation.location.href = item.url;
+    }
+  };
+
+  _proto.go = function go(delta) {
+    if (typeof delta === 'number') {
+      var index = this.currentIndex_ + delta;
+
+      if (index > 0 && index < this.history_.length) {
+        var item = this.history_[index];
+        if (item.url) RxLocation.location.href = item.url;
+      }
+    }
+  };
+
+  _proto.pushState = function pushState(data, title, url) {
+    this.history_.push({
+      data: data,
+      title: title,
+      url: url
+    });
+    this.currentIndex_ = this.history_.length - 1;
+  };
+
+  _proto.replaceState = function replaceState(data, title, url) {
+    if (this.history_.length) {
+      this.history_.splice(this.history_.length - 1, 1, {
+        data: data,
+        title: title,
+        url: url
+      });
+    } else {
+      this.history_.push({
+        data: data,
+        title: title,
+        url: url
+      });
+    }
+
+    this.currentIndex_ = this.history_.length - 1;
+  };
+
+  _createClass(RxHistory, [{
+    key: "length",
+    get: function get() {
+      return this.history_.length;
+    }
+  }], [{
+    key: "history",
+    get: function get() {
+      if (this.history_) {
+        return this.history_;
+      } else {
+        return this.history_ = new RxHistory();
+      }
+    }
+  }]);
+
+  return RxHistory;
+}();(function (RxNodeType) {
   RxNodeType[RxNodeType["ELEMENT_NODE"] = 1] = "ELEMENT_NODE";
   RxNodeType[RxNodeType["TEXT_NODE"] = 3] = "TEXT_NODE";
   RxNodeType[RxNodeType["CDATA_SECTION_NODE"] = 4] = "CDATA_SECTION_NODE";
@@ -493,314 +729,6 @@ Pragma: no-cache
   SelectorType[SelectorType["TagName"] = 3] = "TagName";
 })(exports.SelectorType || (exports.SelectorType = {}));
 
-function isRxElement(x) {
-  return x.nodeType === exports.RxNodeType.ELEMENT_NODE;
-}
-function isRxText(x) {
-  return x.nodeType === exports.RxNodeType.TEXT_NODE;
-}
-function isRxComment(x) {
-  return x.nodeType === exports.RxNodeType.COMMENT_NODE;
-}
-function isRxDocument(x) {
-  return x.nodeType === exports.RxNodeType.DOCUMENT_NODE;
-}
-function isRxDocumentFragment(x) {
-  return x.nodeType === exports.RxNodeType.DOCUMENT_FRAGMENT_NODE;
-}
-function isRxDocumentType(x) {
-  return x.nodeType === exports.RxNodeType.DOCUMENT_TYPE_NODE;
-}
-function isRxProcessingInstruction(x) {
-  return x.nodeType === exports.RxNodeType.PROCESSING_INSTRUCTION_NODE;
-}
-function parse(html) {
-  var doc = new RxDocument();
-  var parentNode = doc,
-      node;
-  var parser = new htmlparser2.Parser({
-    onopentag: function onopentag(nodeName, attributes) {
-      // console.log(nodeName);
-      node = new RxElement(parentNode, nodeName, attributes);
-      parentNode.childNodes.push(node);
-      parentNode = node; // if (NO_CHILDS.indexOf(nodeName) === -1) {
-      //	console.log(nodeName);
-      //	parentNode = node;
-      // }
-    },
-    onclosetag: function onclosetag(nodeName) {
-      if (parentNode.parentNode) {
-        parentNode = parentNode.parentNode;
-      }
-    },
-    ontext: function ontext(nodeValue) {
-      // console.log('ontext', nodeValue);
-      // if (nodeValue.length) {
-      var textNode = new RxText(parentNode, nodeValue);
-      parentNode.childNodes.push(textNode); // }
-    },
-    onprocessinginstruction: function onprocessinginstruction(nodeName, nodeValue) {
-      // console.log('onprocessinginstruction', nodeName, nodeValue);
-      if (nodeName === '!doctype') {
-        node = new RxDocumentType(parentNode, nodeValue);
-      } else {
-        node = new RxProcessingInstruction(parentNode, nodeValue);
-      }
-
-      parentNode.childNodes.push(node);
-    },
-    oncomment: function oncomment(nodeValue) {
-      // console.log('oncomment', nodeValue);
-      node = new RxComment(parentNode, nodeValue);
-      parentNode.childNodes.push(node); // parentNode = node;
-    },
-    oncommentend: function oncommentend() {// console.log('oncommentend');
-      // parentNode = parentNode.parentNode;
-    },
-    oncdatastart: function oncdatastart() {
-      console.log('oncdatastart');
-    },
-    oncdataend: function oncdataend() {
-      console.log('oncdataend');
-    },
-    onerror: function onerror(error) {
-      console.log('error', error);
-    }
-  }, {
-    decodeEntities: false,
-    lowerCaseTags: true
-  });
-  parser.write(html);
-  parser.end();
-  return doc;
-}
-function getQueries(selector) {
-  var queries = [];
-  selector.trim().split(' ').forEach(function (x) {
-    x.trim().split('>').forEach(function (x, i) {
-      // const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
-      // const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
-      var regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
-      /* eslint no-useless-escape: "off" */
-
-      var selectors = [];
-      var matches = x.matchAll(regex);
-
-      for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
-        var match = _step.value;
-
-        if (match[1]) {
-          selectors.push({
-            selector: match[1],
-            type: exports.SelectorType.Id,
-            negate: true
-          });
-        } else if (match[2]) {
-          selectors.push({
-            selector: match[2],
-            type: exports.SelectorType.Class,
-            negate: true
-          });
-        } else if (match[3]) {
-          selectors.push({
-            selector: match[3],
-            type: exports.SelectorType.Attribute,
-            negate: true
-          });
-        } else if (match[4]) {
-          selectors.push({
-            selector: match[4],
-            type: exports.SelectorType.TagName,
-            negate: true
-          });
-        } else if (match[5]) {
-          selectors.push({
-            selector: match[5],
-            type: exports.SelectorType.Id,
-            negate: false
-          });
-        } else if (match[6]) {
-          selectors.push({
-            selector: match[6],
-            type: exports.SelectorType.Class,
-            negate: false
-          });
-        } else if (match[7]) {
-          selectors.push({
-            selector: match[7],
-            type: exports.SelectorType.Attribute,
-            negate: false
-          });
-        } else if (match[8]) {
-          selectors.push({
-            selector: match[8],
-            type: exports.SelectorType.TagName,
-            negate: false
-          });
-        } // console.log('match', match);
-
-      }
-
-      var selector = i > 0 ? {
-        selector: x,
-        selectors: selectors,
-        inner: true
-      } : {
-        selector: x,
-        selectors: selectors,
-        inner: false
-      };
-      queries.push.call(queries, selector);
-    });
-  });
-  return queries;
-}
-function matchSelector(child, selector) {
-  switch (selector.type) {
-    case exports.SelectorType.Id:
-      return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
-
-    case exports.SelectorType.Class:
-      return child.classList.indexOf(selector.selector) !== -1 !== selector.negate;
-
-    case exports.SelectorType.Attribute:
-      return Object.keys(child.attributes).indexOf(selector.selector) !== -1 !== selector.negate;
-
-    case exports.SelectorType.TagName:
-      return child.nodeName === selector.selector !== selector.negate;
-
-    default:
-      return false;
-  }
-}
-function matchSelectors(child, selectors) {
-  return selectors.reduce(function (p, selector) {
-    return p && matchSelector(child, selector);
-  }, true);
-}
-function querySelectorAll(queries, childNodes, query, nodes) {
-  if (query === void 0) {
-    query = null;
-  }
-
-  if (nodes === void 0) {
-    nodes = [];
-  }
-
-  if (query || queries.length) {
-    query = query || queries.shift();
-
-    for (var _iterator2 = _createForOfIteratorHelperLoose(childNodes), _step2; !(_step2 = _iterator2()).done;) {
-      var child = _step2.value;
-
-      if (child instanceof RxElement) {
-        if (matchSelectors(child, query.selectors)) {
-          // console.log(query);
-          if (queries.length) {
-            var results = querySelectorAll(queries, child.childNodes);
-
-            if (results) {
-              Array.prototype.push.apply(nodes, results);
-            }
-          } else {
-            nodes.push(child);
-          }
-        } else if (!query.inner) {
-          var _results = querySelectorAll(queries, child.childNodes, query);
-
-          if (_results) {
-            Array.prototype.push.apply(nodes, _results);
-          }
-        }
-      }
-    }
-  }
-
-  return nodes.length ? nodes : null;
-}
-
-function _querySelector(queries, childNodes, query) {
-  if (query === void 0) {
-    query = null;
-  }
-
-  var node = null;
-
-  if (query || queries.length) {
-    query = query || queries.shift();
-
-    for (var _iterator3 = _createForOfIteratorHelperLoose(childNodes), _step3; !(_step3 = _iterator3()).done;) {
-      var child = _step3.value;
-
-      if (child instanceof RxElement) {
-        if (matchSelectors(child, query.selectors)) {
-          // console.log(query);
-          if (queries.length) {
-            return _querySelector(queries, child.childNodes);
-          } else {
-            return child;
-          }
-        } else if (!query.inner) {
-          node = _querySelector(queries, child.childNodes, query);
-        }
-      }
-    }
-  }
-
-  return node;
-}
-
-function _cloneNode(source, deep, parentNode) {
-  if (deep === void 0) {
-    deep = false;
-  }
-
-  if (parentNode === void 0) {
-    parentNode = null;
-  }
-
-  var node;
-
-  if (isRxElement(source)) {
-    var nodeElement = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
-
-    if (deep) {
-      nodeElement.childNodes = source.childNodes.map(function (x) {
-        return _cloneNode.apply(x, [x, deep, nodeElement]);
-      });
-    }
-
-    node = nodeElement;
-  } else if (isRxDocumentFragment(source)) {
-    var nodeDocumentFragment = new RxDocumentFragment();
-
-    if (deep) {
-      nodeDocumentFragment.childNodes = source.childNodes.map(function (x) {
-        return _cloneNode.apply(x, [x, deep, nodeDocumentFragment]);
-      });
-    }
-
-    node = nodeDocumentFragment;
-  } else if (isRxText(source)) {
-    node = new RxText(parentNode, source.nodeValue);
-  } else if (isRxComment(source)) {
-    node = new RxComment(parentNode, source.nodeValue);
-  } else if (isRxDocument(source)) {
-    var documentElement = new RxDocument();
-
-    if (deep) {
-      documentElement.childNodes = source.childNodes.map(function (x) {
-        return _cloneNode.apply(x, [x, deep, documentElement]);
-      });
-    }
-
-    node = documentElement;
-  } else {
-    throw new Error('Invalid node type');
-  }
-
-  return node;
-}
 var RxSelector = function RxSelector(options) {
   this.selector = '';
   this.type = exports.SelectorType.None;
@@ -1328,8 +1256,8 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
   }, {
     key: "firstElementChild",
     get: function get() {
-      for (var _iterator4 = _createForOfIteratorHelperLoose(this.childNodes), _step4; !(_step4 = _iterator4()).done;) {
-        var node = _step4.value;
+      for (var _iterator = _createForOfIteratorHelperLoose(this.childNodes), _step; !(_step = _iterator()).done;) {
+        var node = _step.value;
 
         if (isRxElement(node)) {
           return node;
@@ -1698,70 +1626,40 @@ var RxDocumentFragment = /*#__PURE__*/function (_RxElement) {
 var RxDocument = /*#__PURE__*/function (_RxElement2) {
   _inheritsLoose(RxDocument, _RxElement2);
 
-  _createClass(RxDocument, [{
-    key: "hidden",
-    get: function get() {
-      return true;
-    }
-  }, {
-    key: "visibilityState",
-    get: function get() {
-      return 'prerender';
-    }
-  }, {
-    key: "doctype",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxDocumentType(x);
-      });
-    }
-  }, {
-    key: "body",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'body';
-      });
-    }
-  }, {
-    key: "head",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'head';
-      });
-    }
-  }, {
-    key: "title",
-    get: function get() {
-      var title = this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'title';
-      });
-
-      if (title) {
-        return title.innerText;
-      } else {
-        return null;
-      }
-    },
-    set: function set(nodeValue) {
-      var title = this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'title';
-      });
-
-      if (title) {
-        title.innerText = nodeValue;
-      }
-    }
-  }, {
-    key: "documentElement",
-    get: function get() {
-      return this.firstElementChild;
-    }
-  }]);
-
+  /*
+      readonly characterSet: string; // Returns document's encoding.
+      readonly charset: string; // Gets or sets the character set used to encode the object.
+      readonly compatMode: string; // Gets a value that indicates whether standards-compliant mode is switched on for the object.
+      readonly contentType: string; // Returns document's content type.
+      readonly currentScript: HTMLOrSVGScriptElement | null; // Returns the script element, or the SVG script element, that is currently executing, as long as the element represents a classic script. In the case of reentrant script execution, returns the one that most recently started executing amongst those that have not yet finished executing.
+      readonly defaultView: (WindowProxy & typeof globalThis) | null; // Returns null if the Document is not currently executing a script or SVG script element (e.g., because the running script is an event handler, or a timeout), or if the currently executing script or SVG script element represents a module script.
+      readonly documentElement: HTMLElement; // Gets a reference to the root node of the document.
+      readonly documentURI: string; // Returns document's URL.
+      readonly embeds: HTMLCollectionOf<HTMLEmbedElement>; // Retrieves a collection of all embed objects in the document.
+      readonly forms: HTMLCollectionOf<HTMLFormElement>; // Retrieves a collection, in source order, of all form objects in the document.
+      readonly fullscreenEnabled: boolean; // Returns true if document has the ability to display elements fullscreen and fullscreen is supported, or false otherwise.
+      readonly head: HTMLHeadElement; // Returns the head element.
+      readonly hidden: boolean;
+      readonly images: HTMLCollectionOf<HTMLImageElement>; // Retrieves a collection, in source order, of img objects in the document.
+      readonly implementation: DOMImplementation; // Gets the implementation object of the current document.
+      readonly inputEncoding: string; // Returns the character encoding used to create the webpage that is loaded into the document object.
+      readonly lastModified: string; // Gets the date that the page was last modified, if the page supplies one.
+      readonly links: HTMLCollectionOf<HTMLAnchorElement | HTMLAreaElement>; // Retrieves a collection of all a objects that specify the href property and all area objects in the document.
+      readonly origin: string; // Returns document's origin.
+      readonly ownerDocument: null;
+      readonly plugins: HTMLCollectionOf<HTMLEmbedElement>; // Return an HTMLCollection of the embed elements in the Document.
+      readonly readyState: DocumentReadyState; // Retrieves a value that indicates the current state of the object.
+      readonly referrer: string; // Gets the URL of the location that referred the user to the current page.
+      readonly scripts: HTMLCollectionOf<HTMLScriptElement>; // Retrieves a collection of all script objects in the document.
+      readonly scrollingElement: Element | null;
+      readonly timeline: DocumentTimeline;
+      readonly visibilityState: VisibilityState;
+      */
   function RxDocument() {
     var _this18;
 
     _this18 = _RxElement2.call(this, null, '#document') || this;
+    _this18.location_ = RxLocation.location;
     _this18.nodeType = exports.RxNodeType.DOCUMENT_NODE;
     _this18.childNodes = [];
     return _this18;
@@ -1829,8 +1727,386 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
     }).join('');
   };
 
+  _createClass(RxDocument, [{
+    key: "location",
+    get: function get() {
+      return this.location_;
+    }
+  }, {
+    key: "URL",
+    get: function get() {
+      return this.location_.href;
+    }
+  }, {
+    key: "hidden",
+    get: function get() {
+      return true;
+    }
+  }, {
+    key: "visibilityState",
+    get: function get() {
+      return 'prerender';
+    }
+  }, {
+    key: "doctype",
+    get: function get() {
+      return this.childNodes.find(function (x) {
+        return isRxDocumentType(x);
+      });
+    }
+  }, {
+    key: "body",
+    get: function get() {
+      return this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'body';
+      });
+    }
+  }, {
+    key: "head",
+    get: function get() {
+      return this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'head';
+      });
+    }
+  }, {
+    key: "title",
+    get: function get() {
+      var title = this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'title';
+      });
+
+      if (title) {
+        return title.innerText;
+      } else {
+        return null;
+      }
+    },
+    set: function set(nodeValue) {
+      var title = this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'title';
+      });
+
+      if (title) {
+        title.innerText = nodeValue;
+      }
+    }
+  }, {
+    key: "documentElement",
+    get: function get() {
+      return this.firstElementChild;
+    }
+  }]);
+
   return RxDocument;
-}(RxElement);var fs$1 = require('fs');
+}(RxElement);
+function isRxElement(x) {
+  return x.nodeType === exports.RxNodeType.ELEMENT_NODE;
+}
+function isRxText(x) {
+  return x.nodeType === exports.RxNodeType.TEXT_NODE;
+}
+function isRxComment(x) {
+  return x.nodeType === exports.RxNodeType.COMMENT_NODE;
+}
+function isRxDocument(x) {
+  return x.nodeType === exports.RxNodeType.DOCUMENT_NODE;
+}
+function isRxDocumentFragment(x) {
+  return x.nodeType === exports.RxNodeType.DOCUMENT_FRAGMENT_NODE;
+}
+function isRxDocumentType(x) {
+  return x.nodeType === exports.RxNodeType.DOCUMENT_TYPE_NODE;
+}
+function isRxProcessingInstruction(x) {
+  return x.nodeType === exports.RxNodeType.PROCESSING_INSTRUCTION_NODE;
+}
+function parse(html) {
+  var doc = new RxDocument();
+  var parentNode = doc,
+      node;
+  var parser = new htmlparser2.Parser({
+    onopentag: function onopentag(nodeName, attributes) {
+      // console.log(nodeName);
+      node = new RxElement(parentNode, nodeName, attributes);
+      parentNode.childNodes.push(node);
+      parentNode = node; // if (NO_CHILDS.indexOf(nodeName) === -1) {
+      //	console.log(nodeName);
+      //	parentNode = node;
+      // }
+    },
+    onclosetag: function onclosetag(nodeName) {
+      if (parentNode.parentNode) {
+        parentNode = parentNode.parentNode;
+      }
+    },
+    ontext: function ontext(nodeValue) {
+      // console.log('ontext', nodeValue);
+      // if (nodeValue.length) {
+      var textNode = new RxText(parentNode, nodeValue);
+      parentNode.childNodes.push(textNode); // }
+    },
+    onprocessinginstruction: function onprocessinginstruction(nodeName, nodeValue) {
+      // console.log('onprocessinginstruction', nodeName, nodeValue);
+      if (nodeName === '!doctype') {
+        node = new RxDocumentType(parentNode, nodeValue);
+      } else {
+        node = new RxProcessingInstruction(parentNode, nodeValue);
+      }
+
+      parentNode.childNodes.push(node);
+    },
+    oncomment: function oncomment(nodeValue) {
+      // console.log('oncomment', nodeValue);
+      node = new RxComment(parentNode, nodeValue);
+      parentNode.childNodes.push(node); // parentNode = node;
+    },
+    oncommentend: function oncommentend() {// console.log('oncommentend');
+      // parentNode = parentNode.parentNode;
+    },
+    oncdatastart: function oncdatastart() {
+      console.log('oncdatastart');
+    },
+    oncdataend: function oncdataend() {
+      console.log('oncdataend');
+    },
+    onerror: function onerror(error) {
+      console.log('error', error);
+    }
+  }, {
+    decodeEntities: false,
+    lowerCaseTags: true
+  });
+  parser.write(html);
+  parser.end();
+  return doc;
+}
+function getQueries(selector) {
+  var queries = [];
+  selector.trim().split(' ').forEach(function (x) {
+    x.trim().split('>').forEach(function (x, i) {
+      // const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
+      // const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
+      var regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
+      /* eslint no-useless-escape: "off" */
+
+      var selectors = [];
+      var matches = x.matchAll(regex);
+
+      for (var _iterator2 = _createForOfIteratorHelperLoose(matches), _step2; !(_step2 = _iterator2()).done;) {
+        var match = _step2.value;
+
+        if (match[1]) {
+          selectors.push({
+            selector: match[1],
+            type: exports.SelectorType.Id,
+            negate: true
+          });
+        } else if (match[2]) {
+          selectors.push({
+            selector: match[2],
+            type: exports.SelectorType.Class,
+            negate: true
+          });
+        } else if (match[3]) {
+          selectors.push({
+            selector: match[3],
+            type: exports.SelectorType.Attribute,
+            negate: true
+          });
+        } else if (match[4]) {
+          selectors.push({
+            selector: match[4],
+            type: exports.SelectorType.TagName,
+            negate: true
+          });
+        } else if (match[5]) {
+          selectors.push({
+            selector: match[5],
+            type: exports.SelectorType.Id,
+            negate: false
+          });
+        } else if (match[6]) {
+          selectors.push({
+            selector: match[6],
+            type: exports.SelectorType.Class,
+            negate: false
+          });
+        } else if (match[7]) {
+          selectors.push({
+            selector: match[7],
+            type: exports.SelectorType.Attribute,
+            negate: false
+          });
+        } else if (match[8]) {
+          selectors.push({
+            selector: match[8],
+            type: exports.SelectorType.TagName,
+            negate: false
+          });
+        } // console.log('match', match);
+
+      }
+
+      var selector = i > 0 ? {
+        selector: x,
+        selectors: selectors,
+        inner: true
+      } : {
+        selector: x,
+        selectors: selectors,
+        inner: false
+      };
+      queries.push.call(queries, selector);
+    });
+  });
+  return queries;
+}
+function matchSelector(child, selector) {
+  switch (selector.type) {
+    case exports.SelectorType.Id:
+      return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
+
+    case exports.SelectorType.Class:
+      return child.classList.indexOf(selector.selector) !== -1 !== selector.negate;
+
+    case exports.SelectorType.Attribute:
+      return Object.keys(child.attributes).indexOf(selector.selector) !== -1 !== selector.negate;
+
+    case exports.SelectorType.TagName:
+      return child.nodeName === selector.selector !== selector.negate;
+
+    default:
+      return false;
+  }
+}
+function matchSelectors(child, selectors) {
+  return selectors.reduce(function (p, selector) {
+    return p && matchSelector(child, selector);
+  }, true);
+}
+function querySelectorAll(queries, childNodes, query, nodes) {
+  if (query === void 0) {
+    query = null;
+  }
+
+  if (nodes === void 0) {
+    nodes = [];
+  }
+
+  if (query || queries.length) {
+    query = query || queries.shift();
+
+    for (var _iterator3 = _createForOfIteratorHelperLoose(childNodes), _step3; !(_step3 = _iterator3()).done;) {
+      var child = _step3.value;
+
+      if (child instanceof RxElement) {
+        if (matchSelectors(child, query.selectors)) {
+          // console.log(query);
+          if (queries.length) {
+            var results = querySelectorAll(queries, child.childNodes);
+
+            if (results) {
+              Array.prototype.push.apply(nodes, results);
+            }
+          } else {
+            nodes.push(child);
+          }
+        } else if (!query.inner) {
+          var _results = querySelectorAll(queries, child.childNodes, query);
+
+          if (_results) {
+            Array.prototype.push.apply(nodes, _results);
+          }
+        }
+      }
+    }
+  }
+
+  return nodes.length ? nodes : null;
+}
+
+function _querySelector(queries, childNodes, query) {
+  if (query === void 0) {
+    query = null;
+  }
+
+  var node = null;
+
+  if (query || queries.length) {
+    query = query || queries.shift();
+
+    for (var _iterator4 = _createForOfIteratorHelperLoose(childNodes), _step4; !(_step4 = _iterator4()).done;) {
+      var child = _step4.value;
+
+      if (child instanceof RxElement) {
+        if (matchSelectors(child, query.selectors)) {
+          // console.log(query);
+          if (queries.length) {
+            return _querySelector(queries, child.childNodes);
+          } else {
+            return child;
+          }
+        } else if (!query.inner) {
+          node = _querySelector(queries, child.childNodes, query);
+        }
+      }
+    }
+  }
+
+  return node;
+}
+
+function _cloneNode(source, deep, parentNode) {
+  if (deep === void 0) {
+    deep = false;
+  }
+
+  if (parentNode === void 0) {
+    parentNode = null;
+  }
+
+  var node;
+
+  if (isRxElement(source)) {
+    var nodeElement = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
+
+    if (deep) {
+      nodeElement.childNodes = source.childNodes.map(function (x) {
+        return _cloneNode.apply(x, [x, deep, nodeElement]);
+      });
+    }
+
+    node = nodeElement;
+  } else if (isRxDocumentFragment(source)) {
+    var nodeDocumentFragment = new RxDocumentFragment();
+
+    if (deep) {
+      nodeDocumentFragment.childNodes = source.childNodes.map(function (x) {
+        return _cloneNode.apply(x, [x, deep, nodeDocumentFragment]);
+      });
+    }
+
+    node = nodeDocumentFragment;
+  } else if (isRxText(source)) {
+    node = new RxText(parentNode, source.nodeValue);
+  } else if (isRxComment(source)) {
+    node = new RxComment(parentNode, source.nodeValue);
+  } else if (isRxDocument(source)) {
+    var documentElement = new RxDocument();
+
+    if (deep) {
+      documentElement.childNodes = source.childNodes.map(function (x) {
+        return _cloneNode.apply(x, [x, deep, documentElement]);
+      });
+    }
+
+    node = documentElement;
+  } else {
+    throw new Error('Invalid node type');
+  }
+
+  return node;
+}var fs$1 = require('fs');
 
 var ServerRequest = function ServerRequest(options) {
   if (options) {
@@ -1869,7 +2145,7 @@ var Server = /*#__PURE__*/function (_Platform) {
    * @param moduleFactory
    * @description This method returns a Server compiled module
    */
-  Server.bootstrap = function bootstrap(moduleFactory, template) {
+  Server.bootstrap = function bootstrap(moduleFactory, request) {
     if (!rxcomp.isPlatformServer) {
       throw new rxcomp.ModuleError('missing platform server, node process not found');
     }
@@ -1894,7 +2170,7 @@ var Server = /*#__PURE__*/function (_Platform) {
       throw new rxcomp.ModuleError('missing bootstrap meta selector');
     }
 
-    if (!template) {
+    if (!(request == null ? void 0 : request.template)) {
       throw new rxcomp.ModuleError('missing template');
     }
     /*
@@ -1913,7 +2189,7 @@ var Server = /*#__PURE__*/function (_Platform) {
     */
 
 
-    var document = this.resolveGlobals(template);
+    var document = this.resolveGlobals(request);
     var meta = this.resolveMeta(moduleFactory);
 
     if (meta.node instanceof RxElement) {
@@ -1957,10 +2233,20 @@ var Server = /*#__PURE__*/function (_Platform) {
     }
   };
 
-  Server.resolveGlobals = function resolveGlobals(documentOrHtml) {
+  Server.resolveGlobals = function resolveGlobals(request) {
+    var url = request.url;
+    var location = RxLocation.location;
+    location.assign(url);
+    global.location = location;
+    var history = RxHistory.history;
+    history.replaceState(null, '', location.origin);
+    global.history = history;
+    var documentOrHtml = request.template;
     var document = typeof documentOrHtml === 'string' ? parse(documentOrHtml) : documentOrHtml;
-    this.document = document;
+    this.document = document; // !!!
+
     global.document = this.document;
+    history.replaceState(null, document.title || '', location.origin);
     return this.document;
   };
 
@@ -2038,7 +2324,7 @@ function bootstrap$(moduleFactory, request) {
 
     try {
       // const module = Server.bootstrap(moduleFactory, request.template);
-      Server.bootstrap(moduleFactory, request.template);
+      Server.bootstrap(moduleFactory, request);
 
       var serialize = function serialize() {
         return Server.serialize();
@@ -2086,4 +2372,4 @@ var ServerModule = /*#__PURE__*/function (_Module) {
 ServerModule.meta = {
   declarations: [].concat(factories, pipes),
   exports: [].concat(factories, pipes)
-};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerRequest=ServerRequest;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=querySelectorAll;exports.render$=render$;exports.template$=template$;Object.defineProperty(exports,'__esModule',{value:true});})));
+};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDOMStringList=RxDOMStringList;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxHistory=RxHistory;exports.RxLocation=RxLocation;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerRequest=ServerRequest;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=querySelectorAll;exports.render$=render$;exports.template$=template$;Object.defineProperty(exports,'__esModule',{value:true});})));

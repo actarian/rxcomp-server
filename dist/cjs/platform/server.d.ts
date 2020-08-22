@@ -65,10 +65,10 @@ export default class Server extends Platform {
      * @param moduleFactory
      * @description This method returns a Server compiled module
      */
-    static bootstrap(moduleFactory?: typeof Module, template?: string): Module;
+    static bootstrap(moduleFactory?: typeof Module, request?: ServerRequest): Module;
     static serialize(): string;
     protected static document: Document | RxDocument;
-    protected static resolveGlobals(documentOrHtml: Document | string): Document | RxDocument;
+    protected static resolveGlobals(request: ServerRequest): Document | RxDocument;
     static render$: typeof render$;
     static template$: typeof template$;
     static bootstrap$: typeof bootstrap$;

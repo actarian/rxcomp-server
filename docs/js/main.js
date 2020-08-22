@@ -1018,12 +1018,12 @@ function optionsWithBody_(options, body) {
   });
 }var Vars = {
   name: 'rxcomp-server',
-  static: false,
-  development: false,
-  production: true,
   host: '',
   resource: '/',
-  api: '/api'
+  api: '/api',
+  static: false,
+  development: false,
+  production: true
 };var CustomInterceptor = function () {
   function CustomInterceptor() {}
 
@@ -1062,7 +1062,9 @@ var AppComponent = function (_Component) {
     var payload = {
       query: "{ getTodos { id, title, completed } }"
     };
-    HttpClient.post$("" + Vars.host + Vars.api, payload).pipe(operators.first()).subscribe(function (response) {
+    var methodUrl = "" + Vars.host + Vars.api;
+    console.log('methodUrl', methodUrl);
+    HttpClient.post$(methodUrl, payload).pipe(operators.first()).subscribe(function (response) {
       _this2.items = response.data.getTodos;
 
       _this2.pushChanges();

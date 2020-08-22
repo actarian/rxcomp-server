@@ -2,6 +2,8 @@ import { isPlatformServer, ModuleError, Platform } from 'rxcomp';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import CacheService, { CacheMode } from '../cache/cache.service';
+import { RxHistory } from '../history/history';
+import { RxLocation } from '../location/location';
 import { parse, RxDocument, RxElement, RxText } from '../nodes/nodes';
 const fs = require('fs');
 export class ServerRequest {
@@ -39,7 +41,7 @@ export default class Server extends Platform {
      * @param moduleFactory
      * @description This method returns a Server compiled module
      */
-    static bootstrap(moduleFactory, template) {
+    static bootstrap(moduleFactory, request) {
         var _a;
         if (!isPlatformServer) {
             throw new ModuleError('missing platform server, node process not found');
@@ -59,7 +61,7 @@ export default class Server extends Platform {
         if (!moduleFactory.meta.bootstrap.meta.selector) {
             throw new ModuleError('missing bootstrap meta selector');
         }
-        if (!template) {
+        if (!(request === null || request === void 0 ? void 0 : request.template)) {
             throw new ModuleError('missing template');
         }
         /*
@@ -76,7 +78,7 @@ export default class Server extends Platform {
             }
         }
         */
-        const document = this.resolveGlobals(template);
+        const document = this.resolveGlobals(request);
         const meta = this.resolveMeta(moduleFactory);
         if (meta.node instanceof RxElement) {
             const node = meta.node;
@@ -112,10 +114,19 @@ export default class Server extends Platform {
             throw new ModuleError('document is not an instance of RxDocument');
         }
     }
-    static resolveGlobals(documentOrHtml) {
+    static resolveGlobals(request) {
+        const url = request.url;
+        const location = RxLocation.location;
+        location.assign(url);
+        global.location = location;
+        const history = RxHistory.history;
+        history.replaceState(null, '', location.origin);
+        global.history = history;
+        const documentOrHtml = request.template;
         const document = typeof documentOrHtml === 'string' ? parse(documentOrHtml) : documentOrHtml;
-        this.document = document;
+        this.document = document; // !!!
         global.document = this.document;
+        history.replaceState(null, document.title || '', location.origin);
         return this.document;
     }
 }
@@ -184,7 +195,7 @@ export function bootstrap$(moduleFactory, request) {
         }
         try {
             // const module = Server.bootstrap(moduleFactory, request.template);
-            Server.bootstrap(moduleFactory, request.template);
+            Server.bootstrap(moduleFactory, request);
             const serialize = () => Server.serialize();
             observer.next(new ServerResponse(Object.assign({ serialize }, request)));
             observer.complete();

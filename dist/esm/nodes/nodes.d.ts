@@ -1,3 +1,4 @@
+import { ILocation } from '../location/location';
 export declare enum RxNodeType {
     ELEMENT_NODE = 1,
     TEXT_NODE = 3,
@@ -15,20 +16,6 @@ export declare enum SelectorType {
     Attribute = 2,
     TagName = 3
 }
-export declare function isRxElement(x: RxNode): x is RxElement;
-export declare function isRxText(x: RxNode): x is RxText;
-export declare function isRxComment(x: RxNode): x is RxComment;
-export declare function isRxDocument(x: RxNode): x is RxDocument;
-export declare function isRxDocumentFragment(x: RxNode): x is RxDocumentFragment;
-export declare function isRxDocumentType(x: RxNode): x is RxDocumentType;
-export declare function isRxProcessingInstruction(x: RxNode): x is RxProcessingInstruction;
-export declare function parse(html: string): RxDocument;
-export declare function getQueries(selector: string): RxQuery[];
-export declare function matchSelector(child: RxElement, selector: RxSelector): boolean;
-export declare function matchSelectors(child: RxElement, selectors: RxSelector[]): boolean;
-export declare function querySelectorAll(queries: RxQuery[], childNodes: RxNode[], query?: RxQuery | null, nodes?: RxElement[]): RxElement[] | null;
-export declare function querySelector(queries: RxQuery[], childNodes: RxNode[], query?: RxQuery | null): RxElement | null;
-export declare function cloneNode(source: RxNode, deep?: boolean, parentNode?: RxElement | null): RxNode;
 export declare class RxSelector {
     selector: string;
     type: SelectorType;
@@ -161,7 +148,12 @@ export declare class RxDocumentType extends RxNode {
 export declare class RxDocumentFragment extends RxElement {
     constructor();
 }
+export interface IDocument extends Document {
+}
 export declare class RxDocument extends RxElement {
+    private location_;
+    get location(): ILocation;
+    get URL(): string;
     get hidden(): true;
     get visibilityState(): 'prerender';
     get doctype(): RxDocumentType | null;
@@ -187,3 +179,17 @@ export declare class RxDocument extends RxElement {
     createTreeWalker(): void;
     serialize(): string;
 }
+export declare function isRxElement(x: RxNode): x is RxElement;
+export declare function isRxText(x: RxNode): x is RxText;
+export declare function isRxComment(x: RxNode): x is RxComment;
+export declare function isRxDocument(x: RxNode): x is RxDocument;
+export declare function isRxDocumentFragment(x: RxNode): x is RxDocumentFragment;
+export declare function isRxDocumentType(x: RxNode): x is RxDocumentType;
+export declare function isRxProcessingInstruction(x: RxNode): x is RxProcessingInstruction;
+export declare function parse(html: string): RxDocument;
+export declare function getQueries(selector: string): RxQuery[];
+export declare function matchSelector(child: RxElement, selector: RxSelector): boolean;
+export declare function matchSelectors(child: RxElement, selectors: RxSelector[]): boolean;
+export declare function querySelectorAll(queries: RxQuery[], childNodes: RxNode[], query?: RxQuery | null, nodes?: RxElement[]): RxElement[] | null;
+export declare function querySelector(queries: RxQuery[], childNodes: RxNode[], query?: RxQuery | null): RxElement | null;
+export declare function cloneNode(source: RxNode, deep?: boolean, parentNode?: RxElement | null): RxNode;

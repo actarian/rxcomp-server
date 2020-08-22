@@ -1,4 +1,5 @@
 import { Parser } from 'htmlparser2';
+import { RxLocation } from '../location/location';
 // export const NO_CHILDS = ['title','base','meta','link','img','br','input',];
 // const SKIP = ['html','head','title','base','meta','script','link','body',];
 // document.createComment = nodeValue => { return new RxComment(null, nodeValue); };
@@ -22,244 +23,6 @@ export var SelectorType;
     SelectorType[SelectorType["Attribute"] = 2] = "Attribute";
     SelectorType[SelectorType["TagName"] = 3] = "TagName";
 })(SelectorType || (SelectorType = {}));
-export function isRxElement(x) {
-    return x.nodeType === RxNodeType.ELEMENT_NODE;
-}
-export function isRxText(x) {
-    return x.nodeType === RxNodeType.TEXT_NODE;
-}
-export function isRxComment(x) {
-    return x.nodeType === RxNodeType.COMMENT_NODE;
-}
-export function isRxDocument(x) {
-    return x.nodeType === RxNodeType.DOCUMENT_NODE;
-}
-export function isRxDocumentFragment(x) {
-    return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
-}
-export function isRxDocumentType(x) {
-    return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
-}
-export function isRxProcessingInstruction(x) {
-    return x.nodeType === RxNodeType.PROCESSING_INSTRUCTION_NODE;
-}
-export function parse(html) {
-    const doc = new RxDocument();
-    let parentNode = doc, node;
-    const parser = new Parser({
-        onopentag: (nodeName, attributes) => {
-            // console.log(nodeName);
-            node = new RxElement(parentNode, nodeName, attributes);
-            parentNode.childNodes.push(node);
-            parentNode = node;
-            // if (NO_CHILDS.indexOf(nodeName) === -1) {
-            //	console.log(nodeName);
-            //	parentNode = node;
-            // }
-        },
-        onclosetag: (nodeName) => {
-            if (parentNode.parentNode) {
-                parentNode = parentNode.parentNode;
-            }
-        },
-        ontext: (nodeValue) => {
-            // console.log('ontext', nodeValue);
-            // if (nodeValue.length) {
-            const textNode = new RxText(parentNode, nodeValue);
-            parentNode.childNodes.push(textNode);
-            // }
-        },
-        onprocessinginstruction: (nodeName, nodeValue) => {
-            // console.log('onprocessinginstruction', nodeName, nodeValue);
-            if (nodeName === '!doctype') {
-                node = new RxDocumentType(parentNode, nodeValue);
-            }
-            else {
-                node = new RxProcessingInstruction(parentNode, nodeValue);
-            }
-            parentNode.childNodes.push(node);
-        },
-        oncomment: nodeValue => {
-            // console.log('oncomment', nodeValue);
-            node = new RxComment(parentNode, nodeValue);
-            parentNode.childNodes.push(node);
-            // parentNode = node;
-        },
-        oncommentend: () => {
-            // console.log('oncommentend');
-            // parentNode = parentNode.parentNode;
-        },
-        oncdatastart: () => {
-            console.log('oncdatastart');
-        },
-        oncdataend: () => {
-            console.log('oncdataend');
-        },
-        onerror: error => {
-            console.log('error', error);
-        },
-    }, {
-        decodeEntities: false,
-        lowerCaseTags: true,
-    });
-    parser.write(html);
-    parser.end();
-    return doc;
-}
-export function getQueries(selector) {
-    const queries = [];
-    selector
-        .trim()
-        .split(' ')
-        .forEach((x) => {
-        x.trim()
-            .split('>')
-            .forEach((x, i) => {
-            // const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
-            // const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
-            const regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
-            /* eslint no-useless-escape: "off" */
-            const selectors = [];
-            const matches = x.matchAll(regex);
-            for (const match of matches) {
-                if (match[1]) {
-                    selectors.push({ selector: match[1], type: SelectorType.Id, negate: true });
-                }
-                else if (match[2]) {
-                    selectors.push({ selector: match[2], type: SelectorType.Class, negate: true });
-                }
-                else if (match[3]) {
-                    selectors.push({ selector: match[3], type: SelectorType.Attribute, negate: true });
-                }
-                else if (match[4]) {
-                    selectors.push({ selector: match[4], type: SelectorType.TagName, negate: true });
-                }
-                else if (match[5]) {
-                    selectors.push({ selector: match[5], type: SelectorType.Id, negate: false });
-                }
-                else if (match[6]) {
-                    selectors.push({ selector: match[6], type: SelectorType.Class, negate: false });
-                }
-                else if (match[7]) {
-                    selectors.push({ selector: match[7], type: SelectorType.Attribute, negate: false });
-                }
-                else if (match[8]) {
-                    selectors.push({ selector: match[8], type: SelectorType.TagName, negate: false });
-                }
-                // console.log('match', match);
-            }
-            const selector = i > 0
-                ? { selector: x, selectors, inner: true }
-                : { selector: x, selectors, inner: false };
-            queries.push.call(queries, selector);
-        });
-    });
-    return queries;
-}
-export function matchSelector(child, selector) {
-    switch (selector.type) {
-        case SelectorType.Id:
-            return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
-        case SelectorType.Class:
-            return (child.classList.indexOf(selector.selector) !== -1) !== selector.negate;
-        case SelectorType.Attribute:
-            return (Object.keys(child.attributes).indexOf(selector.selector) !== -1) !== selector.negate;
-        case SelectorType.TagName:
-            return (child.nodeName === selector.selector) !== selector.negate;
-        default:
-            return false;
-    }
-}
-export function matchSelectors(child, selectors) {
-    return selectors.reduce(function (p, selector) {
-        return p && matchSelector(child, selector);
-    }, true);
-}
-export function querySelectorAll(queries, childNodes, query = null, nodes = []) {
-    if (query || queries.length) {
-        query = query || queries.shift();
-        for (let child of childNodes) {
-            if (child instanceof RxElement) {
-                if (matchSelectors(child, query.selectors)) {
-                    // console.log(query);
-                    if (queries.length) {
-                        const results = querySelectorAll(queries, child.childNodes);
-                        if (results) {
-                            Array.prototype.push.apply(nodes, results);
-                        }
-                    }
-                    else {
-                        nodes.push(child);
-                    }
-                }
-                else if (!query.inner) {
-                    const results = querySelectorAll(queries, child.childNodes, query);
-                    if (results) {
-                        Array.prototype.push.apply(nodes, results);
-                    }
-                }
-            }
-        }
-    }
-    return nodes.length ? nodes : null;
-}
-export function querySelector(queries, childNodes, query = null) {
-    let node = null;
-    if (query || queries.length) {
-        query = query || queries.shift();
-        for (let child of childNodes) {
-            if (child instanceof RxElement) {
-                if (matchSelectors(child, query.selectors)) {
-                    // console.log(query);
-                    if (queries.length) {
-                        return querySelector(queries, child.childNodes);
-                    }
-                    else {
-                        return child;
-                    }
-                }
-                else if (!query.inner) {
-                    node = querySelector(queries, child.childNodes, query);
-                }
-            }
-        }
-    }
-    return node;
-}
-export function cloneNode(source, deep = false, parentNode = null) {
-    let node;
-    if (isRxElement(source)) {
-        const nodeElement = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
-        if (deep) {
-            nodeElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeElement]));
-        }
-        node = nodeElement;
-    }
-    else if (isRxDocumentFragment(source)) {
-        const nodeDocumentFragment = new RxDocumentFragment();
-        if (deep) {
-            nodeDocumentFragment.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeDocumentFragment]));
-        }
-        node = nodeDocumentFragment;
-    }
-    else if (isRxText(source)) {
-        node = new RxText(parentNode, source.nodeValue);
-    }
-    else if (isRxComment(source)) {
-        node = new RxComment(parentNode, source.nodeValue);
-    }
-    else if (isRxDocument(source)) {
-        const documentElement = new RxDocument();
-        if (deep) {
-            documentElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, documentElement]));
-        }
-        node = documentElement;
-    }
-    else {
-        throw new Error('Invalid node type');
-    }
-    return node;
-}
 export class RxSelector {
     constructor(options) {
         this.selector = '';
@@ -835,6 +598,47 @@ export class RxDocumentFragment extends RxElement {
     }
 }
 export class RxDocument extends RxElement {
+    /*
+        readonly characterSet: string; // Returns document's encoding.
+        readonly charset: string; // Gets or sets the character set used to encode the object.
+        readonly compatMode: string; // Gets a value that indicates whether standards-compliant mode is switched on for the object.
+        readonly contentType: string; // Returns document's content type.
+        readonly currentScript: HTMLOrSVGScriptElement | null; // Returns the script element, or the SVG script element, that is currently executing, as long as the element represents a classic script. In the case of reentrant script execution, returns the one that most recently started executing amongst those that have not yet finished executing.
+        readonly defaultView: (WindowProxy & typeof globalThis) | null; // Returns null if the Document is not currently executing a script or SVG script element (e.g., because the running script is an event handler, or a timeout), or if the currently executing script or SVG script element represents a module script.
+        readonly documentElement: HTMLElement; // Gets a reference to the root node of the document.
+        readonly documentURI: string; // Returns document's URL.
+        readonly embeds: HTMLCollectionOf<HTMLEmbedElement>; // Retrieves a collection of all embed objects in the document.
+        readonly forms: HTMLCollectionOf<HTMLFormElement>; // Retrieves a collection, in source order, of all form objects in the document.
+        readonly fullscreenEnabled: boolean; // Returns true if document has the ability to display elements fullscreen and fullscreen is supported, or false otherwise.
+        readonly head: HTMLHeadElement; // Returns the head element.
+        readonly hidden: boolean;
+        readonly images: HTMLCollectionOf<HTMLImageElement>; // Retrieves a collection, in source order, of img objects in the document.
+        readonly implementation: DOMImplementation; // Gets the implementation object of the current document.
+        readonly inputEncoding: string; // Returns the character encoding used to create the webpage that is loaded into the document object.
+        readonly lastModified: string; // Gets the date that the page was last modified, if the page supplies one.
+        readonly links: HTMLCollectionOf<HTMLAnchorElement | HTMLAreaElement>; // Retrieves a collection of all a objects that specify the href property and all area objects in the document.
+        readonly origin: string; // Returns document's origin.
+        readonly ownerDocument: null;
+        readonly plugins: HTMLCollectionOf<HTMLEmbedElement>; // Return an HTMLCollection of the embed elements in the Document.
+        readonly readyState: DocumentReadyState; // Retrieves a value that indicates the current state of the object.
+        readonly referrer: string; // Gets the URL of the location that referred the user to the current page.
+        readonly scripts: HTMLCollectionOf<HTMLScriptElement>; // Retrieves a collection of all script objects in the document.
+        readonly scrollingElement: Element | null;
+        readonly timeline: DocumentTimeline;
+        readonly visibilityState: VisibilityState;
+        */
+    constructor() {
+        super(null, '#document');
+        this.location_ = RxLocation.location;
+        this.nodeType = RxNodeType.DOCUMENT_NODE;
+        this.childNodes = [];
+    }
+    get location() {
+        return this.location_;
+    }
+    get URL() {
+        return this.location_.href;
+    }
     get hidden() {
         return true;
     }
@@ -867,11 +671,6 @@ export class RxDocument extends RxElement {
     }
     get documentElement() {
         return this.firstElementChild;
-    }
-    constructor() {
-        super(null, '#document');
-        this.nodeType = RxNodeType.DOCUMENT_NODE;
-        this.childNodes = [];
     }
     createAttribute() { }
     // Creates a new Attr object and returns it.
@@ -916,4 +715,242 @@ export class RxDocument extends RxElement {
     serialize() {
         return `${this.childNodes.map(x => x.serialize()).join('')}`;
     }
+}
+export function isRxElement(x) {
+    return x.nodeType === RxNodeType.ELEMENT_NODE;
+}
+export function isRxText(x) {
+    return x.nodeType === RxNodeType.TEXT_NODE;
+}
+export function isRxComment(x) {
+    return x.nodeType === RxNodeType.COMMENT_NODE;
+}
+export function isRxDocument(x) {
+    return x.nodeType === RxNodeType.DOCUMENT_NODE;
+}
+export function isRxDocumentFragment(x) {
+    return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
+}
+export function isRxDocumentType(x) {
+    return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
+}
+export function isRxProcessingInstruction(x) {
+    return x.nodeType === RxNodeType.PROCESSING_INSTRUCTION_NODE;
+}
+export function parse(html) {
+    const doc = new RxDocument();
+    let parentNode = doc, node;
+    const parser = new Parser({
+        onopentag: (nodeName, attributes) => {
+            // console.log(nodeName);
+            node = new RxElement(parentNode, nodeName, attributes);
+            parentNode.childNodes.push(node);
+            parentNode = node;
+            // if (NO_CHILDS.indexOf(nodeName) === -1) {
+            //	console.log(nodeName);
+            //	parentNode = node;
+            // }
+        },
+        onclosetag: (nodeName) => {
+            if (parentNode.parentNode) {
+                parentNode = parentNode.parentNode;
+            }
+        },
+        ontext: (nodeValue) => {
+            // console.log('ontext', nodeValue);
+            // if (nodeValue.length) {
+            const textNode = new RxText(parentNode, nodeValue);
+            parentNode.childNodes.push(textNode);
+            // }
+        },
+        onprocessinginstruction: (nodeName, nodeValue) => {
+            // console.log('onprocessinginstruction', nodeName, nodeValue);
+            if (nodeName === '!doctype') {
+                node = new RxDocumentType(parentNode, nodeValue);
+            }
+            else {
+                node = new RxProcessingInstruction(parentNode, nodeValue);
+            }
+            parentNode.childNodes.push(node);
+        },
+        oncomment: nodeValue => {
+            // console.log('oncomment', nodeValue);
+            node = new RxComment(parentNode, nodeValue);
+            parentNode.childNodes.push(node);
+            // parentNode = node;
+        },
+        oncommentend: () => {
+            // console.log('oncommentend');
+            // parentNode = parentNode.parentNode;
+        },
+        oncdatastart: () => {
+            console.log('oncdatastart');
+        },
+        oncdataend: () => {
+            console.log('oncdataend');
+        },
+        onerror: error => {
+            console.log('error', error);
+        },
+    }, {
+        decodeEntities: false,
+        lowerCaseTags: true,
+    });
+    parser.write(html);
+    parser.end();
+    return doc;
+}
+export function getQueries(selector) {
+    const queries = [];
+    selector
+        .trim()
+        .split(' ')
+        .forEach((x) => {
+        x.trim()
+            .split('>')
+            .forEach((x, i) => {
+            // const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
+            // const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
+            const regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
+            /* eslint no-useless-escape: "off" */
+            const selectors = [];
+            const matches = x.matchAll(regex);
+            for (const match of matches) {
+                if (match[1]) {
+                    selectors.push({ selector: match[1], type: SelectorType.Id, negate: true });
+                }
+                else if (match[2]) {
+                    selectors.push({ selector: match[2], type: SelectorType.Class, negate: true });
+                }
+                else if (match[3]) {
+                    selectors.push({ selector: match[3], type: SelectorType.Attribute, negate: true });
+                }
+                else if (match[4]) {
+                    selectors.push({ selector: match[4], type: SelectorType.TagName, negate: true });
+                }
+                else if (match[5]) {
+                    selectors.push({ selector: match[5], type: SelectorType.Id, negate: false });
+                }
+                else if (match[6]) {
+                    selectors.push({ selector: match[6], type: SelectorType.Class, negate: false });
+                }
+                else if (match[7]) {
+                    selectors.push({ selector: match[7], type: SelectorType.Attribute, negate: false });
+                }
+                else if (match[8]) {
+                    selectors.push({ selector: match[8], type: SelectorType.TagName, negate: false });
+                }
+                // console.log('match', match);
+            }
+            const selector = i > 0
+                ? { selector: x, selectors, inner: true }
+                : { selector: x, selectors, inner: false };
+            queries.push.call(queries, selector);
+        });
+    });
+    return queries;
+}
+export function matchSelector(child, selector) {
+    switch (selector.type) {
+        case SelectorType.Id:
+            return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
+        case SelectorType.Class:
+            return (child.classList.indexOf(selector.selector) !== -1) !== selector.negate;
+        case SelectorType.Attribute:
+            return (Object.keys(child.attributes).indexOf(selector.selector) !== -1) !== selector.negate;
+        case SelectorType.TagName:
+            return (child.nodeName === selector.selector) !== selector.negate;
+        default:
+            return false;
+    }
+}
+export function matchSelectors(child, selectors) {
+    return selectors.reduce(function (p, selector) {
+        return p && matchSelector(child, selector);
+    }, true);
+}
+export function querySelectorAll(queries, childNodes, query = null, nodes = []) {
+    if (query || queries.length) {
+        query = query || queries.shift();
+        for (let child of childNodes) {
+            if (child instanceof RxElement) {
+                if (matchSelectors(child, query.selectors)) {
+                    // console.log(query);
+                    if (queries.length) {
+                        const results = querySelectorAll(queries, child.childNodes);
+                        if (results) {
+                            Array.prototype.push.apply(nodes, results);
+                        }
+                    }
+                    else {
+                        nodes.push(child);
+                    }
+                }
+                else if (!query.inner) {
+                    const results = querySelectorAll(queries, child.childNodes, query);
+                    if (results) {
+                        Array.prototype.push.apply(nodes, results);
+                    }
+                }
+            }
+        }
+    }
+    return nodes.length ? nodes : null;
+}
+export function querySelector(queries, childNodes, query = null) {
+    let node = null;
+    if (query || queries.length) {
+        query = query || queries.shift();
+        for (let child of childNodes) {
+            if (child instanceof RxElement) {
+                if (matchSelectors(child, query.selectors)) {
+                    // console.log(query);
+                    if (queries.length) {
+                        return querySelector(queries, child.childNodes);
+                    }
+                    else {
+                        return child;
+                    }
+                }
+                else if (!query.inner) {
+                    node = querySelector(queries, child.childNodes, query);
+                }
+            }
+        }
+    }
+    return node;
+}
+export function cloneNode(source, deep = false, parentNode = null) {
+    let node;
+    if (isRxElement(source)) {
+        const nodeElement = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
+        if (deep) {
+            nodeElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeElement]));
+        }
+        node = nodeElement;
+    }
+    else if (isRxDocumentFragment(source)) {
+        const nodeDocumentFragment = new RxDocumentFragment();
+        if (deep) {
+            nodeDocumentFragment.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeDocumentFragment]));
+        }
+        node = nodeDocumentFragment;
+    }
+    else if (isRxText(source)) {
+        node = new RxText(parentNode, source.nodeValue);
+    }
+    else if (isRxComment(source)) {
+        node = new RxComment(parentNode, source.nodeValue);
+    }
+    else if (isRxDocument(source)) {
+        const documentElement = new RxDocument();
+        if (deep) {
+            documentElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, documentElement]));
+        }
+        node = documentElement;
+    }
+    else {
+        throw new Error('Invalid node type');
+    }
+    return node;
 }

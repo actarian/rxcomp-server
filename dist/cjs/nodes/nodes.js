@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RxDocument = exports.RxDocumentFragment = exports.RxDocumentType = exports.RxProcessingInstruction = exports.RxComment = exports.RxCData = exports.RxText = exports.RxElement = exports.RxClassList = exports.RxStyle = exports.RxNode = exports.RxQuery = exports.RxSelector = exports.cloneNode = exports.querySelector = exports.querySelectorAll = exports.matchSelectors = exports.matchSelector = exports.getQueries = exports.parse = exports.isRxProcessingInstruction = exports.isRxDocumentType = exports.isRxDocumentFragment = exports.isRxDocument = exports.isRxComment = exports.isRxText = exports.isRxElement = exports.SelectorType = exports.RxNodeType = void 0;
+exports.cloneNode = exports.querySelector = exports.querySelectorAll = exports.matchSelectors = exports.matchSelector = exports.getQueries = exports.parse = exports.isRxProcessingInstruction = exports.isRxDocumentType = exports.isRxDocumentFragment = exports.isRxDocument = exports.isRxComment = exports.isRxText = exports.isRxElement = exports.RxDocument = exports.RxDocumentFragment = exports.RxDocumentType = exports.RxProcessingInstruction = exports.RxComment = exports.RxCData = exports.RxText = exports.RxElement = exports.RxClassList = exports.RxStyle = exports.RxNode = exports.RxQuery = exports.RxSelector = exports.SelectorType = exports.RxNodeType = void 0;
 var tslib_1 = require("tslib");
 var htmlparser2_1 = require("htmlparser2");
+var location_1 = require("../location/location");
 // export const NO_CHILDS = ['title','base','meta','link','img','br','input',];
 // const SKIP = ['html','head','title','base','meta','script','link','body',];
 // document.createComment = nodeValue => { return new RxComment(null, nodeValue); };
@@ -26,296 +27,6 @@ var SelectorType;
     SelectorType[SelectorType["Attribute"] = 2] = "Attribute";
     SelectorType[SelectorType["TagName"] = 3] = "TagName";
 })(SelectorType = exports.SelectorType || (exports.SelectorType = {}));
-function isRxElement(x) {
-    return x.nodeType === RxNodeType.ELEMENT_NODE;
-}
-exports.isRxElement = isRxElement;
-function isRxText(x) {
-    return x.nodeType === RxNodeType.TEXT_NODE;
-}
-exports.isRxText = isRxText;
-function isRxComment(x) {
-    return x.nodeType === RxNodeType.COMMENT_NODE;
-}
-exports.isRxComment = isRxComment;
-function isRxDocument(x) {
-    return x.nodeType === RxNodeType.DOCUMENT_NODE;
-}
-exports.isRxDocument = isRxDocument;
-function isRxDocumentFragment(x) {
-    return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
-}
-exports.isRxDocumentFragment = isRxDocumentFragment;
-function isRxDocumentType(x) {
-    return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
-}
-exports.isRxDocumentType = isRxDocumentType;
-function isRxProcessingInstruction(x) {
-    return x.nodeType === RxNodeType.PROCESSING_INSTRUCTION_NODE;
-}
-exports.isRxProcessingInstruction = isRxProcessingInstruction;
-function parse(html) {
-    var doc = new RxDocument();
-    var parentNode = doc, node;
-    var parser = new htmlparser2_1.Parser({
-        onopentag: function (nodeName, attributes) {
-            // console.log(nodeName);
-            node = new RxElement(parentNode, nodeName, attributes);
-            parentNode.childNodes.push(node);
-            parentNode = node;
-            // if (NO_CHILDS.indexOf(nodeName) === -1) {
-            //	console.log(nodeName);
-            //	parentNode = node;
-            // }
-        },
-        onclosetag: function (nodeName) {
-            if (parentNode.parentNode) {
-                parentNode = parentNode.parentNode;
-            }
-        },
-        ontext: function (nodeValue) {
-            // console.log('ontext', nodeValue);
-            // if (nodeValue.length) {
-            var textNode = new RxText(parentNode, nodeValue);
-            parentNode.childNodes.push(textNode);
-            // }
-        },
-        onprocessinginstruction: function (nodeName, nodeValue) {
-            // console.log('onprocessinginstruction', nodeName, nodeValue);
-            if (nodeName === '!doctype') {
-                node = new RxDocumentType(parentNode, nodeValue);
-            }
-            else {
-                node = new RxProcessingInstruction(parentNode, nodeValue);
-            }
-            parentNode.childNodes.push(node);
-        },
-        oncomment: function (nodeValue) {
-            // console.log('oncomment', nodeValue);
-            node = new RxComment(parentNode, nodeValue);
-            parentNode.childNodes.push(node);
-            // parentNode = node;
-        },
-        oncommentend: function () {
-            // console.log('oncommentend');
-            // parentNode = parentNode.parentNode;
-        },
-        oncdatastart: function () {
-            console.log('oncdatastart');
-        },
-        oncdataend: function () {
-            console.log('oncdataend');
-        },
-        onerror: function (error) {
-            console.log('error', error);
-        },
-    }, {
-        decodeEntities: false,
-        lowerCaseTags: true,
-    });
-    parser.write(html);
-    parser.end();
-    return doc;
-}
-exports.parse = parse;
-function getQueries(selector) {
-    var queries = [];
-    selector
-        .trim()
-        .split(' ')
-        .forEach(function (x) {
-        x.trim()
-            .split('>')
-            .forEach(function (x, i) {
-            var e_1, _a;
-            // const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
-            // const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
-            var regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
-            /* eslint no-useless-escape: "off" */
-            var selectors = [];
-            var matches = x.matchAll(regex);
-            try {
-                for (var matches_1 = tslib_1.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
-                    var match = matches_1_1.value;
-                    if (match[1]) {
-                        selectors.push({ selector: match[1], type: SelectorType.Id, negate: true });
-                    }
-                    else if (match[2]) {
-                        selectors.push({ selector: match[2], type: SelectorType.Class, negate: true });
-                    }
-                    else if (match[3]) {
-                        selectors.push({ selector: match[3], type: SelectorType.Attribute, negate: true });
-                    }
-                    else if (match[4]) {
-                        selectors.push({ selector: match[4], type: SelectorType.TagName, negate: true });
-                    }
-                    else if (match[5]) {
-                        selectors.push({ selector: match[5], type: SelectorType.Id, negate: false });
-                    }
-                    else if (match[6]) {
-                        selectors.push({ selector: match[6], type: SelectorType.Class, negate: false });
-                    }
-                    else if (match[7]) {
-                        selectors.push({ selector: match[7], type: SelectorType.Attribute, negate: false });
-                    }
-                    else if (match[8]) {
-                        selectors.push({ selector: match[8], type: SelectorType.TagName, negate: false });
-                    }
-                    // console.log('match', match);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (matches_1_1 && !matches_1_1.done && (_a = matches_1.return)) _a.call(matches_1);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-            var selector = i > 0
-                ? { selector: x, selectors: selectors, inner: true }
-                : { selector: x, selectors: selectors, inner: false };
-            queries.push.call(queries, selector);
-        });
-    });
-    return queries;
-}
-exports.getQueries = getQueries;
-function matchSelector(child, selector) {
-    switch (selector.type) {
-        case SelectorType.Id:
-            return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
-        case SelectorType.Class:
-            return (child.classList.indexOf(selector.selector) !== -1) !== selector.negate;
-        case SelectorType.Attribute:
-            return (Object.keys(child.attributes).indexOf(selector.selector) !== -1) !== selector.negate;
-        case SelectorType.TagName:
-            return (child.nodeName === selector.selector) !== selector.negate;
-        default:
-            return false;
-    }
-}
-exports.matchSelector = matchSelector;
-function matchSelectors(child, selectors) {
-    return selectors.reduce(function (p, selector) {
-        return p && matchSelector(child, selector);
-    }, true);
-}
-exports.matchSelectors = matchSelectors;
-function querySelectorAll(queries, childNodes, query, nodes) {
-    var e_2, _a;
-    if (query === void 0) { query = null; }
-    if (nodes === void 0) { nodes = []; }
-    if (query || queries.length) {
-        query = query || queries.shift();
-        try {
-            for (var childNodes_1 = tslib_1.__values(childNodes), childNodes_1_1 = childNodes_1.next(); !childNodes_1_1.done; childNodes_1_1 = childNodes_1.next()) {
-                var child = childNodes_1_1.value;
-                if (child instanceof RxElement) {
-                    if (matchSelectors(child, query.selectors)) {
-                        // console.log(query);
-                        if (queries.length) {
-                            var results = querySelectorAll(queries, child.childNodes);
-                            if (results) {
-                                Array.prototype.push.apply(nodes, results);
-                            }
-                        }
-                        else {
-                            nodes.push(child);
-                        }
-                    }
-                    else if (!query.inner) {
-                        var results = querySelectorAll(queries, child.childNodes, query);
-                        if (results) {
-                            Array.prototype.push.apply(nodes, results);
-                        }
-                    }
-                }
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (childNodes_1_1 && !childNodes_1_1.done && (_a = childNodes_1.return)) _a.call(childNodes_1);
-            }
-            finally { if (e_2) throw e_2.error; }
-        }
-    }
-    return nodes.length ? nodes : null;
-}
-exports.querySelectorAll = querySelectorAll;
-function querySelector(queries, childNodes, query) {
-    var e_3, _a;
-    if (query === void 0) { query = null; }
-    var node = null;
-    if (query || queries.length) {
-        query = query || queries.shift();
-        try {
-            for (var childNodes_2 = tslib_1.__values(childNodes), childNodes_2_1 = childNodes_2.next(); !childNodes_2_1.done; childNodes_2_1 = childNodes_2.next()) {
-                var child = childNodes_2_1.value;
-                if (child instanceof RxElement) {
-                    if (matchSelectors(child, query.selectors)) {
-                        // console.log(query);
-                        if (queries.length) {
-                            return querySelector(queries, child.childNodes);
-                        }
-                        else {
-                            return child;
-                        }
-                    }
-                    else if (!query.inner) {
-                        node = querySelector(queries, child.childNodes, query);
-                    }
-                }
-            }
-        }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (childNodes_2_1 && !childNodes_2_1.done && (_a = childNodes_2.return)) _a.call(childNodes_2);
-            }
-            finally { if (e_3) throw e_3.error; }
-        }
-    }
-    return node;
-}
-exports.querySelector = querySelector;
-function cloneNode(source, deep, parentNode) {
-    if (deep === void 0) { deep = false; }
-    if (parentNode === void 0) { parentNode = null; }
-    var node;
-    if (isRxElement(source)) {
-        var nodeElement_1 = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
-        if (deep) {
-            nodeElement_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [x, deep, nodeElement_1]); });
-        }
-        node = nodeElement_1;
-    }
-    else if (isRxDocumentFragment(source)) {
-        var nodeDocumentFragment_1 = new RxDocumentFragment();
-        if (deep) {
-            nodeDocumentFragment_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [x, deep, nodeDocumentFragment_1]); });
-        }
-        node = nodeDocumentFragment_1;
-    }
-    else if (isRxText(source)) {
-        node = new RxText(parentNode, source.nodeValue);
-    }
-    else if (isRxComment(source)) {
-        node = new RxComment(parentNode, source.nodeValue);
-    }
-    else if (isRxDocument(source)) {
-        var documentElement_1 = new RxDocument();
-        if (deep) {
-            documentElement_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [x, deep, documentElement_1]); });
-        }
-        node = documentElement_1;
-    }
-    else {
-        throw new Error('Invalid node type');
-    }
-    return node;
-}
-exports.cloneNode = cloneNode;
 var RxSelector = /** @class */ (function () {
     function RxSelector(options) {
         this.selector = '';
@@ -569,7 +280,7 @@ var RxElement = /** @class */ (function (_super) {
     });
     Object.defineProperty(RxElement.prototype, "firstElementChild", {
         get: function () {
-            var e_4, _a;
+            var e_1, _a;
             try {
                 for (var _b = tslib_1.__values(this.childNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var node = _c.value;
@@ -578,12 +289,12 @@ var RxElement = /** @class */ (function (_super) {
                     }
                 }
             }
-            catch (e_4_1) { e_4 = { error: e_4_1 }; }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
             finally {
                 try {
                     if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
                 }
-                finally { if (e_4) throw e_4.error; }
+                finally { if (e_1) throw e_1.error; }
             }
             return null;
         },
@@ -1083,12 +794,56 @@ var RxDocumentFragment = /** @class */ (function (_super) {
 exports.RxDocumentFragment = RxDocumentFragment;
 var RxDocument = /** @class */ (function (_super) {
     tslib_1.__extends(RxDocument, _super);
+    /*
+        readonly characterSet: string; // Returns document's encoding.
+        readonly charset: string; // Gets or sets the character set used to encode the object.
+        readonly compatMode: string; // Gets a value that indicates whether standards-compliant mode is switched on for the object.
+        readonly contentType: string; // Returns document's content type.
+        readonly currentScript: HTMLOrSVGScriptElement | null; // Returns the script element, or the SVG script element, that is currently executing, as long as the element represents a classic script. In the case of reentrant script execution, returns the one that most recently started executing amongst those that have not yet finished executing.
+        readonly defaultView: (WindowProxy & typeof globalThis) | null; // Returns null if the Document is not currently executing a script or SVG script element (e.g., because the running script is an event handler, or a timeout), or if the currently executing script or SVG script element represents a module script.
+        readonly documentElement: HTMLElement; // Gets a reference to the root node of the document.
+        readonly documentURI: string; // Returns document's URL.
+        readonly embeds: HTMLCollectionOf<HTMLEmbedElement>; // Retrieves a collection of all embed objects in the document.
+        readonly forms: HTMLCollectionOf<HTMLFormElement>; // Retrieves a collection, in source order, of all form objects in the document.
+        readonly fullscreenEnabled: boolean; // Returns true if document has the ability to display elements fullscreen and fullscreen is supported, or false otherwise.
+        readonly head: HTMLHeadElement; // Returns the head element.
+        readonly hidden: boolean;
+        readonly images: HTMLCollectionOf<HTMLImageElement>; // Retrieves a collection, in source order, of img objects in the document.
+        readonly implementation: DOMImplementation; // Gets the implementation object of the current document.
+        readonly inputEncoding: string; // Returns the character encoding used to create the webpage that is loaded into the document object.
+        readonly lastModified: string; // Gets the date that the page was last modified, if the page supplies one.
+        readonly links: HTMLCollectionOf<HTMLAnchorElement | HTMLAreaElement>; // Retrieves a collection of all a objects that specify the href property and all area objects in the document.
+        readonly origin: string; // Returns document's origin.
+        readonly ownerDocument: null;
+        readonly plugins: HTMLCollectionOf<HTMLEmbedElement>; // Return an HTMLCollection of the embed elements in the Document.
+        readonly readyState: DocumentReadyState; // Retrieves a value that indicates the current state of the object.
+        readonly referrer: string; // Gets the URL of the location that referred the user to the current page.
+        readonly scripts: HTMLCollectionOf<HTMLScriptElement>; // Retrieves a collection of all script objects in the document.
+        readonly scrollingElement: Element | null;
+        readonly timeline: DocumentTimeline;
+        readonly visibilityState: VisibilityState;
+        */
     function RxDocument() {
         var _this = _super.call(this, null, '#document') || this;
+        _this.location_ = location_1.RxLocation.location;
         _this.nodeType = RxNodeType.DOCUMENT_NODE;
         _this.childNodes = [];
         return _this;
     }
+    Object.defineProperty(RxDocument.prototype, "location", {
+        get: function () {
+            return this.location_;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(RxDocument.prototype, "URL", {
+        get: function () {
+            return this.location_.href;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(RxDocument.prototype, "hidden", {
         get: function () {
             return true;
@@ -1196,3 +951,293 @@ var RxDocument = /** @class */ (function (_super) {
     return RxDocument;
 }(RxElement));
 exports.RxDocument = RxDocument;
+function isRxElement(x) {
+    return x.nodeType === RxNodeType.ELEMENT_NODE;
+}
+exports.isRxElement = isRxElement;
+function isRxText(x) {
+    return x.nodeType === RxNodeType.TEXT_NODE;
+}
+exports.isRxText = isRxText;
+function isRxComment(x) {
+    return x.nodeType === RxNodeType.COMMENT_NODE;
+}
+exports.isRxComment = isRxComment;
+function isRxDocument(x) {
+    return x.nodeType === RxNodeType.DOCUMENT_NODE;
+}
+exports.isRxDocument = isRxDocument;
+function isRxDocumentFragment(x) {
+    return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
+}
+exports.isRxDocumentFragment = isRxDocumentFragment;
+function isRxDocumentType(x) {
+    return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
+}
+exports.isRxDocumentType = isRxDocumentType;
+function isRxProcessingInstruction(x) {
+    return x.nodeType === RxNodeType.PROCESSING_INSTRUCTION_NODE;
+}
+exports.isRxProcessingInstruction = isRxProcessingInstruction;
+function parse(html) {
+    var doc = new RxDocument();
+    var parentNode = doc, node;
+    var parser = new htmlparser2_1.Parser({
+        onopentag: function (nodeName, attributes) {
+            // console.log(nodeName);
+            node = new RxElement(parentNode, nodeName, attributes);
+            parentNode.childNodes.push(node);
+            parentNode = node;
+            // if (NO_CHILDS.indexOf(nodeName) === -1) {
+            //	console.log(nodeName);
+            //	parentNode = node;
+            // }
+        },
+        onclosetag: function (nodeName) {
+            if (parentNode.parentNode) {
+                parentNode = parentNode.parentNode;
+            }
+        },
+        ontext: function (nodeValue) {
+            // console.log('ontext', nodeValue);
+            // if (nodeValue.length) {
+            var textNode = new RxText(parentNode, nodeValue);
+            parentNode.childNodes.push(textNode);
+            // }
+        },
+        onprocessinginstruction: function (nodeName, nodeValue) {
+            // console.log('onprocessinginstruction', nodeName, nodeValue);
+            if (nodeName === '!doctype') {
+                node = new RxDocumentType(parentNode, nodeValue);
+            }
+            else {
+                node = new RxProcessingInstruction(parentNode, nodeValue);
+            }
+            parentNode.childNodes.push(node);
+        },
+        oncomment: function (nodeValue) {
+            // console.log('oncomment', nodeValue);
+            node = new RxComment(parentNode, nodeValue);
+            parentNode.childNodes.push(node);
+            // parentNode = node;
+        },
+        oncommentend: function () {
+            // console.log('oncommentend');
+            // parentNode = parentNode.parentNode;
+        },
+        oncdatastart: function () {
+            console.log('oncdatastart');
+        },
+        oncdataend: function () {
+            console.log('oncdataend');
+        },
+        onerror: function (error) {
+            console.log('error', error);
+        },
+    }, {
+        decodeEntities: false,
+        lowerCaseTags: true,
+    });
+    parser.write(html);
+    parser.end();
+    return doc;
+}
+exports.parse = parse;
+function getQueries(selector) {
+    var queries = [];
+    selector
+        .trim()
+        .split(' ')
+        .forEach(function (x) {
+        x.trim()
+            .split('>')
+            .forEach(function (x, i) {
+            var e_2, _a;
+            // const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
+            // const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
+            var regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
+            /* eslint no-useless-escape: "off" */
+            var selectors = [];
+            var matches = x.matchAll(regex);
+            try {
+                for (var matches_1 = tslib_1.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
+                    var match = matches_1_1.value;
+                    if (match[1]) {
+                        selectors.push({ selector: match[1], type: SelectorType.Id, negate: true });
+                    }
+                    else if (match[2]) {
+                        selectors.push({ selector: match[2], type: SelectorType.Class, negate: true });
+                    }
+                    else if (match[3]) {
+                        selectors.push({ selector: match[3], type: SelectorType.Attribute, negate: true });
+                    }
+                    else if (match[4]) {
+                        selectors.push({ selector: match[4], type: SelectorType.TagName, negate: true });
+                    }
+                    else if (match[5]) {
+                        selectors.push({ selector: match[5], type: SelectorType.Id, negate: false });
+                    }
+                    else if (match[6]) {
+                        selectors.push({ selector: match[6], type: SelectorType.Class, negate: false });
+                    }
+                    else if (match[7]) {
+                        selectors.push({ selector: match[7], type: SelectorType.Attribute, negate: false });
+                    }
+                    else if (match[8]) {
+                        selectors.push({ selector: match[8], type: SelectorType.TagName, negate: false });
+                    }
+                    // console.log('match', match);
+                }
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (matches_1_1 && !matches_1_1.done && (_a = matches_1.return)) _a.call(matches_1);
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
+            var selector = i > 0
+                ? { selector: x, selectors: selectors, inner: true }
+                : { selector: x, selectors: selectors, inner: false };
+            queries.push.call(queries, selector);
+        });
+    });
+    return queries;
+}
+exports.getQueries = getQueries;
+function matchSelector(child, selector) {
+    switch (selector.type) {
+        case SelectorType.Id:
+            return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
+        case SelectorType.Class:
+            return (child.classList.indexOf(selector.selector) !== -1) !== selector.negate;
+        case SelectorType.Attribute:
+            return (Object.keys(child.attributes).indexOf(selector.selector) !== -1) !== selector.negate;
+        case SelectorType.TagName:
+            return (child.nodeName === selector.selector) !== selector.negate;
+        default:
+            return false;
+    }
+}
+exports.matchSelector = matchSelector;
+function matchSelectors(child, selectors) {
+    return selectors.reduce(function (p, selector) {
+        return p && matchSelector(child, selector);
+    }, true);
+}
+exports.matchSelectors = matchSelectors;
+function querySelectorAll(queries, childNodes, query, nodes) {
+    var e_3, _a;
+    if (query === void 0) { query = null; }
+    if (nodes === void 0) { nodes = []; }
+    if (query || queries.length) {
+        query = query || queries.shift();
+        try {
+            for (var childNodes_1 = tslib_1.__values(childNodes), childNodes_1_1 = childNodes_1.next(); !childNodes_1_1.done; childNodes_1_1 = childNodes_1.next()) {
+                var child = childNodes_1_1.value;
+                if (child instanceof RxElement) {
+                    if (matchSelectors(child, query.selectors)) {
+                        // console.log(query);
+                        if (queries.length) {
+                            var results = querySelectorAll(queries, child.childNodes);
+                            if (results) {
+                                Array.prototype.push.apply(nodes, results);
+                            }
+                        }
+                        else {
+                            nodes.push(child);
+                        }
+                    }
+                    else if (!query.inner) {
+                        var results = querySelectorAll(queries, child.childNodes, query);
+                        if (results) {
+                            Array.prototype.push.apply(nodes, results);
+                        }
+                    }
+                }
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (childNodes_1_1 && !childNodes_1_1.done && (_a = childNodes_1.return)) _a.call(childNodes_1);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
+    }
+    return nodes.length ? nodes : null;
+}
+exports.querySelectorAll = querySelectorAll;
+function querySelector(queries, childNodes, query) {
+    var e_4, _a;
+    if (query === void 0) { query = null; }
+    var node = null;
+    if (query || queries.length) {
+        query = query || queries.shift();
+        try {
+            for (var childNodes_2 = tslib_1.__values(childNodes), childNodes_2_1 = childNodes_2.next(); !childNodes_2_1.done; childNodes_2_1 = childNodes_2.next()) {
+                var child = childNodes_2_1.value;
+                if (child instanceof RxElement) {
+                    if (matchSelectors(child, query.selectors)) {
+                        // console.log(query);
+                        if (queries.length) {
+                            return querySelector(queries, child.childNodes);
+                        }
+                        else {
+                            return child;
+                        }
+                    }
+                    else if (!query.inner) {
+                        node = querySelector(queries, child.childNodes, query);
+                    }
+                }
+            }
+        }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        finally {
+            try {
+                if (childNodes_2_1 && !childNodes_2_1.done && (_a = childNodes_2.return)) _a.call(childNodes_2);
+            }
+            finally { if (e_4) throw e_4.error; }
+        }
+    }
+    return node;
+}
+exports.querySelector = querySelector;
+function cloneNode(source, deep, parentNode) {
+    if (deep === void 0) { deep = false; }
+    if (parentNode === void 0) { parentNode = null; }
+    var node;
+    if (isRxElement(source)) {
+        var nodeElement_1 = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
+        if (deep) {
+            nodeElement_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [x, deep, nodeElement_1]); });
+        }
+        node = nodeElement_1;
+    }
+    else if (isRxDocumentFragment(source)) {
+        var nodeDocumentFragment_1 = new RxDocumentFragment();
+        if (deep) {
+            nodeDocumentFragment_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [x, deep, nodeDocumentFragment_1]); });
+        }
+        node = nodeDocumentFragment_1;
+    }
+    else if (isRxText(source)) {
+        node = new RxText(parentNode, source.nodeValue);
+    }
+    else if (isRxComment(source)) {
+        node = new RxComment(parentNode, source.nodeValue);
+    }
+    else if (isRxDocument(source)) {
+        var documentElement_1 = new RxDocument();
+        if (deep) {
+            documentElement_1.childNodes = source.childNodes.map(function (x) { return cloneNode.apply(x, [x, deep, documentElement_1]); });
+        }
+        node = documentElement_1;
+    }
+    else {
+        throw new Error('Invalid node type');
+    }
+    return node;
+}
+exports.cloneNode = cloneNode;

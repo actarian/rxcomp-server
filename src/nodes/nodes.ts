@@ -1,4 +1,5 @@
 import { Parser } from 'htmlparser2';
+import { ILocation, RxLocation } from '../location/location';
 
 // export const NO_CHILDS = ['title','base','meta','link','img','br','input',];
 // const SKIP = ['html','head','title','base','meta','script','link','body',];
@@ -22,264 +23,6 @@ export enum SelectorType {
 	Class = 1,
 	Attribute = 2,
 	TagName = 3,
-}
-
-export function isRxElement(x: RxNode): x is RxElement {
-	return x.nodeType === RxNodeType.ELEMENT_NODE;
-}
-
-export function isRxText(x: RxNode): x is RxText {
-	return x.nodeType === RxNodeType.TEXT_NODE;
-}
-
-export function isRxComment(x: RxNode): x is RxComment {
-	return x.nodeType === RxNodeType.COMMENT_NODE;
-}
-
-export function isRxDocument(x: RxNode): x is RxDocument {
-	return x.nodeType === RxNodeType.DOCUMENT_NODE;
-}
-
-export function isRxDocumentFragment(x: RxNode): x is RxDocumentFragment {
-	return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
-}
-
-export function isRxDocumentType(x: RxNode): x is RxDocumentType {
-	return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
-}
-
-export function isRxProcessingInstruction(x: RxNode): x is RxProcessingInstruction {
-	return x.nodeType === RxNodeType.PROCESSING_INSTRUCTION_NODE;
-}
-
-export function parse(html: string) {
-	const doc = new RxDocument();
-	let parentNode: RxElement = doc,
-		node;
-	const parser = new Parser(
-		{
-			onopentag: (nodeName, attributes) => {
-				// console.log(nodeName);
-				node = new RxElement(parentNode, nodeName, attributes);
-				parentNode.childNodes.push(node);
-				parentNode = node;
-				// if (NO_CHILDS.indexOf(nodeName) === -1) {
-				//	console.log(nodeName);
-				//	parentNode = node;
-				// }
-			},
-			onclosetag: (nodeName) => {
-				if (parentNode.parentNode) {
-					parentNode = parentNode.parentNode;
-				}
-			},
-			ontext: (nodeValue) => {
-				// console.log('ontext', nodeValue);
-				// if (nodeValue.length) {
-				const textNode = new RxText(parentNode, nodeValue);
-				parentNode.childNodes.push(textNode);
-				// }
-			},
-			onprocessinginstruction: (nodeName, nodeValue) => {
-				// console.log('onprocessinginstruction', nodeName, nodeValue);
-				if (nodeName === '!doctype') {
-					node = new RxDocumentType(parentNode, nodeValue);
-				} else {
-					node = new RxProcessingInstruction(parentNode, nodeValue);
-				}
-				parentNode.childNodes.push(node);
-			},
-			oncomment: nodeValue => {
-				// console.log('oncomment', nodeValue);
-				node = new RxComment(parentNode, nodeValue);
-				parentNode.childNodes.push(node);
-				// parentNode = node;
-			},
-			oncommentend: () => {
-				// console.log('oncommentend');
-				// parentNode = parentNode.parentNode;
-			},
-			oncdatastart: () => {
-				console.log('oncdatastart');
-			},
-			oncdataend: () => {
-				console.log('oncdataend');
-			},
-			onerror: error => {
-				console.log('error', error);
-			},
-			/*
-			onopentagname: (name) => {
-				console.log('onopentagname', name);
-			},
-			onattribute: (name, value) => {
-				console.log('onattribute', name, value);
-			},
-			onreset: () => {
-				console.log('reset');
-			},
-			onend: () => {
-				console.log('end');
-			},
-			*/
-		},
-		{
-			decodeEntities: false,
-			lowerCaseTags: true,
-		}
-	);
-	parser.write(html);
-	parser.end();
-	return doc;
-}
-
-export function getQueries(selector: string): RxQuery[] {
-	const queries: RxQuery[] = [];
-	selector
-		.trim()
-		.split(' ')
-		.forEach((x: string) => {
-			x.trim()
-				.split('>')
-				.forEach((x, i) => {
-					// const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
-					// const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
-					const regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
-					/* eslint no-useless-escape: "off" */
-					const selectors = [];
-					const matches = x.matchAll(regex);
-					for (const match of matches) {
-						if (match[1]) {
-							selectors.push({ selector: match[1], type: SelectorType.Id, negate: true });
-						} else if (match[2]) {
-							selectors.push({ selector: match[2], type: SelectorType.Class, negate: true });
-						} else if (match[3]) {
-							selectors.push({ selector: match[3], type: SelectorType.Attribute, negate: true });
-						} else if (match[4]) {
-							selectors.push({ selector: match[4], type: SelectorType.TagName, negate: true });
-						} else if (match[5]) {
-							selectors.push({ selector: match[5], type: SelectorType.Id, negate: false });
-						} else if (match[6]) {
-							selectors.push({ selector: match[6], type: SelectorType.Class, negate: false });
-						} else if (match[7]) {
-							selectors.push({ selector: match[7], type: SelectorType.Attribute, negate: false });
-						} else if (match[8]) {
-							selectors.push({ selector: match[8], type: SelectorType.TagName, negate: false });
-						}
-						// console.log('match', match);
-					}
-					const selector =
-						i > 0
-							? { selector: x, selectors, inner: true }
-							: { selector: x, selectors, inner: false };
-					queries.push.call(queries, selector);
-				});
-		});
-	return queries;
-}
-
-export function matchSelector(child: RxElement, selector: RxSelector): boolean {
-	switch (selector.type) {
-		case SelectorType.Id:
-			return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
-		case SelectorType.Class:
-			return (child.classList.indexOf(selector.selector) !== -1) !== selector.negate;
-		case SelectorType.Attribute:
-			return (Object.keys(child.attributes).indexOf(selector.selector) !== -1) !== selector.negate;
-		case SelectorType.TagName:
-			return (child.nodeName === selector.selector) !== selector.negate;
-		default:
-			return false;
-	}
-}
-
-export function matchSelectors(child: RxElement, selectors: RxSelector[]): boolean {
-	return selectors.reduce(function (p: boolean, selector: RxSelector) {
-		return p && matchSelector(child, selector);
-	}, true);
-}
-
-export function querySelectorAll(queries: RxQuery[], childNodes: RxNode[], query: RxQuery | null = null, nodes: RxElement[] = []): RxElement[] | null {
-	if (query || queries.length) {
-		query = query || queries.shift() as RxQuery;
-		for (let child of childNodes) {
-			if (child instanceof RxElement) {
-				if (matchSelectors(child, query.selectors)) {
-					// console.log(query);
-					if (queries.length) {
-						const results: RxElement[] | null = querySelectorAll(queries, child.childNodes);
-						if (results) {
-							Array.prototype.push.apply(nodes, results);
-						}
-					} else {
-						nodes.push(child);
-					}
-				} else if (!query.inner) {
-					const results: RxElement[] | null = querySelectorAll(queries, child.childNodes, query);
-					if (results) {
-						Array.prototype.push.apply(nodes, results);
-					}
-				}
-			}
-		}
-	}
-	return nodes.length ? nodes : null;
-}
-
-export function querySelector(queries: RxQuery[], childNodes: RxNode[], query: RxQuery | null = null): RxElement | null {
-	let node = null;
-	if (query || queries.length) {
-		query = query || queries.shift() as RxQuery;
-		for (let child of childNodes) {
-			if (child instanceof RxElement) {
-				if (matchSelectors(child, query.selectors)) {
-					// console.log(query);
-					if (queries.length) {
-						return querySelector(queries, child.childNodes);
-					} else {
-						return child;
-					}
-				} else if (!query.inner) {
-					node = querySelector(queries, child.childNodes, query);
-				}
-			}
-		}
-	}
-	return node;
-}
-
-export function cloneNode(source: RxNode, deep: boolean = false, parentNode: RxElement | null = null): RxNode {
-	let node: RxNode;
-	if (isRxElement(source)) {
-		const nodeElement: RxElement = new RxElement(
-			parentNode,
-			source.nodeName,
-			Object.assign({}, source.attributes),
-		);
-		if (deep) {
-			nodeElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeElement]));
-		}
-		node = nodeElement;
-	} else if (isRxDocumentFragment(source)) {
-		const nodeDocumentFragment: RxDocumentFragment = new RxDocumentFragment();
-		if (deep) {
-			nodeDocumentFragment.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeDocumentFragment]));
-		}
-		node = nodeDocumentFragment;
-	} else if (isRxText(source)) {
-		node = new RxText(parentNode, source.nodeValue);
-	} else if (isRxComment(source)) {
-		node = new RxComment(parentNode, source.nodeValue);
-	} else if (isRxDocument(source)) {
-		const documentElement: RxDocument = new RxDocument();
-		if (deep) {
-			documentElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, documentElement]));
-		}
-		node = documentElement;
-	} else {
-		throw new Error('Invalid node type');
-	}
-	return node;
 }
 
 export class RxSelector {
@@ -715,7 +458,7 @@ export class RxElement extends RxNode {
 		// console.log('insertBefore', this, newNode, referenceNode);
 		return newNode;
 	}
-	cloneNode(deep: boolean = false) {
+	cloneNode(deep: boolean = false): RxNode {
 		return cloneNode.apply(this, [this, deep]);
 	}
 	addListener(eventName: string, handler: (e: any) => {}) { }
@@ -876,7 +619,267 @@ export class RxDocumentFragment extends RxElement {
 	}
 }
 
+// !!! TODO
+// Any web page loaded in the browser and serves as an entry point into the web page's content, which is the DOM tree.//
+// interface Document extends Node, DocumentAndElementEventHandlers, DocumentOrShadowRoot, GlobalEventHandlers, NonElementParentNode, ParentNode, XPathEvaluatorBase {
+export interface IDocument extends Document {
+	/*
+	readonly URL: string; // Sets or gets the URL for the current document.
+	readonly characterSet: string; // Returns document's encoding.
+	readonly charset: string; // Gets or sets the character set used to encode the object.
+	readonly compatMode: string; // Gets a value that indicates whether standards-compliant mode is switched on for the object.
+	readonly contentType: string; // Returns document's content type.
+	readonly currentScript: HTMLOrSVGScriptElement | null; // Returns the script element, or the SVG script element, that is currently executing, as long as the element represents a classic script. In the case of reentrant script execution, returns the one that most recently started executing amongst those that have not yet finished executing.
+	readonly defaultView: (WindowProxy & typeof globalThis) | null; // Returns null if the Document is not currently executing a script or SVG script element (e.g., because the running script is an event handler, or a timeout), or if the currently executing script or SVG script element represents a module script.
+	readonly doctype: DocumentType | null; // Gets an object representing the document type declaration associated with the current document.
+	readonly documentElement: HTMLElement; // Gets a reference to the root node of the document.
+	readonly documentURI: string; // Returns document's URL.
+	readonly embeds: HTMLCollectionOf<HTMLEmbedElement>; // Retrieves a collection of all embed objects in the document.
+	readonly forms: HTMLCollectionOf<HTMLFormElement>; // Retrieves a collection, in source order, of all form objects in the document.
+	readonly fullscreenEnabled: boolean; // Returns true if document has the ability to display elements fullscreen and fullscreen is supported, or false otherwise.
+	readonly head: HTMLHeadElement; // Returns the head element.
+	readonly hidden: boolean;
+	readonly images: HTMLCollectionOf<HTMLImageElement>; // Retrieves a collection, in source order, of img objects in the document.
+	readonly implementation: DOMImplementation; // Gets the implementation object of the current document.
+	readonly inputEncoding: string; // Returns the character encoding used to create the webpage that is loaded into the document object.
+	readonly lastModified: string; // Gets the date that the page was last modified, if the page supplies one.
+	readonly links: HTMLCollectionOf<HTMLAnchorElement | HTMLAreaElement>; // Retrieves a collection of all a objects that specify the href property and all area objects in the document.
+	readonly origin: string; // Returns document's origin.
+	readonly ownerDocument: null;
+	readonly plugins: HTMLCollectionOf<HTMLEmbedElement>; // Return an HTMLCollection of the embed elements in the Document.
+	readonly readyState: DocumentReadyState; // Retrieves a value that indicates the current state of the object.
+	readonly referrer: string; // Gets the URL of the location that referred the user to the current page.
+	readonly scripts: HTMLCollectionOf<HTMLScriptElement>; // Retrieves a collection of all script objects in the document.
+	readonly scrollingElement: Element | null;
+	readonly timeline: DocumentTimeline;
+	readonly visibilityState: VisibilityState;
+	body: HTMLElement; // Specifies the beginning and end of the document body.
+	cookie: string; // Returns the HTTP cookies that apply to the Document. If there are no cookies or cookies can't be applied to this resource, the empty string will be returned.
+	// Can be set, to add a new cookie to the element's set of HTTP cookies.
+	// If the contents are sandboxed into a unique origin (e.g. in an iframe with the sandbox attribute), a "SecurityError" DOMException will be thrown on getting and setting.
+	designMode: string; // Sets or gets a value that indicates whether the document can be edited.
+	dir: string; // Sets or retrieves a value that indicates the reading order of the object.
+	domain: string; // Sets or gets the security domain of the document.
+	location: Location; // Contains information about the current URL.
+	title: string; // Contains the title of the document.
+	// METHODS
+	onfullscreenchange: ((this: Document, ev: Event) => any) | null;
+	onfullscreenerror: ((this: Document, ev: Event) => any) | null;
+	onpointerlockchange: ((this: Document, ev: Event) => any) | null;
+	onpointerlockerror: ((this: Document, ev: Event) => any) | null;
+	onreadystatechange: ((this: Document, ev: Event) => any) | null; // Fires when the state of the object has changed.
+	// @param ev The event
+	onvisibilitychange: ((this: Document, ev: Event) => any) | null;
+	adoptNode<T extends Node>(source: T): T; // Moves node from another document and returns it.
+	// If node is a document, throws a "NotSupportedError" DOMException or, if node is a shadow root, throws a "HierarchyRequestError" DOMException.
+	caretPositionFromPoint(x: number, y: number): CaretPosition | null;
+	close(): void; // Closes an output stream and forces the sent data to display.
+	createAttribute(localName: string): Attr; // Creates an attribute object with a specified name.
+	// @param name String that sets the attribute object's name.
+	createAttributeNS(namespace: string | null, qualifiedName: string): Attr;
+	createCDATASection(data: string): CDATASection; // Returns a CDATASection node whose data is data.
+	createComment(data: string): Comment; // Creates a comment object with the specified data.
+	// @param data Sets the comment object's data.
+	createDocumentFragment(): DocumentFragment; // Creates a new document.
+	createElement<K extends keyof HTMLElementTagNameMap>(tagName: K, options?: ElementCreationOptions): HTMLElementTagNameMap[K]; // Creates an instance of the element for the specified tag.
+	// @param tagName The name of an element.
+	// @deprecated
+	// createElement<K extends keyof HTMLElementDeprecatedTagNameMap>(tagName: K, options?: ElementCreationOptions): HTMLElementDeprecatedTagNameMap[K];
+	createElement(tagName: string, options?: ElementCreationOptions): HTMLElement;
+	createElementNS(namespaceURI: 'http://www.w3.org/1999/xhtml', qualifiedName: string): HTMLElement;
+	createElementNS<K extends keyof SVGElementTagNameMap>(namespaceURI: 'http://www.w3.org/2000/svg', qualifiedName: K): SVGElementTagNameMap[K];
+	createElementNS(namespaceURI: 'http://www.w3.org/2000/svg', qualifiedName: string): SVGElement;
+	createElementNS(namespaceURI: string | null, qualifiedName: string, options?: ElementCreationOptions): Element;
+	createElementNS(namespace: string | null, qualifiedName: string, options?: string | ElementCreationOptions): Element; // Returns an element with namespace namespace. Its namespace prefix will be everything before ":" (U+003E) in qualifiedName or null. Its local name will be everything after ":" (U+003E) in qualifiedName or qualifiedName.
+	// If localName does not match the Name production an 'InvalidCharacterError' DOMException will be thrown.
+	// If one of the following conditions is true a 'NamespaceError' DOMException will be thrown:
+	// localName does not match the QName production.
+	// Namespace prefix is not null and namespace is the empty string.
+	// Namespace prefix is 'xml' and namespace is not the XML namespace.
+	// qualifiedName or namespace prefix is 'xmlns' and namespace is not the XMLNS namespace.
+	// namespace is the XMLNS namespace and neither qualifiedName nor namespace prefix is 'xmlns'.
+	// When supplied, options's is can be used to create a customized built-in element.
+	createEvent(eventInterface: 'AnimationEvent'): AnimationEvent;
+	createEvent(eventInterface: 'AnimationPlaybackEvent'): AnimationPlaybackEvent;
+	createEvent(eventInterface: 'AudioProcessingEvent'): AudioProcessingEvent;
+	createEvent(eventInterface: 'BeforeUnloadEvent'): BeforeUnloadEvent;
+	createEvent(eventInterface: 'ClipboardEvent'): ClipboardEvent;
+	createEvent(eventInterface: 'CloseEvent'): CloseEvent;
+	createEvent(eventInterface: 'CompositionEvent'): CompositionEvent;
+	createEvent(eventInterface: 'CustomEvent'): CustomEvent;
+	createEvent(eventInterface: 'DeviceLightEvent'): DeviceLightEvent;
+	createEvent(eventInterface: 'DeviceMotionEvent'): DeviceMotionEvent;
+	createEvent(eventInterface: 'DeviceOrientationEvent'): DeviceOrientationEvent;
+	createEvent(eventInterface: 'DragEvent'): DragEvent;
+	createEvent(eventInterface: 'ErrorEvent'): ErrorEvent;
+	createEvent(eventInterface: 'Event'): Event;
+	createEvent(eventInterface: 'Events'): Event;
+	createEvent(eventInterface: 'FocusEvent'): FocusEvent;
+	createEvent(eventInterface: 'FocusNavigationEvent'): FocusNavigationEvent;
+	createEvent(eventInterface: 'GamepadEvent'): GamepadEvent;
+	createEvent(eventInterface: 'HashChangeEvent'): HashChangeEvent;
+	createEvent(eventInterface: 'IDBVersionChangeEvent'): IDBVersionChangeEvent;
+	createEvent(eventInterface: 'InputEvent'): InputEvent;
+	createEvent(eventInterface: 'KeyboardEvent'): KeyboardEvent;
+	createEvent(eventInterface: 'ListeningStateChangedEvent'): ListeningStateChangedEvent;
+	createEvent(eventInterface: 'MSGestureEvent'): MSGestureEvent;
+	createEvent(eventInterface: 'MSMediaKeyMessageEvent'): MSMediaKeyMessageEvent;
+	createEvent(eventInterface: 'MSMediaKeyNeededEvent'): MSMediaKeyNeededEvent;
+	createEvent(eventInterface: 'MSPointerEvent'): MSPointerEvent;
+	createEvent(eventInterface: 'MediaEncryptedEvent'): MediaEncryptedEvent;
+	createEvent(eventInterface: 'MediaKeyMessageEvent'): MediaKeyMessageEvent;
+	createEvent(eventInterface: 'MediaQueryListEvent'): MediaQueryListEvent;
+	createEvent(eventInterface: 'MediaStreamErrorEvent'): MediaStreamErrorEvent;
+	createEvent(eventInterface: 'MediaStreamEvent'): MediaStreamEvent;
+	createEvent(eventInterface: 'MediaStreamTrackEvent'): MediaStreamTrackEvent;
+	createEvent(eventInterface: 'MessageEvent'): MessageEvent;
+	createEvent(eventInterface: 'MouseEvent'): MouseEvent;
+	createEvent(eventInterface: 'MouseEvents'): MouseEvent;
+	createEvent(eventInterface: 'MutationEvent'): MutationEvent;
+	createEvent(eventInterface: 'MutationEvents'): MutationEvent;
+	createEvent(eventInterface: 'OfflineAudioCompletionEvent'): OfflineAudioCompletionEvent;
+	createEvent(eventInterface: 'OverflowEvent'): OverflowEvent;
+	createEvent(eventInterface: 'PageTransitionEvent'): PageTransitionEvent;
+	createEvent(eventInterface: 'PaymentRequestUpdateEvent'): PaymentRequestUpdateEvent;
+	createEvent(eventInterface: 'PermissionRequestedEvent'): PermissionRequestedEvent;
+	createEvent(eventInterface: 'PointerEvent'): PointerEvent;
+	createEvent(eventInterface: 'PopStateEvent'): PopStateEvent;
+	createEvent(eventInterface: 'ProgressEvent'): ProgressEvent;
+	createEvent(eventInterface: 'PromiseRejectionEvent'): PromiseRejectionEvent;
+	createEvent(eventInterface: 'RTCDTMFToneChangeEvent'): RTCDTMFToneChangeEvent;
+	createEvent(eventInterface: 'RTCDataChannelEvent'): RTCDataChannelEvent;
+	createEvent(eventInterface: 'RTCDtlsTransportStateChangedEvent'): RTCDtlsTransportStateChangedEvent;
+	createEvent(eventInterface: 'RTCErrorEvent'): RTCErrorEvent;
+	createEvent(eventInterface: 'RTCIceCandidatePairChangedEvent'): RTCIceCandidatePairChangedEvent;
+	createEvent(eventInterface: 'RTCIceGathererEvent'): RTCIceGathererEvent;
+	createEvent(eventInterface: 'RTCIceTransportStateChangedEvent'): RTCIceTransportStateChangedEvent;
+	createEvent(eventInterface: 'RTCPeerConnectionIceErrorEvent'): RTCPeerConnectionIceErrorEvent;
+	createEvent(eventInterface: 'RTCPeerConnectionIceEvent'): RTCPeerConnectionIceEvent;
+	createEvent(eventInterface: 'RTCSsrcConflictEvent'): RTCSsrcConflictEvent;
+	createEvent(eventInterface: 'RTCStatsEvent'): RTCStatsEvent;
+	createEvent(eventInterface: 'RTCTrackEvent'): RTCTrackEvent;
+	createEvent(eventInterface: 'SVGZoomEvent'): SVGZoomEvent;
+	createEvent(eventInterface: 'SVGZoomEvents'): SVGZoomEvent;
+	createEvent(eventInterface: 'SecurityPolicyViolationEvent'): SecurityPolicyViolationEvent;
+	createEvent(eventInterface: 'ServiceWorkerMessageEvent'): ServiceWorkerMessageEvent;
+	createEvent(eventInterface: 'SpeechRecognitionEvent'): SpeechRecognitionEvent;
+	createEvent(eventInterface: 'SpeechSynthesisErrorEvent'): SpeechSynthesisErrorEvent;
+	createEvent(eventInterface: 'SpeechSynthesisEvent'): SpeechSynthesisEvent;
+	createEvent(eventInterface: 'StorageEvent'): StorageEvent;
+	createEvent(eventInterface: 'TextEvent'): TextEvent;
+	createEvent(eventInterface: 'TouchEvent'): TouchEvent;
+	createEvent(eventInterface: 'TrackEvent'): TrackEvent;
+	createEvent(eventInterface: 'TransitionEvent'): TransitionEvent;
+	createEvent(eventInterface: 'UIEvent'): UIEvent;
+	createEvent(eventInterface: 'UIEvents'): UIEvent;
+	createEvent(eventInterface: 'VRDisplayEvent'): VRDisplayEvent;
+	createEvent(eventInterface: 'VRDisplayEvent '): VRDisplayEvent;
+	createEvent(eventInterface: 'WebGLContextEvent'): WebGLContextEvent;
+	createEvent(eventInterface: 'WheelEvent'): WheelEvent;
+	createEvent(eventInterface: string): Event;
+	createNodeIterator(root: Node, whatToShow?: number, filter?: NodeFilter | null): NodeIterator; // Creates a NodeIterator object that you can use to traverse filtered lists of nodes or elements in a document.
+	// @param root The root element or node to start traversing on.
+	// @param whatToShow The type of nodes or elements to appear in the node list
+	// @param filter A custom NodeFilter function to use. For more information, see filter. Use null for no filter.
+	// @param entityReferenceExpansion A flag that specifies whether entity reference nodes are expanded.
+	createProcessingInstruction(target: string, data: string): ProcessingInstruction; // Returns a ProcessingInstruction node whose target is target and data is data. If target does not match the Name production an 'InvalidCharacterError' DOMException will be thrown. If data contains "?>" an "InvalidCharacterError" DOMException will be thrown.
+	createRange(): Range; // Returns an empty range object that has both of its boundary points positioned at the beginning of the document.
+	createTextNode(data: string): Text; // Creates a text string from the specified value.
+	// @param data String that specifies the nodeValue property of the text node.
+	createTreeWalker(root: Node, whatToShow?: number, filter?: NodeFilter | null): TreeWalker; // Creates a TreeWalker object that you can use to traverse filtered lists of nodes or elements in a document.
+	// @param root The root element or node to start traversing on.
+	// @param whatToShow The type of nodes or elements to appear in the node list. For more information, see whatToShow.
+	// @param filter A custom NodeFilter function to use.
+	// @param entityReferenceExpansion A flag that specifies whether entity reference nodes are expanded.
+	// @deprecated
+	// createTreeWalker(root: Node, whatToShow: number, filter: NodeFilter | null, entityReferenceExpansion?: boolean): TreeWalker;
+	elementFromPoint(x: number, y: number): Element | null; // Returns the element for the specified x coordinate and the specified y coordinate.
+	// @param x The x-offset
+	// @param y The y-offset
+	elementsFromPoint(x: number, y: number): Element[];
+	execCommand(commandId: string, showUI?: boolean, value?: string): boolean; // Executes a command on the current document, current selection, or the given range.
+	// @param commandId String that specifies the command to execute. This command can be any of the command identifiers that can be executed in script.
+	// @param showUI Display the user interface, defaults to false.
+	// @param value Value to assign.
+	exitFullscreen(): Promise<void>; // Stops document's fullscreen element from being displayed fullscreen and resolves promise when done.
+	exitPointerLock(): void;
+	getAnimations(): Animation[];
+	getElementById(elementId: string): HTMLElement | null; // Returns a reference to the first object with the specified value of the ID or NAME attribute.
+	// @param elementId String that specifies the ID value. Case-insensitive.
+	getElementsByClassName(classNames: string): HTMLCollectionOf<Element>; // Returns a HTMLCollection of the elements in the object on which the method was invoked (a document or an element) that have all the classes given by classNames. The classNames argument is interpreted as a space-separated list of classes.
+	getElementsByName(elementName: string): NodeListOf<HTMLElement>; // Gets a collection of objects based on the value of the NAME or ID attribute.
+	// @param elementName Gets a collection of objects based on the value of the NAME or ID attribute.
+	getElementsByTagName<K extends keyof HTMLElementTagNameMap>(qualifiedName: K): HTMLCollectionOf<HTMLElementTagNameMap[K]>;
+	getElementsByTagName<K extends keyof SVGElementTagNameMap>(qualifiedName: K): HTMLCollectionOf<SVGElementTagNameMap[K]>;
+	getElementsByTagName(qualifiedName: string): HTMLCollectionOf<Element>; // Retrieves a collection of objects based on the specified element name.
+	// @param name Specifies the name of an element.
+	getElementsByTagNameNS(namespaceURI: 'http://www.w3.org/1999/xhtml', localName: string): HTMLCollectionOf<HTMLElement>;
+	getElementsByTagNameNS(namespaceURI: 'http://www.w3.org/2000/svg', localName: string): HTMLCollectionOf<SVGElement>;
+	getElementsByTagNameNS(namespaceURI: string, localName: string): HTMLCollectionOf<Element>; // If namespace and localName are '*' returns a HTMLCollection of all descendant elements.
+	// If only namespace is '*' returns a HTMLCollection of all descendant elements whose local name is localName.
+	// If only localName is '*' returns a HTMLCollection of all descendant elements whose namespace is namespace.
+	// Otherwise, returns a HTMLCollection of all descendant elements whose namespace is namespace and local name is localName.
+	getSelection(): Selection | null; // Returns an object representing the current selection of the document that is loaded into the object displaying a webpage.
+	hasFocus(): boolean; // Gets a value indicating whether the object currently has focus.
+	importNode<T extends Node>(importedNode: T, deep: boolean): T; // Returns a copy of node. If deep is true, the copy also includes the node's descendants.
+	// If node is a document or a shadow root, throws a 'NotSupportedError' DOMException.
+	open(url?: string, name?: string, features?: string, replace?: boolean): Document; // Opens a new window and loads a document specified by a given URL. Also, opens a new window that uses the url parameter and the name parameter to collect the output of the write method and the writeln method.
+	// @param url Specifies a MIME type for the document.
+	// @param name Specifies the name of the window. This name is used as the value for the TARGET attribute on a form or an anchor element.
+	// @param features Contains a list of items separated by commas. Each item consists of an option and a value, separated by an equals sign (for example, "fullscreen=yes, toolbar=yes"). The following values are supported.
+	// @param replace Specifies whether the existing entry for the document is replaced in the history list.
+	queryCommandEnabled(commandId: string): boolean; // Returns a Boolean value that indicates whether a specified command can be successfully executed using execCommand, given the current state of the document.
+	// @param commandId Specifies a command identifier.
+	queryCommandIndeterm(commandId: string): boolean; // Returns a Boolean value that indicates whether the specified command is in the indeterminate state.
+	// @param commandId String that specifies a command identifier.
+	queryCommandState(commandId: string): boolean; // Returns a Boolean value that indicates the current state of the command.
+	// @param commandId String that specifies a command identifier.
+	queryCommandSupported(commandId: string): boolean; // Returns a Boolean value that indicates whether the current command is supported on the current range.
+	// @param commandId Specifies a command identifier.
+	queryCommandValue(commandId: string): string; // Returns the current value of the document, range, or current selection for the given command.
+	// @param commandId String that specifies a command identifier.
+	write(...text: string[]): void; // Writes one or more HTML expressions to a document in the specified window.
+	// @param content Specifies the text and HTML tags to write.
+	writeln(...text: string[]): void; // Writes one or more HTML expressions, followed by a carriage return, to a document in the specified window.
+	// @param content The text and HTML tags to write.
+	addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+	addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+	removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+	removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+	// DEPRECATED !!!
+	// Sets or gets the color of all active links in the document.
+	// @deprecated
+	// alinkColor: string; // Returns a reference to the collection of elements contained by the object.
+	// @deprecated
+	// readonly all: HTMLAllCollection; // Retrieves a collection of all a objects that have a name and/or id property. Objects in this collection are in HTML source order.
+	// @deprecated
+	// readonly anchors: HTMLCollectionOf<HTMLAnchorElement>; // Retrieves a collection of all applet objects in the document.
+	// @deprecated
+	// readonly applets: HTMLCollectionOf<HTMLAppletElement>; // Deprecated. Sets or retrieves a value that indicates the background color behind the object.
+	// @deprecated
+	// bgColor: string; // Sets or gets the foreground (text) color of the document.
+	// @deprecated
+	// fgColor: string; // @deprecated
+	// readonly fullscreen: boolean; // Sets or gets the color of the document links.
+	// @deprecated
+	// linkColor: string; // Sets or gets the color of the links that the user has visited.
+	// @deprecated
+	// vlinkColor: string; // @deprecated
+	// captureEvents(): void; // @deprecated
+	// caretRangeFromPoint(x: number, y: number): Range; // @deprecated
+	// clear(): void; // @deprecated
+	// releaseEvents(): void;
+	*/
+}
+
 export class RxDocument extends RxElement {
+	private location_: ILocation = RxLocation.location;
+	get location() {
+		return this.location_;
+	}
+	get URL(): string {
+		return this.location_.href;
+	}
 	get hidden(): true {
 		return true;
 	}
@@ -909,6 +912,37 @@ export class RxDocument extends RxElement {
 	get documentElement(): RxElement | null {
 		return this.firstElementChild;
 	}
+
+	/*
+		readonly characterSet: string; // Returns document's encoding.
+		readonly charset: string; // Gets or sets the character set used to encode the object.
+		readonly compatMode: string; // Gets a value that indicates whether standards-compliant mode is switched on for the object.
+		readonly contentType: string; // Returns document's content type.
+		readonly currentScript: HTMLOrSVGScriptElement | null; // Returns the script element, or the SVG script element, that is currently executing, as long as the element represents a classic script. In the case of reentrant script execution, returns the one that most recently started executing amongst those that have not yet finished executing.
+		readonly defaultView: (WindowProxy & typeof globalThis) | null; // Returns null if the Document is not currently executing a script or SVG script element (e.g., because the running script is an event handler, or a timeout), or if the currently executing script or SVG script element represents a module script.
+		readonly documentElement: HTMLElement; // Gets a reference to the root node of the document.
+		readonly documentURI: string; // Returns document's URL.
+		readonly embeds: HTMLCollectionOf<HTMLEmbedElement>; // Retrieves a collection of all embed objects in the document.
+		readonly forms: HTMLCollectionOf<HTMLFormElement>; // Retrieves a collection, in source order, of all form objects in the document.
+		readonly fullscreenEnabled: boolean; // Returns true if document has the ability to display elements fullscreen and fullscreen is supported, or false otherwise.
+		readonly head: HTMLHeadElement; // Returns the head element.
+		readonly hidden: boolean;
+		readonly images: HTMLCollectionOf<HTMLImageElement>; // Retrieves a collection, in source order, of img objects in the document.
+		readonly implementation: DOMImplementation; // Gets the implementation object of the current document.
+		readonly inputEncoding: string; // Returns the character encoding used to create the webpage that is loaded into the document object.
+		readonly lastModified: string; // Gets the date that the page was last modified, if the page supplies one.
+		readonly links: HTMLCollectionOf<HTMLAnchorElement | HTMLAreaElement>; // Retrieves a collection of all a objects that specify the href property and all area objects in the document.
+		readonly origin: string; // Returns document's origin.
+		readonly ownerDocument: null;
+		readonly plugins: HTMLCollectionOf<HTMLEmbedElement>; // Return an HTMLCollection of the embed elements in the Document.
+		readonly readyState: DocumentReadyState; // Retrieves a value that indicates the current state of the object.
+		readonly referrer: string; // Gets the URL of the location that referred the user to the current page.
+		readonly scripts: HTMLCollectionOf<HTMLScriptElement>; // Retrieves a collection of all script objects in the document.
+		readonly scrollingElement: Element | null;
+		readonly timeline: DocumentTimeline;
+		readonly visibilityState: VisibilityState;
+		*/
+
 	constructor() {
 		super(null, '#document');
 		this.nodeType = RxNodeType.DOCUMENT_NODE;
@@ -957,4 +991,262 @@ export class RxDocument extends RxElement {
 	serialize(): string {
 		return `${this.childNodes.map(x => x.serialize()).join('')}`;
 	}
+}
+
+export function isRxElement(x: RxNode): x is RxElement {
+	return x.nodeType === RxNodeType.ELEMENT_NODE;
+}
+
+export function isRxText(x: RxNode): x is RxText {
+	return x.nodeType === RxNodeType.TEXT_NODE;
+}
+
+export function isRxComment(x: RxNode): x is RxComment {
+	return x.nodeType === RxNodeType.COMMENT_NODE;
+}
+
+export function isRxDocument(x: RxNode): x is RxDocument {
+	return x.nodeType === RxNodeType.DOCUMENT_NODE;
+}
+
+export function isRxDocumentFragment(x: RxNode): x is RxDocumentFragment {
+	return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
+}
+
+export function isRxDocumentType(x: RxNode): x is RxDocumentType {
+	return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
+}
+
+export function isRxProcessingInstruction(x: RxNode): x is RxProcessingInstruction {
+	return x.nodeType === RxNodeType.PROCESSING_INSTRUCTION_NODE;
+}
+
+export function parse(html: string) {
+	const doc = new RxDocument();
+	let parentNode: RxElement = doc,
+		node;
+	const parser = new Parser(
+		{
+			onopentag: (nodeName, attributes) => {
+				// console.log(nodeName);
+				node = new RxElement(parentNode, nodeName, attributes);
+				parentNode.childNodes.push(node);
+				parentNode = node;
+				// if (NO_CHILDS.indexOf(nodeName) === -1) {
+				//	console.log(nodeName);
+				//	parentNode = node;
+				// }
+			},
+			onclosetag: (nodeName) => {
+				if (parentNode.parentNode) {
+					parentNode = parentNode.parentNode;
+				}
+			},
+			ontext: (nodeValue) => {
+				// console.log('ontext', nodeValue);
+				// if (nodeValue.length) {
+				const textNode = new RxText(parentNode, nodeValue);
+				parentNode.childNodes.push(textNode);
+				// }
+			},
+			onprocessinginstruction: (nodeName, nodeValue) => {
+				// console.log('onprocessinginstruction', nodeName, nodeValue);
+				if (nodeName === '!doctype') {
+					node = new RxDocumentType(parentNode, nodeValue);
+				} else {
+					node = new RxProcessingInstruction(parentNode, nodeValue);
+				}
+				parentNode.childNodes.push(node);
+			},
+			oncomment: nodeValue => {
+				// console.log('oncomment', nodeValue);
+				node = new RxComment(parentNode, nodeValue);
+				parentNode.childNodes.push(node);
+				// parentNode = node;
+			},
+			oncommentend: () => {
+				// console.log('oncommentend');
+				// parentNode = parentNode.parentNode;
+			},
+			oncdatastart: () => {
+				console.log('oncdatastart');
+			},
+			oncdataend: () => {
+				console.log('oncdataend');
+			},
+			onerror: error => {
+				console.log('error', error);
+			},
+			/*
+			onopentagname: (name) => {
+				console.log('onopentagname', name);
+			},
+			onattribute: (name, value) => {
+				console.log('onattribute', name, value);
+			},
+			onreset: () => {
+				console.log('reset');
+			},
+			onend: () => {
+				console.log('end');
+			},
+			*/
+		},
+		{
+			decodeEntities: false,
+			lowerCaseTags: true,
+		}
+	);
+	parser.write(html);
+	parser.end();
+	return doc;
+}
+
+export function getQueries(selector: string): RxQuery[] {
+	const queries: RxQuery[] = [];
+	selector
+		.trim()
+		.split(' ')
+		.forEach((x: string) => {
+			x.trim()
+				.split('>')
+				.forEach((x, i) => {
+					// const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
+					// const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
+					const regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
+					/* eslint no-useless-escape: "off" */
+					const selectors = [];
+					const matches = x.matchAll(regex);
+					for (const match of matches) {
+						if (match[1]) {
+							selectors.push({ selector: match[1], type: SelectorType.Id, negate: true });
+						} else if (match[2]) {
+							selectors.push({ selector: match[2], type: SelectorType.Class, negate: true });
+						} else if (match[3]) {
+							selectors.push({ selector: match[3], type: SelectorType.Attribute, negate: true });
+						} else if (match[4]) {
+							selectors.push({ selector: match[4], type: SelectorType.TagName, negate: true });
+						} else if (match[5]) {
+							selectors.push({ selector: match[5], type: SelectorType.Id, negate: false });
+						} else if (match[6]) {
+							selectors.push({ selector: match[6], type: SelectorType.Class, negate: false });
+						} else if (match[7]) {
+							selectors.push({ selector: match[7], type: SelectorType.Attribute, negate: false });
+						} else if (match[8]) {
+							selectors.push({ selector: match[8], type: SelectorType.TagName, negate: false });
+						}
+						// console.log('match', match);
+					}
+					const selector =
+						i > 0
+							? { selector: x, selectors, inner: true }
+							: { selector: x, selectors, inner: false };
+					queries.push.call(queries, selector);
+				});
+		});
+	return queries;
+}
+
+export function matchSelector(child: RxElement, selector: RxSelector): boolean {
+	switch (selector.type) {
+		case SelectorType.Id:
+			return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
+		case SelectorType.Class:
+			return (child.classList.indexOf(selector.selector) !== -1) !== selector.negate;
+		case SelectorType.Attribute:
+			return (Object.keys(child.attributes).indexOf(selector.selector) !== -1) !== selector.negate;
+		case SelectorType.TagName:
+			return (child.nodeName === selector.selector) !== selector.negate;
+		default:
+			return false;
+	}
+}
+
+export function matchSelectors(child: RxElement, selectors: RxSelector[]): boolean {
+	return selectors.reduce(function (p: boolean, selector: RxSelector) {
+		return p && matchSelector(child, selector);
+	}, true);
+}
+
+export function querySelectorAll(queries: RxQuery[], childNodes: RxNode[], query: RxQuery | null = null, nodes: RxElement[] = []): RxElement[] | null {
+	if (query || queries.length) {
+		query = query || queries.shift() as RxQuery;
+		for (let child of childNodes) {
+			if (child instanceof RxElement) {
+				if (matchSelectors(child, query.selectors)) {
+					// console.log(query);
+					if (queries.length) {
+						const results: RxElement[] | null = querySelectorAll(queries, child.childNodes);
+						if (results) {
+							Array.prototype.push.apply(nodes, results);
+						}
+					} else {
+						nodes.push(child);
+					}
+				} else if (!query.inner) {
+					const results: RxElement[] | null = querySelectorAll(queries, child.childNodes, query);
+					if (results) {
+						Array.prototype.push.apply(nodes, results);
+					}
+				}
+			}
+		}
+	}
+	return nodes.length ? nodes : null;
+}
+
+export function querySelector(queries: RxQuery[], childNodes: RxNode[], query: RxQuery | null = null): RxElement | null {
+	let node = null;
+	if (query || queries.length) {
+		query = query || queries.shift() as RxQuery;
+		for (let child of childNodes) {
+			if (child instanceof RxElement) {
+				if (matchSelectors(child, query.selectors)) {
+					// console.log(query);
+					if (queries.length) {
+						return querySelector(queries, child.childNodes);
+					} else {
+						return child;
+					}
+				} else if (!query.inner) {
+					node = querySelector(queries, child.childNodes, query);
+				}
+			}
+		}
+	}
+	return node;
+}
+
+export function cloneNode(source: RxNode, deep: boolean = false, parentNode: RxElement | null = null): RxNode {
+	let node: RxNode;
+	if (isRxElement(source)) {
+		const nodeElement: RxElement = new RxElement(
+			parentNode,
+			source.nodeName,
+			Object.assign({}, source.attributes),
+		);
+		if (deep) {
+			nodeElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeElement]));
+		}
+		node = nodeElement;
+	} else if (isRxDocumentFragment(source)) {
+		const nodeDocumentFragment: RxDocumentFragment = new RxDocumentFragment();
+		if (deep) {
+			nodeDocumentFragment.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, nodeDocumentFragment]));
+		}
+		node = nodeDocumentFragment;
+	} else if (isRxText(source)) {
+		node = new RxText(parentNode, source.nodeValue);
+	} else if (isRxComment(source)) {
+		node = new RxComment(parentNode, source.nodeValue);
+	} else if (isRxDocument(source)) {
+		const documentElement: RxDocument = new RxDocument();
+		if (deep) {
+			documentElement.childNodes = source.childNodes.map(x => cloneNode.apply(x, [x, deep, documentElement]));
+		}
+		node = documentElement;
+	} else {
+		throw new Error('Invalid node type');
+	}
+	return node;
 }
