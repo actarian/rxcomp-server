@@ -2,7 +2,7 @@
   "author": "Luca Zampetti <lzampetti@gmail.com>",
   "name": "rxcomp-server",
   "description": "Reactive StoreModule for RxComp component library",
-  "version": "1.0.0-beta.12",
+  "version": "1.0.0-beta.13",
   "browser": "dist/umd/rxcomp-server.js",
   "main": "dist/cjs/rxcomp-server.js",
   "types": "dist/cjs/rxcomp-server.d.ts",

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>SelectorType | RxCompServer</title>
+	<title>IServerRequest | RxCompServer</title>
 	<meta name="description" content="Documentation for RxCompServer">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,82 +54,82 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="selectortype.html">SelectorType</a>
+					<a href="iserverrequest.html">IServerRequest</a>
 				</li>
 			</ul>
-			<h1>Enumeration SelectorType</h1>
+			<h1>Interface IServerRequest</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">IServerRequest</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<a href="iserverresponse.html" class="tsd-signature-type">IServerResponse</a>
+							</li>
+							<li>
+								<a href="iservererrorresponse.html" class="tsd-signature-type">IServerErrorResponse</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implemented by</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../classes/serverrequest.html" class="tsd-signature-type">ServerRequest</a></li>
+				</ul>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Enumeration members</h3>
+							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="selectortype.html#attribute" class="tsd-kind-icon">Attribute</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="selectortype.html#class" class="tsd-kind-icon">Class</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="selectortype.html#id" class="tsd-kind-icon">Id</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="selectortype.html#none" class="tsd-kind-icon">None</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="selectortype.html#tagname" class="tsd-kind-icon">Tag<wbr>Name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="iserverrequest.html#template" class="tsd-kind-icon">template</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="iserverrequest.html#url" class="tsd-kind-icon">url</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="iserverrequest.html#vars" class="tsd-kind-icon">vars</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Enumeration members</h2>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="attribute" class="tsd-anchor"></a>
-					<h3>Attribute</h3>
-					<div class="tsd-signature tsd-kind-icon">Attribute<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 2</span></div>
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="template" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> template</h3>
+					<div class="tsd-signature tsd-kind-icon">template<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/nodes/nodes.ts#L24">src/nodes/nodes.ts:24</a></li>
+							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/platform/server.ts#L29">src/platform/server.ts:29</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="class" class="tsd-anchor"></a>
-					<h3>Class</h3>
-					<div class="tsd-signature tsd-kind-icon">Class<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 1</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="url" class="tsd-anchor"></a>
+					<h3>url</h3>
+					<div class="tsd-signature tsd-kind-icon">url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/nodes/nodes.ts#L23">src/nodes/nodes.ts:23</a></li>
+							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/platform/server.ts#L28">src/platform/server.ts:28</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="id" class="tsd-anchor"></a>
-					<h3>Id</h3>
-					<div class="tsd-signature tsd-kind-icon">Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 0</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="vars" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> vars</h3>
+					<div class="tsd-signature tsd-kind-icon">vars<span class="tsd-signature-symbol">:</span> <a href="iservervars.html" class="tsd-signature-type">IServerVars</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/nodes/nodes.ts#L22">src/nodes/nodes.ts:22</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="none" class="tsd-anchor"></a>
-					<h3>None</h3>
-					<div class="tsd-signature tsd-kind-icon">None<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = -1</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/nodes/nodes.ts#L21">src/nodes/nodes.ts:21</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="tagname" class="tsd-anchor"></a>
-					<h3>Tag<wbr>Name</h3>
-					<div class="tsd-signature tsd-kind-icon">Tag<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 3</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/nodes/nodes.ts#L25">src/nodes/nodes.ts:25</a></li>
+							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/platform/server.ts#L30">src/platform/server.ts:30</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -147,23 +147,17 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-enum">
-						<a href="selectortype.html" class="tsd-kind-icon">Selector<wbr>Type</a>
+					<li class="current tsd-kind-interface">
+						<a href="iserverrequest.html" class="tsd-kind-icon">IServer<wbr>Request</a>
 						<ul>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="selectortype.html#attribute" class="tsd-kind-icon">Attribute</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="iserverrequest.html#template" class="tsd-kind-icon">template</a>
 							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="selectortype.html#class" class="tsd-kind-icon">Class</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="iserverrequest.html#url" class="tsd-kind-icon">url</a>
 							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="selectortype.html#id" class="tsd-kind-icon">Id</a>
-							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="selectortype.html#none" class="tsd-kind-icon">None</a>
-							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="selectortype.html#tagname" class="tsd-kind-icon">Tag<wbr>Name</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="iserverrequest.html#vars" class="tsd-kind-icon">vars</a>
 							</li>
 						</ul>
 					</li>

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>RxSelector | RxCompServer</title>
+	<title>ServerErrorResponse | RxCompServer</title>
 	<meta name="description" content="Documentation for RxCompServer">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="rxselector.html">RxSelector</a>
+					<a href="servererrorresponse.html">ServerErrorResponse</a>
 				</li>
 			</ul>
-			<h1>Class RxSelector</h1>
+			<h1>Class ServerErrorResponse</h1>
 		</div>
 	</div>
 </header>
@@ -68,8 +68,14 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">RxSelector</span>
+						<span class="target">ServerErrorResponse</span>
 					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implements</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../interfaces/iservererrorresponse.html" class="tsd-signature-type">IServerErrorResponse</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -79,15 +85,17 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="rxselector.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="servererrorresponse.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="rxselector.html#negate" class="tsd-kind-icon">negate</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="rxselector.html#selector" class="tsd-kind-icon">selector</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="rxselector.html#type" class="tsd-kind-icon">type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="servererrorresponse.html#error" class="tsd-kind-icon">error</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="servererrorresponse.html#statuscode" class="tsd-kind-icon">status<wbr>Code</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="servererrorresponse.html#statusmessage" class="tsd-kind-icon">status<wbr>Message</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="servererrorresponse.html#url" class="tsd-kind-icon">url</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="servererrorresponse.html#vars" class="tsd-kind-icon">vars</a></li>
 							</ul>
 						</section>
 					</div>
@@ -99,22 +107,22 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>RxSelector<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="rxselector.html" class="tsd-signature-type">RxSelector</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="rxselector.html" class="tsd-signature-type">RxSelector</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Server<wbr>Error<wbr>Response<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/iservererrorresponse.html" class="tsd-signature-type">IServerErrorResponse</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="servererrorresponse.html" class="tsd-signature-type">ServerErrorResponse</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/nodes/nodes.ts#L31">src/nodes/nodes.ts:31</a></li>
+									<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/platform/server.ts#L88">src/platform/server.ts:88</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>options: <a href="rxselector.html" class="tsd-signature-type">RxSelector</a></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/iservererrorresponse.html" class="tsd-signature-type">IServerErrorResponse</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="rxselector.html" class="tsd-signature-type">RxSelector</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="servererrorresponse.html" class="tsd-signature-type">ServerErrorResponse</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -122,32 +130,57 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="negate" class="tsd-anchor"></a>
-					<h3>negate</h3>
-					<div class="tsd-signature tsd-kind-icon">negate<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div>
+					<a name="error" class="tsd-anchor"></a>
+					<h3>error</h3>
+					<div class="tsd-signature tsd-kind-icon">error<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Error</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/iservererrorresponse.html">IServerErrorResponse</a>.<a href="../interfaces/iservererrorresponse.html#error">error</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/nodes/nodes.ts#L31">src/nodes/nodes.ts:31</a></li>
+							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/platform/server.ts#L86">src/platform/server.ts:86</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="selector" class="tsd-anchor"></a>
-					<h3>selector</h3>
-					<div class="tsd-signature tsd-kind-icon">selector<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;&quot;</span></div>
+					<a name="statuscode" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> status<wbr>Code</h3>
+					<div class="tsd-signature tsd-kind-icon">status<wbr>Code<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/iservererrorresponse.html">IServerErrorResponse</a>.<a href="../interfaces/iservererrorresponse.html#statuscode">statusCode</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/nodes/nodes.ts#L29">src/nodes/nodes.ts:29</a></li>
+							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/platform/server.ts#L87">src/platform/server.ts:87</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="type" class="tsd-anchor"></a>
-					<h3>type</h3>
-					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <a href="../enums/selectortype.html" class="tsd-signature-type">SelectorType</a><span class="tsd-signature-symbol"> = SelectorType.None</span></div>
+					<a name="statusmessage" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> status<wbr>Message</h3>
+					<div class="tsd-signature tsd-kind-icon">status<wbr>Message<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/iservererrorresponse.html">IServerErrorResponse</a>.<a href="../interfaces/iservererrorresponse.html#statusmessage">statusMessage</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/nodes/nodes.ts#L30">src/nodes/nodes.ts:30</a></li>
+							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/platform/server.ts#L88">src/platform/server.ts:88</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="url" class="tsd-anchor"></a>
+					<h3>url</h3>
+					<div class="tsd-signature tsd-kind-icon">url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/iservererrorresponse.html">IServerErrorResponse</a>.<a href="../interfaces/iservererrorresponse.html#url">url</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/platform/server.ts#L84">src/platform/server.ts:84</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="vars" class="tsd-anchor"></a>
+					<h3>vars</h3>
+					<div class="tsd-signature tsd-kind-icon">vars<span class="tsd-signature-symbol">:</span> <a href="../interfaces/iservervars.html" class="tsd-signature-type">IServerVars</a></div>
+					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/iservererrorresponse.html">IServerErrorResponse</a>.<a href="../interfaces/iservererrorresponse.html#vars">vars</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/actarian/rxcomp-server/blob/344a9b6/src/platform/server.ts#L85">src/platform/server.ts:85</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -166,19 +199,25 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="rxselector.html" class="tsd-kind-icon">Rx<wbr>Selector</a>
+						<a href="servererrorresponse.html" class="tsd-kind-icon">Server<wbr>Error<wbr>Response</a>
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="rxselector.html#constructor" class="tsd-kind-icon">constructor</a>
+								<a href="servererrorresponse.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="rxselector.html#negate" class="tsd-kind-icon">negate</a>
+								<a href="servererrorresponse.html#error" class="tsd-kind-icon">error</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="rxselector.html#selector" class="tsd-kind-icon">selector</a>
+								<a href="servererrorresponse.html#statuscode" class="tsd-kind-icon">status<wbr>Code</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="rxselector.html#type" class="tsd-kind-icon">type</a>
+								<a href="servererrorresponse.html#statusmessage" class="tsd-kind-icon">status<wbr>Message</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="servererrorresponse.html#url" class="tsd-kind-icon">url</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="servererrorresponse.html#vars" class="tsd-kind-icon">vars</a>
 							</li>
 						</ul>
 					</li>

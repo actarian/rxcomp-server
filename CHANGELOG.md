@@ -3,7 +3,7 @@ All notable changes to the "rxcomp-server" library will be documented in this fi
 
 ---
 
-## [1.0.0-beta.12] - 2020-07-26
+## [1.0.0-beta.13] - 2020-08-23
 ### Added
 - Initial release of RxComp Server library
 

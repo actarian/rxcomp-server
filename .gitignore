@@ -1,5 +1,8 @@
 docs/js/rxcomp.js
 
+# Ignore
+*.ignore
+
 # Logs
 logs
 *.log

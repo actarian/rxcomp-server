@@ -66,8 +66,7 @@
 					<h1>💎 RxComp ServerModule</h1>
 				</a>
 				<p><a href="https://github.com/actarian/rxcomp-server"><img src="https://img.shields.io/github/license/actarian/rxcomp-server.svg" alt="Licence"></a></p>
-				<p><a href="https://github.com/actarian/rxcomp-server">RxComp Server</a> is a small Javascript module for <a href="https://github.com/actarian/rxcomp">RxComp</a>, developed with <a href="https://github.com/immerjs/immer">Immer</a> and <a href="https://github.com/ReactiveX/rxjs">RxJs</a> as a simple alternative to <a href="https://github.com/reduxjs/redux">Redux</a>.</p>
-				<p>The store can however be used with any framework or VanillaJS. </p>
+				<p><a href="https://github.com/actarian/rxcomp-server">RxComp Server</a> is the Server Side Rendering module for <a href="https://github.com/actarian/rxcomp">RxComp</a> library, developed with <a href="https://github.com/ReactiveX/rxjs">RxJs</a>.</p>
 				<table>
 					<thead>
 						<tr>
@@ -99,17 +98,9 @@
 							<td align="left">rxjs.min.js</td>
 							<td align="left"><img src="https://img.badgesize.io/https://unpkg.com/rxjs@6.6.2/bundles/rxjs.umd.min.js.svg" alt=""></td>
 						</tr>
-						<tr>
-							<td align="left">immer.min.js</td>
-							<td align="left"><img src="https://img.badgesize.io/https://unpkg.com/immer@7.0.5/dist/immer.umd.production.min.js.svg?compression=gzip" alt=""></td>
-						</tr>
-						<tr>
-							<td align="left">immer.min.js</td>
-							<td align="left"><img src="https://img.badgesize.io/https://unpkg.com/immer@7.0.5/dist/immer.umd.production.min.js.svg" alt=""></td>
-						</tr>
 				</tbody></table>
 				<blockquote>
-					<p><a href="https://actarian.github.io/rxcomp-server/">RxComp Server Demo</a><br><a href="https://actarian.github.io/rxcomp-server/api/">RxComp Server Api</a><br><a href="https://codesandbox.io/s/rxcomp-servermodule-demo-h297m">RxComp Sotre Codesandbox</a>  </p>
+					<p><a href="https://actarian.github.io/rxcomp-server/">RxComp Server Demo</a><br><a href="https://actarian.github.io/rxcomp-server/api/">RxComp Server Api</a>  </p>
 				</blockquote>
 				<p><img src="https://rawcdn.githack.com/actarian/rxcomp-server/master/docs/img/rxcomp-server-demo.jpg?token=AAOBSISYZJXZNFFWAPGOLYC7DQKIO" alt="">  </p>
 				<hr>
@@ -119,14 +110,13 @@
 				<a href="#es6-via-npm" id="es6-via-npm" style="color: inherit; text-decoration: none;">
 					<h3>ES6 via npm</h3>
 				</a>
-				<p>This library depend on <a href="https://github.com/actarian/rxcomp">RxComp</a> <a href="https://github.com/immerjs/immer">Immer</a> and <a href="https://github.com/ReactiveX/rxjs">RxJs</a><br>install via npm or include via script   </p>
-				<pre><code>npm <span class="hljs-keyword">install</span> rxjs immer rxcomp rxcomp-<span class="hljs-keyword">server</span> <span class="hljs-comment">--save</span></code></pre><hr>
+				<p>This library depend on <a href="https://github.com/actarian/rxcomp">RxComp</a> and <a href="https://github.com/ReactiveX/rxjs">RxJs</a><br>install via npm or include via script   </p>
+				<pre><code>npm <span class="hljs-keyword">install</span> rxjs rxcomp rxcomp-<span class="hljs-keyword">server</span> <span class="hljs-comment">--save</span></code></pre><hr>
 				<a href="#cdn" id="cdn" style="color: inherit; text-decoration: none;">
 					<h3>CDN</h3>
 				</a>
 				<p>For CDN, you can use unpkg</p>
 				<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://unpkg.com/rxjs@6.6.2/bundles/rxjs.umd.min.js&quot;</span> <span class="hljs-attr">crossorigin</span>=<span class="hljs-string">&quot;anonymous&quot;</span> <span class="hljs-attr">SameSite</span>=<span class="hljs-string">&quot;none Secure&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://unpkg.com/immer@7.0.5/dist/immer.umd.production.min.js&quot;</span> <span class="hljs-attr">crossorigin</span>=<span class="hljs-string">&quot;anonymous&quot;</span> <span class="hljs-attr">SameSite</span>=<span class="hljs-string">&quot;none Secure&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://unpkg.com/rxcomp@1.0.0-beta.12/dist/umd/rxcomp.min.js&quot;</span> <span class="hljs-attr">crossorigin</span>=<span class="hljs-string">&quot;anonymous&quot;</span> <span class="hljs-attr">SameSite</span>=<span class="hljs-string">&quot;none Secure&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>  
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://unpkg.com/rxcomp-server@1.0.0-beta.11/dist/umd/rxcomp-server.min.js&quot;</span> <span class="hljs-attr">crossorigin</span>=<span class="hljs-string">&quot;anonymous&quot;</span> <span class="hljs-attr">SameSite</span>=<span class="hljs-string">&quot;none Secure&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>  </code></pre>
 				<p>The global namespace for RxComp is <code>rxcomp</code></p>
@@ -134,143 +124,19 @@
 				<p>The global namespace for RxComp ServerModule is <code>rxcomp.server</code></p>
 				<pre><code class="language-javascript"><span class="hljs-keyword">import</span> { StoreModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxcomp-server&#x27;</span>;</code></pre>
 				<hr>
-				<a href="#the-store" id="the-store" style="color: inherit; text-decoration: none;">
-					<h3>The store</h3>
+				<a href="#bootstrapping-server-module" id="bootstrapping-server-module" style="color: inherit; text-decoration: none;">
+					<h3>Bootstrapping Server Module</h3>
 				</a>
-				<p>With the <code>useStore</code> factory we create the immutable store with a default value.<br>The store will be consumed by a singleton service, and honoring the <a href="https://en.wikipedia.org/wiki/Single-responsibility_principle">single-responsibility principle</a> only a specific portion of the app data will be stored.  </p>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> { useStore } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxcomp-server&#x27;</span>;
+				<p>The exposed <code>renderRequest$</code> method handles the <code>ServerRequest</code> and return an Observable with the <code>ServerResponse</code>.
+				Example of <code>main.server.ts</code>.  </p>
+				<pre><code class="language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;cross-fetch/polyfill&#x27;</span>;
+<span class="hljs-keyword">import</span> { Observable } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxjs&#x27;</span>;
+<span class="hljs-keyword">import</span> { Server, ServerRequest, ServerResponse } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../../../src/rxcomp-server&#x27;</span>;
+<span class="hljs-keyword">import</span> AppModule <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./app.module&#x27;</span>;
 
-<span class="hljs-keyword">const</span> { state$ } = useStore({ <span class="hljs-attr">todolist</span>: [] });</code></pre>
-				<p>Subscribing to the <code>state$</code> observable you always get the last immutable copy of the <code>state</code> draft.</p>
-				<pre><code class="language-js">state$.subscribe(<span class="hljs-function"><span class="hljs-params">state</span> =&gt;</span> <span class="hljs-built_in">this</span>.todolist = state.todolist);</code></pre>
-				<hr>
-				<a href="#reducing-the-store-state" id="reducing-the-store-state" style="color: inherit; text-decoration: none;">
-					<h3>Reducing the store state</h3>
-				</a>
-				<p>The <code>reducer</code> operator accept a reducer callback with the <code>observable$</code> payload and a mutable draft of the <code>state</code> as parameter.<br>When reducer returns, an immutable copy of the state will be pushed to the <code>state$</code> observable through <a href="https://github.com/immerjs/immer">Immer</a>.  </p>
-				<pre><code class="language-js"><span class="hljs-keyword">const</span> { reducer } = useStore({ <span class="hljs-attr">todolist</span>: [] });
-
-observable$.pipe(
-  reducer(<span class="hljs-function">(<span class="hljs-params">todolist, state</span>) =&gt;</span> state.todolist = todolist)
-);</code></pre>
-				<hr>
-				<a href="#catching-errors-into-the-state" id="catching-errors-into-the-state" style="color: inherit; text-decoration: none;">
-					<h3>Catching errors into the state</h3>
-				</a>
-				<p>The <code>catchState</code> operator is used to catch the error and store it in the immutable state.  </p>
-				<pre><code class="language-js"><span class="hljs-keyword">const</span> { catchState } = useStore({ <span class="hljs-attr">todolist</span>: [] });
-
-observable$.pipe(
-  catchState(<span class="hljs-built_in">console</span>.log),
-);</code></pre>
-				<p>You can then observe the state for errors.  </p>
-				<pre><code class="language-js">state$.subscribe(<span class="hljs-function"><span class="hljs-params">state</span> =&gt;</span> <span class="hljs-built_in">this</span>.error = state.error);</code></pre>
-				<hr>
-				<a href="#setting-the-busy-state" id="setting-the-busy-state" style="color: inherit; text-decoration: none;">
-					<h3>Setting the busy state</h3>
-				</a>
-				<p>The <code>busy$</code> observable will store the busy flag in the immutable state and lock future calls until the observable completes.  </p>
-				<pre><code class="language-js"><span class="hljs-keyword">const</span> { busy$ } = useStore({ <span class="hljs-attr">todolist</span>: [] });
-
-busy$().pipe(
-  switchMap(<span class="hljs-function">() =&gt;</span> observable$),
-);</code></pre>
-				<p>You can then observe the busy state.  </p>
-				<pre><code class="language-js">state$.subscribe(<span class="hljs-function"><span class="hljs-params">state</span> =&gt;</span> <span class="hljs-built_in">this</span>.busy = state.busy);</code></pre>
-				<hr>
-				<a href="#loading-state-from-web-api-storage-or-cookie" id="loading-state-from-web-api-storage-or-cookie" style="color: inherit; text-decoration: none;">
-					<h3>Loading state from Web Api Storage or Cookie</h3>
-				</a>
-				<p>While reloading the page, you may want to reload the previous state of the app.<br>First we have to initialize the store with a different <code>StoreType</code> (the default is <code>StoreType.Memory</code>) and give it a unique store name.  </p>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> { StoreType, useStore } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxcomp-server&#x27;</span>;
-
-<span class="hljs-keyword">const</span> { cached$ } = useStore({ <span class="hljs-attr">todolist</span>: [] }, 
-  StoreType.Session, <span class="hljs-string">&#x27;todolist&#x27;</span>
-);</code></pre>
-				<p>With the <code>cached$</code> observable we can retrieve the last saved state from <code>sessionStorage</code> or <code>localStorage</code> or <code>cookie</code>.  </p>
-				<pre><code class="language-js">cached$((state) =&gt; state.todolist)</code></pre>
-				<hr>
-				<a href="#all-together" id="all-together" style="color: inherit; text-decoration: none;">
-					<h3>All together</h3>
-				</a>
-				<ol>
-					<li>busy$ mark state as busy  </li>
-					<li>cached$ load data from cache  </li>
-					<li>reducer reduce the state to the new state  </li>
-					<li>catchState catch the error and reduce the state to the errored state.  </li>
-				</ol>
-				<pre><code class="language-js"><span class="hljs-keyword">import</span> { StoreType, useStore } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxcomp-server&#x27;</span>;
-
-<span class="hljs-keyword">const</span> { busy$, cached$, reducer, catchState } = useStore(
-  { <span class="hljs-attr">todolist</span>: [] },
-  StoreType.Session, <span class="hljs-string">&#x27;todolist&#x27;</span>
-);
-
-busy$().pipe(
-  switchMap(<span class="hljs-function">() =&gt;</span> 
-    merge(cached$((state) =&gt; state.todolist), fromApi$).pipe(
-      reducer(<span class="hljs-function">(<span class="hljs-params">todolist, state</span>) =&gt;</span> state.todolist = todolist),
-      catchState(<span class="hljs-built_in">console</span>.log),
-    )
-  )
-);</code></pre>
-				<hr>
-				<a href="#querying-the-store-state" id="querying-the-store-state" style="color: inherit; text-decoration: none;">
-					<h3>Querying the store state</h3>
-				</a>
-				<p>The <code>select$</code> observable accept a reducer callback with an immutable copy of the <code>state</code> as parameter and returns an immutable copy of a portion of the <code>state</code> as observable.  </p>
-				<pre><code class="language-js"><span class="hljs-keyword">const</span> { select$ } = useStore({ <span class="hljs-attr">todolist</span>: [] });
-
-<span class="hljs-keyword">const</span> todolist$ = select$((state) =&gt; state.todolist);</code></pre>
-				<hr>
-				<a href="#querying-with-select" id="querying-with-select" style="color: inherit; text-decoration: none;">
-					<h3>Querying with select</h3>
-				</a>
-				<p>The <code>select</code> method works like the <code>select$</code> observable but doesn&#39;t return an observable.  </p>
-				<pre><code class="language-js"><span class="hljs-keyword">const</span> { select } = useStore({ <span class="hljs-attr">todolist</span>: [] });
-
-<span class="hljs-keyword">const</span> todolist = select(<span class="hljs-function">(<span class="hljs-params">state</span>) =&gt;</span> state.todolist);</code></pre>
-				<hr>
-				<a href="#other-methods" id="other-methods" style="color: inherit; text-decoration: none;">
-					<h3>Other methods</h3>
-				</a>
-				<a href="#setting-the-store-state" id="setting-the-store-state" style="color: inherit; text-decoration: none;">
-					<h4>Setting the store state</h4>
-				</a>
-				<p>The <code>next</code> method accept a reducer callback with a mutable draft of the <code>state</code> as parameter.<br>When reducer returns, an immutable copy of the state will be pushed to the <code>state$</code> observable through <a href="https://github.com/immerjs/immer">Immer</a>.
-				It works like the <code>reduce</code> operator but doesn&#39;t return an observable.  </p>
-				<pre><code class="language-js"><span class="hljs-keyword">const</span> { next } = useStore({ <span class="hljs-attr">todolist</span>: [] });
-
-next(<span class="hljs-function">(<span class="hljs-params">state</span>) =&gt;</span> state.todolist = todolist))</code></pre>
-				<hr>
-				<a href="#setting-the-store-error" id="setting-the-store-error" style="color: inherit; text-decoration: none;">
-					<h4>Setting the store error</h4>
-				</a>
-				<p>The <code>nextError</code> method will store the <code>error</code> parameter in the immutable state.
-				It works like the <code>catchState</code> operator but is intended to use in conjunction of classic <code>catchError</code> operator.  </p>
-				<pre><code class="language-js"><span class="hljs-keyword">const</span> { nextError } = useStore({ <span class="hljs-attr">todolist</span>: [] });
-
-catchError(<span class="hljs-function"><span class="hljs-params">error</span> =&gt;</span> nextError(error))</code></pre>
-				<hr>
-				<a href="#bootstrapping-module" id="bootstrapping-module" style="color: inherit; text-decoration: none;">
-					<h3>Bootstrapping Module</h3>
-				</a>
-				<pre><code class="language-javascript"><span class="hljs-keyword">import</span> { Browser, CoreModule, Module } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxcomp&#x27;</span>;
-<span class="hljs-keyword">import</span> { StoreModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxcomp-server&#x27;</span>;
-<span class="hljs-keyword">import</span> AppComponent <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./app.component&#x27;</span>;
-
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AppModule</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Module</span> </span>{}
-
-AppModule.meta = {
-    <span class="hljs-attr">imports</span>: [
-        CoreModule,
-        StoreModule
-    ],
-    <span class="hljs-attr">declarations</span>: [],
-    <span class="hljs-attr">bootstrap</span>: AppComponent,
-};
-
-Browser.bootstrap(AppModule);</code></pre>
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">renderRequest$</span>(<span class="hljs-params">request: ServerRequest</span>): <span class="hljs-title">Observable</span>&lt;<span class="hljs-title">ServerResponse</span>&gt; </span>{
+    <span class="hljs-keyword">return</span> Server.bootstrap$(AppModule, request);
+}</code></pre>
 				<hr>
 				<a href="#browser-compatibility" id="browser-compatibility" style="color: inherit; text-decoration: none;">
 					<h3>Browser Compatibility</h3>
@@ -306,7 +172,7 @@ Browser.bootstrap(AppModule);</code></pre>
 					<h2>Contact</h2>
 				</a>
 				<ul>
-					<li>Luca Zampetti <a href="mailto:&#x6c;&#122;&#x61;&#x6d;&#112;&#101;&#116;&#116;&#105;&#64;&#103;&#x6d;&#x61;&#105;&#108;&#x2e;&#99;&#111;&#109;">&#x6c;&#122;&#x61;&#x6d;&#112;&#101;&#116;&#116;&#105;&#64;&#103;&#x6d;&#x61;&#105;&#108;&#x2e;&#99;&#111;&#109;</a></li>
+					<li>Luca Zampetti <a href="mailto:&#108;&#122;&#97;&#x6d;&#112;&#101;&#116;&#x74;&#105;&#64;&#x67;&#109;&#x61;&#x69;&#x6c;&#x2e;&#99;&#111;&#109;">&#108;&#122;&#97;&#x6d;&#112;&#101;&#116;&#x74;&#105;&#64;&#x67;&#109;&#x61;&#x69;&#x6c;&#x2e;&#99;&#111;&#109;</a></li>
 					<li>Follow <a href="https://twitter.com/actarian">@actarian</a> on Twitter</li>
 				</ul>
 				<p><a href="https://twitter.com/actarian"><img src="https://img.shields.io/twitter/follow/actarian.svg?style=social&label=Follow%20@actarian" alt="Twitter Follow"></a>  </p>
@@ -346,6 +212,10 @@ Browser.bootstrap(AppModule);</code></pre>
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
 				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
