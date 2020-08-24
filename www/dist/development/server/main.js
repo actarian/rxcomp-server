@@ -1,10 +1,10 @@
 /**
- * @license rxcomp-server v1.0.0-beta.12
+ * @license rxcomp-server v1.0.0-beta.13
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
 
-(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?f(exports,require('stream'),require('http'),require('url'),require('https'),require('zlib'),require('rxjs/operators'),require('rxjs'),require('htmlparser2'),require('rxcomp')):typeof define==='function'&&define.amd?define(['exports','stream','http','url','https','zlib','rxjs/operators','rxjs','htmlparser2','rxcomp'],f):(g=typeof globalThis!=='undefined'?globalThis:g||self,f(g.main={},g.Stream,g.http,g.Url,g.https,g.zlib,g.rxjs.operators,g.rxjs,g.htmlparser2,g.rxcomp));}(this,(function(exports, Stream, http, Url, https, zlib, operators, rxjs, htmlparser2, rxcomp){'use strict';Stream=Stream&&Object.prototype.hasOwnProperty.call(Stream,'default')?Stream['default']:Stream;http=http&&Object.prototype.hasOwnProperty.call(http,'default')?http['default']:http;Url=Url&&Object.prototype.hasOwnProperty.call(Url,'default')?Url['default']:Url;https=https&&Object.prototype.hasOwnProperty.call(https,'default')?https['default']:https;zlib=zlib&&Object.prototype.hasOwnProperty.call(zlib,'default')?zlib['default']:zlib;var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?f(exports,require('stream'),require('http'),require('url'),require('https'),require('zlib'),require('rxjs/operators'),require('rxcomp'),require('rxjs'),require('htmlparser2')):typeof define==='function'&&define.amd?define(['exports','stream','http','url','https','zlib','rxjs/operators','rxcomp','rxjs','htmlparser2'],f):(g=typeof globalThis!=='undefined'?globalThis:g||self,f(g.main={},g.Stream,g.http,g.Url,g.https,g.zlib,g.rxjs.operators,g.rxcomp,g.rxjs,g.htmlparser2));}(this,(function(exports, Stream, http, Url, https, zlib, operators, rxcomp, rxjs, htmlparser2){'use strict';Stream=Stream&&Object.prototype.hasOwnProperty.call(Stream,'default')?Stream['default']:Stream;http=http&&Object.prototype.hasOwnProperty.call(http,'default')?http['default']:http;Url=Url&&Object.prototype.hasOwnProperty.call(Url,'default')?Url['default']:Url;https=https&&Object.prototype.hasOwnProperty.call(https,'default')?https['default']:https;zlib=zlib&&Object.prototype.hasOwnProperty.call(zlib,'default')?zlib['default']:zlib;var operators__default='default'in operators?operators['default']:operators;var rxcomp__default='default'in rxcomp?rxcomp['default']:rxcomp;var rxjs__default='default'in rxjs?rxjs['default']:rxjs;var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function createCommonjsModule(fn, basedir, module) {
 	return module = {
@@ -1672,7 +1672,2331 @@ if (!commonjsGlobal.fetch) {
   commonjsGlobal.Response = nodePonyfill.Response;
   commonjsGlobal.Headers = nodePonyfill.Headers;
   commonjsGlobal.Request = nodePonyfill.Request;
-}function _defineProperties(target, props) {
+}/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+/* global Reflect, Promise */
+var _extendStatics = function extendStatics(d, b) {
+  _extendStatics = Object.setPrototypeOf || {
+    __proto__: []
+  } instanceof Array && function (d, b) {
+    d.__proto__ = b;
+  } || function (d, b) {
+    for (var p in b) {
+      if (b.hasOwnProperty(p)) d[p] = b[p];
+    }
+  };
+
+  return _extendStatics(d, b);
+};
+
+function __extends(d, b) {
+  _extendStatics(d, b);
+
+  function __() {
+    this.constructor = d;
+  }
+
+  d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
+var _assign = function __assign() {
+  _assign = Object.assign || function __assign(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+
+      for (var p in s) {
+        if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+      }
+    }
+
+    return t;
+  };
+
+  return _assign.apply(this, arguments);
+};
+function __rest(s, e) {
+  var t = {};
+
+  for (var p in s) {
+    if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
+  }
+
+  if (s != null && typeof Object.getOwnPropertySymbols === "function") for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+    if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i])) t[p[i]] = s[p[i]];
+  }
+  return t;
+}
+function __decorate(decorators, target, key, desc) {
+  var c = arguments.length,
+      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+      d;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) {
+    if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  }
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function __param(paramIndex, decorator) {
+  return function (target, key) {
+    decorator(target, key, paramIndex);
+  };
+}
+function __metadata(metadataKey, metadataValue) {
+  if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
+}
+function __awaiter(thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+}
+function __generator(thisArg, body) {
+  var _ = {
+    label: 0,
+    sent: function sent() {
+      if (t[0] & 1) throw t[1];
+      return t[1];
+    },
+    trys: [],
+    ops: []
+  },
+      f,
+      y,
+      t,
+      g;
+  return g = {
+    next: verb(0),
+    "throw": verb(1),
+    "return": verb(2)
+  }, typeof Symbol === "function" && (g[Symbol.iterator] = function () {
+    return this;
+  }), g;
+
+  function verb(n) {
+    return function (v) {
+      return step([n, v]);
+    };
+  }
+
+  function step(op) {
+    if (f) throw new TypeError("Generator is already executing.");
+
+    while (_) {
+      try {
+        if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+        if (y = 0, t) op = [op[0] & 2, t.value];
+
+        switch (op[0]) {
+          case 0:
+          case 1:
+            t = op;
+            break;
+
+          case 4:
+            _.label++;
+            return {
+              value: op[1],
+              done: false
+            };
+
+          case 5:
+            _.label++;
+            y = op[1];
+            op = [0];
+            continue;
+
+          case 7:
+            op = _.ops.pop();
+
+            _.trys.pop();
+
+            continue;
+
+          default:
+            if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+              _ = 0;
+              continue;
+            }
+
+            if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+              _.label = op[1];
+              break;
+            }
+
+            if (op[0] === 6 && _.label < t[1]) {
+              _.label = t[1];
+              t = op;
+              break;
+            }
+
+            if (t && _.label < t[2]) {
+              _.label = t[2];
+
+              _.ops.push(op);
+
+              break;
+            }
+
+            if (t[2]) _.ops.pop();
+
+            _.trys.pop();
+
+            continue;
+        }
+
+        op = body.call(thisArg, _);
+      } catch (e) {
+        op = [6, e];
+        y = 0;
+      } finally {
+        f = t = 0;
+      }
+    }
+
+    if (op[0] & 5) throw op[1];
+    return {
+      value: op[0] ? op[1] : void 0,
+      done: true
+    };
+  }
+}
+var __createBinding = Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+};
+function __exportStar(m, exports) {
+  for (var p in m) {
+    if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+  }
+}
+function __values(o) {
+  var s = typeof Symbol === "function" && Symbol.iterator,
+      m = s && o[s],
+      i = 0;
+  if (m) return m.call(o);
+  if (o && typeof o.length === "number") return {
+    next: function next() {
+      if (o && i >= o.length) o = void 0;
+      return {
+        value: o && o[i++],
+        done: !o
+      };
+    }
+  };
+  throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+}
+function __read(o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+      r,
+      ar = [],
+      e;
+
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) {
+      ar.push(r.value);
+    }
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+
+  return ar;
+}
+function __spread() {
+  for (var ar = [], i = 0; i < arguments.length; i++) {
+    ar = ar.concat(__read(arguments[i]));
+  }
+
+  return ar;
+}
+function __spreadArrays() {
+  for (var s = 0, i = 0, il = arguments.length; i < il; i++) {
+    s += arguments[i].length;
+  }
+
+  for (var r = Array(s), k = 0, i = 0; i < il; i++) {
+    for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) {
+      r[k] = a[j];
+    }
+  }
+
+  return r;
+}
+function __await(v) {
+  return this instanceof __await ? (this.v = v, this) : new __await(v);
+}
+function __asyncGenerator(thisArg, _arguments, generator) {
+  if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+  var g = generator.apply(thisArg, _arguments || []),
+      i,
+      q = [];
+  return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () {
+    return this;
+  }, i;
+
+  function verb(n) {
+    if (g[n]) i[n] = function (v) {
+      return new Promise(function (a, b) {
+        q.push([n, v, a, b]) > 1 || resume(n, v);
+      });
+    };
+  }
+
+  function resume(n, v) {
+    try {
+      step(g[n](v));
+    } catch (e) {
+      settle(q[0][3], e);
+    }
+  }
+
+  function step(r) {
+    r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);
+  }
+
+  function fulfill(value) {
+    resume("next", value);
+  }
+
+  function reject(value) {
+    resume("throw", value);
+  }
+
+  function settle(f, v) {
+    if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]);
+  }
+}
+function __asyncDelegator(o) {
+  var i, p;
+  return i = {}, verb("next"), verb("throw", function (e) {
+    throw e;
+  }), verb("return"), i[Symbol.iterator] = function () {
+    return this;
+  }, i;
+
+  function verb(n, f) {
+    i[n] = o[n] ? function (v) {
+      return (p = !p) ? {
+        value: __await(o[n](v)),
+        done: n === "return"
+      } : f ? f(v) : v;
+    } : f;
+  }
+}
+function __asyncValues(o) {
+  if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+  var m = o[Symbol.asyncIterator],
+      i;
+  return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () {
+    return this;
+  }, i);
+
+  function verb(n) {
+    i[n] = o[n] && function (v) {
+      return new Promise(function (resolve, reject) {
+        v = o[n](v), settle(resolve, reject, v.done, v.value);
+      });
+    };
+  }
+
+  function settle(resolve, reject, d, v) {
+    Promise.resolve(v).then(function (v) {
+      resolve({
+        value: v,
+        done: d
+      });
+    }, reject);
+  }
+}
+function __makeTemplateObject(cooked, raw) {
+  if (Object.defineProperty) {
+    Object.defineProperty(cooked, "raw", {
+      value: raw
+    });
+  } else {
+    cooked.raw = raw;
+  }
+
+  return cooked;
+}
+
+var __setModuleDefault = Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+};
+
+function __importStar(mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+}
+function __importDefault(mod) {
+  return mod && mod.__esModule ? mod : {
+    default: mod
+  };
+}
+function __classPrivateFieldGet(receiver, privateMap) {
+  if (!privateMap.has(receiver)) {
+    throw new TypeError("attempted to get private field on non-instance");
+  }
+
+  return privateMap.get(receiver);
+}
+function __classPrivateFieldSet(receiver, privateMap, value) {
+  if (!privateMap.has(receiver)) {
+    throw new TypeError("attempted to set private field on non-instance");
+  }
+
+  privateMap.set(receiver, value);
+  return value;
+}var tslib_es6=/*#__PURE__*/Object.freeze({__proto__:null,__extends: __extends,get __assign(){return _assign},__rest: __rest,__decorate: __decorate,__param: __param,__metadata: __metadata,__awaiter: __awaiter,__generator: __generator,__createBinding: __createBinding,__exportStar: __exportStar,__values: __values,__read: __read,__spread: __spread,__spreadArrays: __spreadArrays,__await: __await,__asyncGenerator: __asyncGenerator,__asyncDelegator: __asyncDelegator,__asyncValues: __asyncValues,__makeTemplateObject: __makeTemplateObject,__importStar: __importStar,__importDefault: __importDefault,__classPrivateFieldGet: __classPrivateFieldGet,__classPrivateFieldSet: __classPrivateFieldSet});var httpEvent = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.HttpEventType = void 0;
+  var HttpEventType;
+
+  (function (HttpEventType) {
+    HttpEventType[HttpEventType["Sent"] = 0] = "Sent";
+    HttpEventType[HttpEventType["UploadProgress"] = 1] = "UploadProgress";
+    HttpEventType[HttpEventType["ResponseHeader"] = 2] = "ResponseHeader";
+    HttpEventType[HttpEventType["DownloadProgress"] = 3] = "DownloadProgress";
+    HttpEventType[HttpEventType["Response"] = 4] = "Response";
+    HttpEventType[HttpEventType["User"] = 5] = "User";
+    HttpEventType[HttpEventType["ResponseError"] = 6] = "ResponseError";
+  })(HttpEventType = exports.HttpEventType || (exports.HttpEventType = {}));
+});var httpHeaders = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.HttpHeaders = void 0;
+
+  var HttpHeaders =
+  /** @class */
+  function () {
+    function HttpHeaders(options) {
+      var _this = this;
+
+      var _a;
+
+      this.headers_ = new Map();
+      var headers = this.headers_;
+
+      if (options instanceof HttpHeaders) {
+        options.headers_.forEach(function (value, key) {
+          headers.set(key, value);
+        });
+      } else if (typeof ((_a = options) === null || _a === void 0 ? void 0 : _a.forEach) === 'function') {
+        options.forEach(function (value, key) {
+          headers.set(key, value.split(', '));
+        });
+      } else if (typeof options === 'object') {
+        Object.keys(options).forEach(function (key) {
+          var values = options[key];
+
+          if (typeof values === 'string') {
+            values = [values];
+          }
+
+          if (headers.has(key)) {
+            values.forEach(function (value) {
+              return _this.append(key, value);
+            });
+          } else {
+            headers.set(key, values);
+          }
+        });
+      } else if (typeof options === 'string') {
+        options.split('\n').forEach(function (line) {
+          var index = line.indexOf(':');
+
+          if (index > 0) {
+            var key = line.slice(0, index);
+            var value = line.slice(index + 1).trim();
+
+            if (headers.has(key)) {
+              _this.append(key, value);
+            } else {
+              headers.set(key, [value]);
+            }
+          }
+        });
+      }
+
+      if (!headers.has('Accept')) {
+        headers.set('Accept', ['application/json', 'text/plain', '*/*']);
+      }
+
+      if (!headers.has('Content-Type')) {
+        headers.set('Content-Type', ['application/json']);
+      }
+    }
+
+    HttpHeaders.prototype.has = function (key) {
+      return this.headers_.has(key);
+    };
+
+    HttpHeaders.prototype.get = function (key) {
+      var values = this.headers_.get(key);
+      return values ? values.join(', ') : null;
+    };
+
+    HttpHeaders.prototype.set = function (key, value) {
+      var clone = this.clone_();
+      clone.headers_.set(key, value.split(', '));
+      return clone;
+    };
+
+    HttpHeaders.prototype.append = function (key, value) {
+      var clone = this.clone_();
+      var values = clone.headers_.has(key) ? clone.headers_.get(key) || [] : [];
+      values.push(value);
+      clone.headers_.set(key, values);
+      return clone;
+    };
+
+    HttpHeaders.prototype.delete = function (key) {
+      var clone = this.clone_();
+      clone.headers_.delete(key);
+      return clone;
+    };
+
+    HttpHeaders.prototype.forEach = function (callback, thisArg) {
+      var _this = this;
+
+      this.headers_.forEach(function (v, k) {
+        callback(v.join(', '), k, _this);
+      });
+    };
+
+    HttpHeaders.prototype.serialize = function () {
+      var headers = [];
+      this.forEach(function (value, key) {
+        headers.push([key, value]);
+      });
+      return headers;
+    };
+
+    HttpHeaders.prototype.clone_ = function () {
+      var clone = new HttpHeaders();
+      this.headers_.forEach(function (value, key) {
+        clone.headers_.set(key, value);
+      });
+      return clone;
+    };
+
+    return HttpHeaders;
+  }();
+
+  exports.HttpHeaders = HttpHeaders;
+});var httpErrorResponse = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.HttpErrorResponse = void 0;
+
+  var HttpErrorResponse =
+  /** @class */
+  function (_super) {
+    tslib_es6.__extends(HttpErrorResponse, _super);
+
+    function HttpErrorResponse(options) {
+      var _this = _super.call(this, (options === null || options === void 0 ? void 0 : options.message) || 'Unknown Error') || this;
+
+      _this.status = 0;
+      _this.statusText = 'Unknown Error';
+      _this.ok = false;
+      _this.type = httpEvent.HttpEventType.ResponseError;
+      _this.message = 'Unknown Error';
+      _this.name = 'HttpErrorResponse';
+
+      if (options) {
+        _this.headers = new httpHeaders.HttpHeaders(options.headers);
+        _this.status = options.status || _this.status;
+        _this.statusText = options.statusText || _this.statusText;
+        _this.url = options.url || _this.url;
+        _this.error = options.error || _this.error;
+        _this.name = options.name || _this.name;
+        _this.request = options.request || null;
+      }
+
+      return _this;
+    }
+
+    HttpErrorResponse.prototype.clone = function (options) {
+      options = Object.assign({
+        headers: this.headers,
+        status: this.status,
+        statusText: this.statusText,
+        url: this.url,
+        error: this.error,
+        message: this.message,
+        name: this.name,
+        request: this.request
+      }, options || {});
+      var clone = new HttpErrorResponse(options);
+      return clone;
+    };
+
+    return HttpErrorResponse;
+  }(Error);
+
+  exports.HttpErrorResponse = HttpErrorResponse;
+});var httpResponse = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.HttpResponseBase = exports.HttpResponse = exports.HttpHeaderResponse = void 0;
+
+  var HttpHeaderResponse =
+  /** @class */
+  function () {
+    function HttpHeaderResponse(options) {
+      this.status = 200;
+      this.statusText = 'OK';
+      this.type = httpEvent.HttpEventType.ResponseHeader;
+
+      if (options) {
+        this.headers = new httpHeaders.HttpHeaders(options.headers);
+        this.status = options.status || this.status;
+        this.statusText = options.statusText || this.statusText;
+        this.url = options.url || this.url;
+      }
+
+      this.ok = this.status >= 200 && this.status < 300;
+    }
+
+    HttpHeaderResponse.prototype.clone = function (options) {
+      options = Object.assign({
+        headers: this.headers,
+        status: this.status,
+        statusText: this.statusText,
+        url: this.url,
+        ok: this.ok,
+        type: this.type
+      }, options || {});
+      var clone = new HttpHeaderResponse(options);
+      return clone;
+    };
+
+    return HttpHeaderResponse;
+  }();
+
+  exports.HttpHeaderResponse = HttpHeaderResponse;
+
+  var HttpResponse =
+  /** @class */
+  function () {
+    function HttpResponse(options) {
+      this.status = 200;
+      this.statusText = 'OK';
+      this.type = httpEvent.HttpEventType.Response;
+      this.body = null;
+
+      if (options) {
+        this.headers = new httpHeaders.HttpHeaders(options.headers);
+        this.status = options.status || this.status;
+        this.statusText = options.statusText || this.statusText;
+        this.url = options.url || this.url;
+        this.body = options.body || this.body;
+      }
+
+      this.ok = this.status >= 200 && this.status < 300;
+    }
+
+    HttpResponse.prototype.clone = function (options) {
+      options = Object.assign({
+        headers: this.headers,
+        status: this.status,
+        statusText: this.statusText,
+        url: this.url,
+        ok: this.ok,
+        type: this.type,
+        body: this.body
+      }, options || {});
+      var clone = new HttpResponse(options);
+      return clone;
+    };
+
+    return HttpResponse;
+  }();
+
+  exports.HttpResponse = HttpResponse;
+
+  var HttpResponseBase =
+  /** @class */
+  function () {
+    function HttpResponseBase(options, defaultStatus, defaultStatusText) {
+      if (defaultStatus === void 0) {
+        defaultStatus = 200;
+      }
+
+      if (defaultStatusText === void 0) {
+        defaultStatusText = 'OK';
+      }
+
+      this.status = 200;
+      this.statusText = 'OK';
+      this.headers = options.headers || new httpHeaders.HttpHeaders();
+      this.status = options.status !== undefined ? options.status : defaultStatus;
+      this.statusText = options.statusText || defaultStatusText;
+      this.url = options.url || undefined;
+      this.ok = this.status >= 200 && this.status < 300;
+    }
+
+    return HttpResponseBase;
+  }();
+
+  exports.HttpResponseBase = HttpResponseBase;
+  /*
+  // !!!
+  export default class HttpResponse {
+      data?: any;
+      url: string = '';
+      status: number = 0;
+      statusText: string = '';
+      ok: boolean = false;
+      redirected: boolean = false;
+      get static() {
+          return this.url!.indexOf('.json') === this.url!.length - 5;
+      }
+      constructor(response: Response) {
+          this.data = null;
+          if (response) {
+              this.url = response.url;
+              this.status = response.status;
+              this.statusText = response.statusText;
+              this.ok = response.ok;
+              this.redirected = response.redirected;
+          }
+      }
+  }
+  */
+});var httpFetch_handler = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.HttpFetchHandler = void 0;
+
+  var HttpFetchHandler =
+  /** @class */
+  function () {
+    function HttpFetchHandler() {
+      this.response_ = null;
+    }
+
+    HttpFetchHandler.prototype.handle = function (request) {
+      var _this = this;
+
+      if (!request.method) {
+        throw new Error("missing method");
+      }
+
+      var requestInfo = request.urlWithParams;
+      var requestInit = request.toInitRequest(); // console.log('fetchRequest', fetchRequest);
+      // fetchRequest.headers.forEach((value, key) => console.log('HttpFetchHandler.handle', key, value));
+      // request = request.clone({ headers: fetchRequest.headers });
+      // console.log('HttpFetchHandler.handle', 'requestInfo', requestInfo, 'requestInit', requestInit);
+      // hydrate
+
+      var stateKey = rxcomp__default.TransferService.makeKey(request.transferKey);
+      console.log('HttpFetchHandler.get', 'stateKey', stateKey, 'isPlatformBrowser', rxcomp__default.isPlatformBrowser, 'hydrate', request.hydrate);
+
+      if (rxcomp__default.isPlatformBrowser && request.hydrate && rxcomp__default.TransferService.has(stateKey)) {
+        var cached = rxcomp__default.TransferService.get(stateKey); // !!! <T>			
+
+        console.log('HttpFetchHandler', cached);
+        rxcomp__default.TransferService.remove(stateKey);
+        return rxjs__default.of(cached); // hydrate
+      } else {
+        return rxjs__default.from(fetch(requestInfo, requestInit) // fetch(fetchRequest)
+        .then(function (response) {
+          return _this.getProgress(response, request);
+        }).then(function (response) {
+          return _this.getResponse(response, request);
+        })).pipe( // hydrate
+        operators__default.tap(function (response) {
+          console.log('HttpFetchHandler.set', 'isPlatformServer', rxcomp__default.isPlatformServer, 'hydrate', request.hydrate, response);
+
+          if (rxcomp__default.isPlatformServer && request.hydrate) {
+            rxcomp__default.TransferService.set(stateKey, response);
+          }
+        }), // hydrate
+        operators__default.catchError(function (error) {
+          var errorResponse = {
+            error: error
+          };
+
+          if (_this.response_) {
+            errorResponse.headers = _this.response_.headers;
+            errorResponse.status = _this.response_.status;
+            errorResponse.statusText = _this.response_.statusText;
+            errorResponse.url = _this.response_.url;
+            errorResponse.request = request;
+          }
+
+          var httpErrorResponse$1 = new httpErrorResponse.HttpErrorResponse(errorResponse); // console.log('httpErrorResponse', httpErrorResponse);
+
+          rxcomp__default.nextError$.next(httpErrorResponse$1);
+          return rxjs__default.of(_this.response_); // return throwError(httpErrorResponse);
+        }), operators__default.finalize(function () {
+          _this.response_ = null;
+        }));
+      }
+    };
+    /*
+    onProgress(value: Uint8Array, done: boolean, request, reader, progress) {
+        console.log("value:", value);
+        if (value || done) {
+            console.log("upload complete, request.bodyUsed:", request.bodyUsed);
+            progress.value = progress.max;
+            return reader.closed.then(() => fileUpload);
+        };
+        console.log("upload progress:", value);
+        if (progress.value < file.size) {
+            progress.value += 1;
+        }
+        return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
+    };
+      getProgress_(request) {
+        const uploadProgress = new ReadableStream({
+            start(controller) {
+                console.log("starting upload, request.bodyUsed:", request.bodyUsed);
+                controller.enqueue(request.bodyUsed);
+            },
+            pull(controller) {
+                if (request.bodyUsed) {
+                    controller.close();
+                }
+                controller.enqueue(request.bodyUsed);
+                console.log("pull, request.bodyUsed:", request.bodyUsed);
+            },
+            cancel(reason) {
+                console.log(reason);
+            }
+        });
+          const [fileUpload, reader] = [
+            upload(request).catch(e => {
+                reader.cancel();
+                console.log(e);
+                throw e
+            }), uploadProgress.getReader()
+        ];
+    }
+    */
+
+
+    HttpFetchHandler.prototype.getProgress = function (response, request) {
+      var _this = this; // console.log('HttpFetchHandler.setProgress', request.reportProgress, response.body);
+
+
+      var clonedBody = response.clone().body;
+
+      if (rxcomp__default.isPlatformBrowser && request.reportProgress && clonedBody) {
+        var reader_1 = clonedBody.getReader();
+        var contentLength_1 = response.headers && response.headers.has('Content-Length') ? +(response.headers.get('Content-Length') || 0) : 0;
+        return new Promise(function (resolve, reject) {
+          /*
+          let receivedLength = 0; // received that many bytes at the moment
+          const chunks: Uint8Array[] = []; // array of received binary chunks (comprises the body)
+          const getChunk = () => {
+              return reader.read().then(({ done, value }) => {
+                  if (!done) {
+                      if (value) {
+                          chunks.push(value);
+                          receivedLength += value.length || 0;
+                          console.log(`HttpFetchHandler.setProgress ${(receivedLength / contentLength * 100).toFixed(2)}% ${receivedLength} of ${contentLength}`);
+                      }
+                      getChunk();
+                  } else {
+                      reader.cancel();
+                      resolve(response);
+                      if (false) {
+                          // Step 4: concatenate chunks into single Uint8Array
+                          const chunksAll = new Uint8Array(receivedLength); // (4.1)
+                          let position = 0;
+                          for (let chunk of chunks) {
+                              chunksAll.set(chunk, position); // (4.2)
+                              position += chunk.length;
+                          }
+                          // Step 5: decode into a string
+                          const result = new TextDecoder("utf-8").decode(chunksAll);
+                          // We're done!
+                          const data = JSON.parse(result);
+                          console.log('HttpFetchHandler.setProgress data', data);
+                          resolve(response);
+                      }
+                  }
+              }).catch(error => {
+                  reader.cancel();
+                  reject(error);
+              });
+          };
+          getChunk();
+          */
+          var progress = {
+            progress: 0,
+            percent: 0,
+            current: 0,
+            total: 0
+          };
+
+          var onProgress = function onProgress(value, done) {
+            var receivedLength = progress.current;
+
+            if (!done) {
+              if (value) {
+                receivedLength += value.length || 0;
+                progress.total = contentLength_1;
+                progress.current = receivedLength;
+                progress.progress = receivedLength / contentLength_1;
+                progress.percent = progress.progress * 100;
+              } // console.log('progress', progress);
+
+
+              return reader_1.read().then(function (_a) {
+                var value = _a.value,
+                    done = _a.done;
+                return onProgress(value, done);
+              });
+            } else {
+              progress.total = contentLength_1;
+              progress.current = contentLength_1;
+              progress.progress = 1;
+              progress.percent = 100; // console.log('progress', progress);
+
+              return reader_1.closed.then(function () {
+                return response.clone();
+              });
+            }
+          };
+
+          reader_1.read().then(function (_a) {
+            var value = _a.value,
+                done = _a.done;
+            return onProgress(value, done);
+          }).then(function (response) {
+            _this.response_ = new httpResponse.HttpResponse(response);
+
+            if (typeof response[request.responseType] === 'function') {
+              return response[request.responseType]().then(function (json) {
+                _this.response_ = new httpResponse.HttpResponse(Object.assign(_this.response_, {
+                  body: json
+                }));
+
+                if (response.ok) {
+                  return resolve(_this.response_);
+                } else {
+                  return reject(_this.response_);
+                }
+              });
+            } else {
+              return reject(_this.response_);
+            }
+          }).catch(function (err) {
+            return console.log("upload error:", err);
+          });
+        });
+      } else {
+        return Promise.resolve(response);
+      }
+    };
+
+    HttpFetchHandler.prototype.getResponse = function (response, request) {
+      this.response_ = new httpResponse.HttpResponse(response);
+
+      if (rxcomp__default.isPlatformBrowser && request.reportProgress && response.body) {
+        return Promise.resolve(this.response_);
+      } else {
+        return this.getResponseType(response, request);
+      }
+    };
+
+    HttpFetchHandler.prototype.getResponseType = function (response, request) {
+      var _this = this;
+
+      return new Promise(function (resolve, reject) {
+        _this.response_ = new httpResponse.HttpResponse(response);
+
+        if (typeof response[request.responseType] === 'function') {
+          return response[request.responseType]().then(function (json) {
+            _this.response_ = new httpResponse.HttpResponse(Object.assign(_this.response_, {
+              body: json
+            }));
+
+            if (response.ok) {
+              return resolve(_this.response_);
+            } else {
+              return reject(_this.response_);
+            }
+          });
+        } else {
+          return reject(_this.response_);
+        }
+      });
+    };
+
+    HttpFetchHandler.prototype.getReadableStream = function (response, request) {
+      var reader = response.body.getReader();
+      var readableStream = new ReadableStream({
+        start: function start(controller) {
+          // console.log("starting upload, request.bodyUsed:", request.bodyUsed);
+          // controller.enqueue(request.bodyUsed);
+          // The following function handles each data chunk
+          var push = function push() {
+            // "done" is a Boolean and value a "Uint8Array"
+            reader.read().then(function (_a) {
+              var done = _a.done,
+                  value = _a.value; // Is there no more data to read?
+
+              if (done) {
+                // Tell the browser that we have finished sending data
+                controller.close();
+                return;
+              } // Get the data and send it to the browser via the controller
+
+
+              controller.enqueue(value);
+              push();
+            });
+          };
+
+          push();
+        }
+      });
+      return readableStream;
+    };
+
+    return HttpFetchHandler;
+  }();
+
+  exports.HttpFetchHandler = HttpFetchHandler;
+});var httpXhr_handler = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.HttpXhrHandler = void 0;
+  var XSSI_PREFIX = /^\)\]\}',?\n/;
+
+  var HttpXhrHandler =
+  /** @class */
+  function () {
+    function HttpXhrHandler() {}
+
+    HttpXhrHandler.prototype.handle = function (request) {
+      if (!request.method) {
+        throw new Error("missing method");
+      }
+
+      if (request.method === 'JSONP') {
+        throw new Error("Attempted to construct Jsonp request without JsonpClientModule installed.");
+      }
+
+      console.log('HttpXhrHandler.request', request);
+      return new rxjs__default.Observable(function (observer) {
+        var xhr = new XMLHttpRequest();
+        var requestInfo = request.urlWithParams;
+        var requestInit = request.toInitRequest();
+
+        if (!requestInit.method) {
+          throw new Error("missing method");
+        } // hydrate
+
+
+        var stateKey = rxcomp__default.TransferService.makeKey(request.transferKey);
+
+        if (rxcomp__default.isPlatformBrowser && request.hydrate && rxcomp__default.TransferService.has(stateKey)) {
+          var cached = rxcomp__default.TransferService.get(stateKey); // !!! <T>
+
+          rxcomp__default.TransferService.remove(stateKey);
+          observer.next(cached);
+          observer.complete();
+          return; // hydrate
+        } else {
+          xhr.open(requestInit.method, requestInfo);
+
+          if (request.withCredentials) {
+            xhr.withCredentials = true;
+          }
+
+          var headers = request.headers;
+
+          if (!headers.has('Accept')) {
+            headers.set('Accept', 'application/json, text/plain, */*');
+          }
+
+          if (!headers.has('Content-Type')) {
+            var detectedType = request.detectContentTypeHeader();
+
+            if (detectedType !== null) {
+              headers.set('Content-Type', detectedType);
+            }
+          }
+
+          console.log('HttpXhrHandler.contentType', headers.get('Content-Type'));
+          headers.forEach(function (value, name) {
+            return xhr.setRequestHeader(name, value);
+          });
+
+          if (request.responseType) {
+            xhr.responseType = request.responseType !== 'json' ? request.responseType : 'text';
+          }
+
+          var body_1 = request.serializeBody();
+          var headerResponse_1 = null;
+
+          var partialFromXhr_1 = function partialFromXhr_1() {
+            if (headerResponse_1 !== null) {
+              return headerResponse_1;
+            }
+
+            var status = xhr.status === 1223 ? 204 : xhr.status;
+            var statusText = xhr.statusText || 'OK';
+            var headers = new httpHeaders.HttpHeaders(xhr.getAllResponseHeaders());
+            var url = getResponseUrl_(xhr) || request.url;
+            headerResponse_1 = new httpResponse.HttpHeaderResponse({
+              headers: headers,
+              status: status,
+              statusText: statusText,
+              url: url
+            });
+            return headerResponse_1;
+          };
+
+          var onLoad_1 = function onLoad_1() {
+            var _a = partialFromXhr_1(),
+                headers = _a.headers,
+                status = _a.status,
+                statusText = _a.statusText,
+                url = _a.url;
+
+            var body = null;
+
+            if (status !== 204) {
+              body = typeof xhr.response === 'undefined' ? xhr.responseText : xhr.response;
+            }
+
+            if (status === 0) {
+              status = !!body ? 200 : 0;
+            }
+
+            var ok = status >= 200 && status < 300;
+
+            if (request.responseType === 'json' && typeof body === 'string') {
+              var originalBody = body;
+              body = body.replace(XSSI_PREFIX, '');
+
+              try {
+                body = body !== '' ? JSON.parse(body) : null;
+              } catch (error) {
+                body = originalBody;
+
+                if (ok) {
+                  ok = false;
+                  body = {
+                    error: error,
+                    text: body
+                  };
+                }
+              }
+            }
+
+            if (ok) {
+              var response = new httpResponse.HttpResponse({
+                body: body,
+                headers: headers,
+                status: status,
+                statusText: statusText,
+                url: url
+              }); // hydrate
+
+              if (rxcomp__default.isPlatformServer && request.hydrate) {
+                rxcomp__default.TransferService.set(stateKey, response);
+              } // hydrate
+
+
+              observer.next(response);
+              observer.complete();
+            } else {
+              var options = {
+                error: new Error(statusText),
+                headers: headers,
+                status: status,
+                statusText: statusText,
+                url: url,
+                request: request
+              };
+              var httpErrorResponse$1 = new httpErrorResponse.HttpErrorResponse(options); // console.log('httpErrorResponse', httpErrorResponse);
+
+              rxcomp__default.nextError$.next(httpErrorResponse$1); // return of(null);
+
+              observer.error(httpErrorResponse$1);
+            }
+          };
+
+          var onError_1 = function onError_1(error) {
+            var url = partialFromXhr_1().url;
+            var statusText = xhr.statusText || 'Unknown Error';
+            var headers = new httpHeaders.HttpHeaders(xhr.getAllResponseHeaders());
+            var options = {
+              error: new Error(statusText),
+              headers: headers,
+              status: xhr.status || 0,
+              statusText: statusText,
+              url: url,
+              request: request
+            };
+            var httpErrorResponse$1 = new httpErrorResponse.HttpErrorResponse(options); // console.log('httpErrorResponse', httpErrorResponse);
+
+            rxcomp__default.nextError$.next(httpErrorResponse$1); // return of(null);
+
+            observer.error(httpErrorResponse$1);
+          };
+
+          var sentHeaders_1 = false;
+
+          var onDownProgress_1 = function onDownProgress_1(event) {
+            if (!sentHeaders_1) {
+              observer.next(partialFromXhr_1());
+              sentHeaders_1 = true;
+            }
+
+            var progressEvent = {
+              type: httpEvent.HttpEventType.DownloadProgress,
+              loaded: event.loaded
+            };
+
+            if (event.lengthComputable) {
+              progressEvent.total = event.total;
+            }
+
+            if (request.responseType === 'text' && !!xhr.responseText) {
+              progressEvent.partialText = xhr.responseText;
+            }
+
+            console.log(progressEvent);
+            observer.next(progressEvent);
+          };
+
+          var onUpProgress_1 = function onUpProgress_1(event) {
+            var progress = {
+              type: httpEvent.HttpEventType.UploadProgress,
+              loaded: event.loaded
+            };
+
+            if (event.lengthComputable) {
+              progress.total = event.total;
+            }
+
+            observer.next(progress);
+          };
+
+          xhr.addEventListener('load', onLoad_1);
+          xhr.addEventListener('error', onError_1);
+
+          if (request.reportProgress) {
+            xhr.addEventListener('progress', onDownProgress_1);
+
+            if (body_1 !== null && xhr.upload) {
+              xhr.upload.addEventListener('progress', onUpProgress_1);
+            }
+          }
+
+          xhr.send(body_1);
+          observer.next({
+            type: httpEvent.HttpEventType.Sent
+          });
+          return function () {
+            xhr.removeEventListener('error', onError_1);
+            xhr.removeEventListener('load', onLoad_1);
+
+            if (request.reportProgress) {
+              xhr.removeEventListener('progress', onDownProgress_1);
+
+              if (body_1 !== null && xhr.upload) {
+                xhr.upload.removeEventListener('progress', onUpProgress_1);
+              }
+            }
+
+            if (xhr.readyState !== xhr.DONE) {
+              xhr.abort();
+            }
+          };
+        }
+      });
+    };
+
+    return HttpXhrHandler;
+  }();
+
+  exports.HttpXhrHandler = HttpXhrHandler;
+
+  function getResponseUrl_(xhr) {
+    if ('responseURL' in xhr && xhr.responseURL) {
+      return xhr.responseURL;
+    }
+
+    if (/^X-Request-URL:/m.test(xhr.getAllResponseHeaders())) {
+      return xhr.getResponseHeader('X-Request-URL');
+    }
+
+    return null;
+  }
+});var httpInterceptor = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.jsonpCallbackContext = exports.interceptingHandler = exports.HttpInterceptingHandler = exports.xhrHandler = exports.fetchHandler = exports.NoopInterceptor = exports.HttpInterceptors = exports.HttpInterceptorHandler = void 0;
+
+  var HttpInterceptorHandler =
+  /** @class */
+  function () {
+    function HttpInterceptorHandler(next, interceptor) {
+      this.next = next;
+      this.interceptor = interceptor;
+    }
+
+    HttpInterceptorHandler.prototype.handle = function (req) {
+      return this.interceptor.intercept(req, this.next);
+    };
+
+    return HttpInterceptorHandler;
+  }();
+
+  exports.HttpInterceptorHandler = HttpInterceptorHandler;
+  exports.HttpInterceptors = [];
+
+  var NoopInterceptor =
+  /** @class */
+  function () {
+    function NoopInterceptor() {}
+
+    NoopInterceptor.prototype.intercept = function (req, next) {
+      return next.handle(req);
+    };
+
+    return NoopInterceptor;
+  }();
+
+  exports.NoopInterceptor = NoopInterceptor;
+  exports.fetchHandler = new httpFetch_handler.HttpFetchHandler();
+  exports.xhrHandler = new httpXhr_handler.HttpXhrHandler();
+
+  var HttpInterceptingHandler =
+  /** @class */
+  function () {
+    function HttpInterceptingHandler() {
+      this.chain = null;
+    }
+
+    HttpInterceptingHandler.prototype.handle = function (req) {
+      if (this.chain === null) {
+        var interceptors = exports.HttpInterceptors;
+        this.chain = interceptors.reduceRight(function (next, interceptor) {
+          return new HttpInterceptorHandler(next, interceptor);
+        }, exports.fetchHandler);
+      }
+
+      return this.chain.handle(req);
+    };
+
+    return HttpInterceptingHandler;
+  }();
+
+  exports.HttpInterceptingHandler = HttpInterceptingHandler;
+
+  function interceptingHandler(handler, interceptors) {
+    if (interceptors === void 0) {
+      interceptors = [];
+    }
+
+    if (!interceptors) {
+      return handler;
+    }
+
+    return interceptors.reduceRight(function (next, interceptor) {
+      return new HttpInterceptorHandler(next, interceptor);
+    }, handler);
+  }
+
+  exports.interceptingHandler = interceptingHandler;
+
+  function jsonpCallbackContext() {
+    if (typeof window === 'object') {
+      return window;
+    }
+
+    return {};
+  }
+
+  exports.jsonpCallbackContext = jsonpCallbackContext;
+});var http_module = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var factories = [];
+  var pipes = [];
+  /**
+   *  HttpModule Class.
+   * @example
+   * export default class AppModule extends Module {}
+   *
+   * AppModule.meta = {
+   *  imports: [
+   *   CoreModule,
+   *    HttpModule
+   *  ],
+   *  declarations: [
+   *   ErrorsComponent
+   *  ],
+   *  bootstrap: AppComponent,
+   * };
+   * @extends Module
+   */
+
+  var HttpModule =
+  /** @class */
+  function (_super) {
+    tslib_es6.__extends(HttpModule, _super);
+
+    function HttpModule() {
+      return _super !== null && _super.apply(this, arguments) || this;
+    }
+
+    HttpModule.useInterceptors = function (interceptorFactories) {
+      if (interceptorFactories === null || interceptorFactories === void 0 ? void 0 : interceptorFactories.length) {
+        var interceptors = interceptorFactories === null || interceptorFactories === void 0 ? void 0 : interceptorFactories.map(function (x) {
+          return new x();
+        });
+        httpInterceptor.HttpInterceptors.push.apply(httpInterceptor.HttpInterceptors, interceptors);
+      }
+
+      return this;
+    };
+
+    HttpModule.meta = {
+      declarations: tslib_es6.__spread(factories, pipes),
+      exports: tslib_es6.__spread(factories, pipes)
+    };
+    return HttpModule;
+  }(rxcomp__default.Module);
+
+  exports.default = HttpModule;
+});var httpHandler = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.HttpHandler = void 0;
+
+  var HttpHandler =
+  /** @class */
+  function () {
+    function HttpHandler() {}
+
+    return HttpHandler;
+  }();
+
+  exports.HttpHandler = HttpHandler;
+});var httpParams = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.HttpParams = exports.HttpUrlEncodingCodec = void 0;
+
+  var HttpUrlEncodingCodec =
+  /** @class */
+  function () {
+    function HttpUrlEncodingCodec() {}
+
+    HttpUrlEncodingCodec.prototype.encodeKey = function (key) {
+      return encodeParam_(key);
+    };
+
+    HttpUrlEncodingCodec.prototype.encodeValue = function (value) {
+      return encodeParam_(value);
+    };
+
+    HttpUrlEncodingCodec.prototype.decodeKey = function (key) {
+      return decodeURIComponent(key);
+    };
+
+    HttpUrlEncodingCodec.prototype.decodeValue = function (value) {
+      return decodeURIComponent(value);
+    };
+
+    return HttpUrlEncodingCodec;
+  }();
+
+  exports.HttpUrlEncodingCodec = HttpUrlEncodingCodec;
+
+  var HttpParams =
+  /** @class */
+  function () {
+    function HttpParams(options, encoder) {
+      if (encoder === void 0) {
+        encoder = new HttpUrlEncodingCodec();
+      }
+
+      this.params_ = new Map();
+      this.encoder = encoder;
+      var params = this.params_;
+
+      if (options instanceof HttpParams) {
+        options.params_.forEach(function (value, key) {
+          params.set(key, value);
+        });
+      } else if (typeof options === 'object') {
+        Object.keys(options).forEach(function (key) {
+          var value = options[key];
+          params.set(key, Array.isArray(value) ? value : [value]);
+        });
+      } else if (typeof options === 'string') {
+        parseRawParams_(params, options, this.encoder);
+      } // ?updates=null&cloneFrom=null&encoder=%5Bobject%20Object%5D&params_=%5Bobject%20Map%5D
+
+    }
+
+    HttpParams.prototype.keys = function () {
+      return Array.from(this.params_.keys());
+    };
+
+    HttpParams.prototype.has = function (key) {
+      return this.params_.has(key);
+    };
+
+    HttpParams.prototype.get = function (key) {
+      var value = this.params_.get(key);
+      return value ? value[0] : null;
+    };
+
+    HttpParams.prototype.getAll = function (key) {
+      return this.params_.get(key) || null;
+    };
+
+    HttpParams.prototype.set = function (key, value) {
+      var clone = this.clone_();
+      clone.params_.set(key, [value]);
+      return clone;
+    };
+
+    HttpParams.prototype.append = function (key, value) {
+      var clone = this.clone_();
+
+      if (clone.has(key)) {
+        var values = clone.params_.get(key) || [];
+        values.push(value);
+        clone.params_.set(key, values);
+      } else {
+        clone.params_.set(key, [value]);
+      }
+
+      return clone;
+    };
+
+    HttpParams.prototype.delete = function (key) {
+      var clone = this.clone_();
+      clone.params_.delete(key);
+      return clone;
+    };
+
+    HttpParams.prototype.toString = function () {
+      var _this = this;
+
+      return this.keys().map(function (key) {
+        var values = _this.params_.get(key);
+
+        return _this.encoder.encodeKey(key) + (values ? '=' + values.map(function (x) {
+          return _this.encoder.encodeValue(x);
+        }).join('&') : '');
+      }).filter(function (keyValue) {
+        return keyValue !== '';
+      }).join('&');
+    };
+
+    HttpParams.prototype.clone_ = function () {
+      var clone = new HttpParams(undefined, this.encoder);
+      this.params_.forEach(function (value, key) {
+        clone.params_.set(key, value);
+      });
+      return clone;
+    };
+
+    return HttpParams;
+  }();
+
+  exports.HttpParams = HttpParams;
+
+  function parseRawParams_(params, queryString, encoder) {
+    if (queryString.length > 0) {
+      var keyValueParams = queryString.split('&');
+      keyValueParams.forEach(function (keyValue) {
+        var index = keyValue.indexOf('=');
+
+        var _a = tslib_es6.__read(index == -1 ? [encoder.decodeKey(keyValue), ''] : [encoder.decodeKey(keyValue.slice(0, index)), encoder.decodeValue(keyValue.slice(index + 1))], 2),
+            key = _a[0],
+            value = _a[1];
+
+        var values = params.get(key) || [];
+        values.push(value);
+        params.set(key, values);
+      });
+    }
+
+    return params;
+  }
+
+  function encodeParam_(v) {
+    return encodeURIComponent(v).replace(/%40/gi, '@').replace(/%3A/gi, ':').replace(/%24/gi, '$').replace(/%2C/gi, ',').replace(/%3B/gi, ';').replace(/%2B/gi, '+').replace(/%3D/gi, '=').replace(/%3F/gi, '?').replace(/%2F/gi, '/');
+  }
+});var httpRequest = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.HttpRequest = void 0;
+
+  var HttpRequest =
+  /** @class */
+  function () {
+    function HttpRequest(method, url, third, fourth) {
+      this.url = url;
+      this.reportProgress = false;
+      this.withCredentials = false;
+      this.hydrate = true;
+      this.observe = 'body';
+      this.responseType = 'json'; // !!! remove, rethink
+
+      var isStaticFile = /\.(json|xml|txt)(\?.*)?$/.test(url);
+      this.method = isStaticFile ? 'GET' : method.toUpperCase();
+      var options;
+
+      if (methodHasBody_(this.method) || !!fourth) {
+        this.body = third !== undefined ? third : null;
+        options = fourth;
+      } else {
+        options = third;
+      }
+
+      if (options) {
+        this.reportProgress = !!options.reportProgress;
+        this.withCredentials = !!options.withCredentials;
+        this.observe = options.observe || this.observe;
+
+        if (options.responseType) {
+          this.responseType = options.responseType;
+        }
+
+        if (options.headers) {
+          this.headers = new httpHeaders.HttpHeaders(options.headers);
+        }
+
+        if (options.params) {
+          this.params = new httpParams.HttpParams(options.params);
+        }
+      }
+
+      if (!this.headers) {
+        this.headers = new httpHeaders.HttpHeaders();
+      }
+
+      if (!this.params) {
+        this.params = new httpParams.HttpParams();
+      }
+
+      var params = this.params.toString();
+      var index = url.indexOf('?');
+      var sep = index === -1 ? '?' : index < url.length - 1 ? '&' : '';
+      this.urlWithParams = url + (params.length ? sep + params : params);
+    }
+
+    Object.defineProperty(HttpRequest.prototype, "transferKey", {
+      get: function get() {
+        var pathname = getPath_(this.url).pathname;
+        var key = flatMap_(pathname, this.params);
+        key = key.replace(/(\W)/gm, '_');
+        console.log('transferKey', key, pathname, this.params, this.url);
+        return key;
+      },
+      enumerable: false,
+      configurable: true
+    });
+
+    HttpRequest.prototype.serializeBody = function () {
+      if (this.body === null) {
+        return null;
+      }
+
+      if (isArrayBuffer_(this.body) || isBlob_(this.body) || isFormData_(this.body) || typeof this.body === 'string') {
+        return this.body;
+      }
+
+      if (this.body instanceof httpParams.HttpParams) {
+        return this.body.toString();
+      }
+
+      if (typeof this.body === 'object' || typeof this.body === 'boolean' || Array.isArray(this.body)) {
+        return JSON.stringify(this.body);
+      }
+
+      return this.body.toString();
+    };
+
+    HttpRequest.prototype.detectContentTypeHeader = function () {
+      if (this.body === null) {
+        return null;
+      }
+
+      if (isFormData_(this.body)) {
+        return null;
+      }
+
+      if (isBlob_(this.body)) {
+        return this.body.type || null;
+      }
+
+      if (isArrayBuffer_(this.body)) {
+        return null;
+      }
+
+      if (typeof this.body === 'string') {
+        return 'text/plain';
+      }
+
+      if (this.body instanceof httpParams.HttpParams) {
+        return 'application/x-www-form-urlencoded;charset=UTF-8';
+      }
+
+      if (typeof this.body === 'object' || typeof this.body === 'number' || Array.isArray(this.body)) {
+        return 'application/json';
+      }
+
+      return null;
+    };
+
+    HttpRequest.prototype.toInitRequest = function () {
+      return {
+        method: this.method,
+        headers: this.headers.serialize(),
+        body: this.serializeBody(),
+        mode: 'same-origin',
+        credentials: 'same-origin',
+        cache: 'default',
+        redirect: 'error'
+      };
+    };
+
+    HttpRequest.prototype.toFetchRequest__ = function () {
+      return new Request(this.urlWithParams, this.toInitRequest());
+      /*
+      Request.cache Read only
+      Contains the cache mode of the request (e.g., default, reload, no-cache).
+      Request.context Read only
+      Contains the context of the request (e.g., audio, image, iframe, etc.)
+      Request.credentials Read only
+      Contains the credentials of the request (e.g., omit, same-origin, include). The default is same-origin.
+      Request.destination Read only
+      Returns a string from the RequestDestination enum describing the request's destination. This is a string indicating the type of content being requested.
+      Request.headers Read only
+      Contains the associated Headers object of the request.
+      Request.integrity Read only
+      Contains the subresource integrity value of the request (e.g., sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=).
+      Request.method Read only
+      Contains the request's method (GET, POST, etc.)
+      Request.mode Read only
+      Contains the mode of the request (e.g., cors, no-cors, same-origin, navigate.)
+      Request.redirect Read only
+      Contains the mode for how redirects are handled. It may be one of follow, error, or manual.
+      Request.referrer Read only
+      Contains the referrer of the request (e.g., client).
+      Request.referrerPolicy Read only
+      Contains the referrer policy of the request (e.g., no-referrer).
+      Request.url Read only
+      Contains the URL of the request.
+      Request implements Body, so it also inherits the following properties:
+      body Read only
+      A simple getter used to expose a ReadableStream of the body contents.
+      bodyUsed Read only
+      Stores a Boolean that declares whether the body has been used in a response yet.
+      */
+    };
+
+    HttpRequest.prototype.clone = function (options) {
+      options = Object.assign({
+        headers: this.headers,
+        reportProgress: this.reportProgress,
+        params: this.params,
+        responseType: this.responseType,
+        withCredentials: this.withCredentials,
+        observe: this.observe,
+        body: this.body,
+        url: this.url,
+        method: this.method
+      }, options || {});
+      var clone = new HttpRequest(this.method, this.url, this.body, options);
+      return clone;
+    };
+
+    return HttpRequest;
+  }();
+
+  exports.HttpRequest = HttpRequest;
+
+  function methodHasBody_(method) {
+    switch (method) {
+      case 'DELETE':
+      case 'GET':
+      case 'HEAD':
+      case 'OPTIONS':
+      case 'JSONP':
+        return false;
+
+      default:
+        return true;
+    }
+  }
+
+  function isArrayBuffer_(value) {
+    return typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer;
+  }
+
+  function isBlob_(value) {
+    return typeof Blob !== 'undefined' && value instanceof Blob;
+  }
+
+  function isFormData_(value) {
+    return typeof FormData !== 'undefined' && value instanceof FormData;
+  }
+
+  function flatMap_(s, x) {
+    if (typeof x === 'number') {
+      s += x.toString();
+    } else if (typeof x === 'string') {
+      s += x.substr(0, 10);
+    } else if (x && typeof x === 'object') {
+      s += '_' + Object.keys(x).map(function (k) {
+        return k + '_' + flatMap_('', x[k]);
+      }).join('_');
+    }
+
+    return s;
+  }
+
+  function getPath_(href) {
+    var e_1, _a;
+
+    var protocol = '';
+    var host = '';
+    var hostname = '';
+    var port = '';
+    var pathname = '';
+    var search = '';
+    var hash = '';
+    var regExp = /^((http\:|https\:)?\/\/|\/)?([^\/\:]+)?(\:([^\/]+))?(\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
+    var matches = href.matchAll(regExp);
+
+    try {
+      for (var matches_1 = tslib_es6.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
+        var match = matches_1_1.value;
+        protocol = match[2] || '';
+        host = hostname = match[3] || '';
+        port = match[5] || '';
+        pathname = match[6] || '';
+        search = match[7] || '';
+        hash = match[8] || '';
+      }
+    } catch (e_1_1) {
+      e_1 = {
+        error: e_1_1
+      };
+    } finally {
+      try {
+        if (matches_1_1 && !matches_1_1.done && (_a = matches_1.return)) _a.call(matches_1);
+      } finally {
+        if (e_1) throw e_1.error;
+      }
+    }
+
+    return {
+      href: href,
+      protocol: protocol,
+      host: host,
+      hostname: hostname,
+      port: port,
+      pathname: pathname,
+      search: search,
+      hash: hash
+    };
+  }
+});var http_service = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var HttpService =
+  /** @class */
+  function () {
+    function HttpService() {}
+
+    HttpService.incrementPendingRequest = function () {
+      HttpService.pendingRequests$.next(HttpService.pendingRequests$.getValue() + 1);
+    };
+
+    HttpService.decrementPendingRequest = function () {
+      HttpService.pendingRequests$.next(HttpService.pendingRequests$.getValue() - 1);
+    };
+
+    HttpService.request$ = function (first, url, options) {
+      var _this = this;
+
+      if (options === void 0) {
+        options = {};
+      }
+
+      var request;
+
+      if (first instanceof httpRequest.HttpRequest) {
+        request = first;
+      } else {
+        var headers = undefined;
+
+        if (options.headers instanceof httpHeaders.HttpHeaders) {
+          headers = options.headers;
+        } else {
+          headers = new httpHeaders.HttpHeaders(options.headers);
+        }
+
+        var params = undefined;
+
+        if (options.params) {
+          params = new httpParams.HttpParams(options.params);
+        }
+
+        request = new httpRequest.HttpRequest(first, url, options.body !== undefined ? options.body : null, {
+          headers: headers,
+          params: params,
+          reportProgress: options.reportProgress,
+          responseType: options.responseType || 'json',
+          withCredentials: options.withCredentials
+        });
+      } // console.log('HttpService.request$', request);
+
+
+      HttpService.incrementPendingRequest();
+      var events$ = rxjs__default.of(request).pipe(operators__default.concatMap(function (request) {
+        return _this.handler.handle(request);
+      }), // tap((response: HttpEvent<any>) => console.log('HttpService.response', response)),
+      operators__default.finalize(function () {
+        return HttpService.decrementPendingRequest();
+      }));
+
+      if (first instanceof httpRequest.HttpRequest || options.observe === 'events') {
+        return events$.pipe(operators__default.catchError(function (error) {
+          console.log('error', error);
+          return rxjs__default.throwError(_this.getError(error, null, request));
+        }));
+      }
+
+      var response$ = events$.pipe(operators__default.filter(function (event) {
+        return event instanceof httpResponse.HttpResponse;
+      }));
+      var response_;
+      var observe$ = response$.pipe(operators__default.map(function (response) {
+        response_ = response;
+
+        switch (options.observe || 'body') {
+          case 'body':
+            switch (request.responseType) {
+              case 'arraybuffer':
+                if (response.body !== null && !(response.body instanceof ArrayBuffer)) {
+                  throw new Error('Response is not an ArrayBuffer.');
+                }
+
+                return response.body;
+
+              case 'blob':
+                if (response.body !== null && !(response.body instanceof Blob)) {
+                  throw new Error('Response is not a Blob.');
+                }
+
+                return response.body;
+
+              case 'text':
+                if (response.body !== null && typeof response.body !== 'string') {
+                  throw new Error('Response is not a string.');
+                }
+
+                return response.body;
+
+              case 'json':
+              default:
+                return response.body;
+            }
+
+          case 'response':
+            return response;
+
+          default:
+            throw new Error("Unreachable: unhandled observe type " + options.observe + "}");
+        }
+      }), operators__default.catchError(function (error) {
+        console.log('error', error);
+        return rxjs__default.throwError(_this.getError(error, response_, request));
+      }));
+      return observe$;
+      /*
+      switch (options.observe || 'body') {
+          case 'body':
+              switch (request.responseType) {
+                  case 'arraybuffer':
+                      return response$.pipe(map((response: HttpResponse<T>) => {
+                          if (response.body !== null && !(response.body instanceof ArrayBuffer)) {
+                              throw new Error('Response is not an ArrayBuffer.');
+                          }
+                          return response.body;
+                      }));
+                  case 'blob':
+                      return response$.pipe(map((response: HttpResponse<T>) => {
+                          if (response.body !== null && !(response.body instanceof Blob)) {
+                              throw new Error('Response is not a Blob.');
+                          }
+                          return response.body;
+                      }));
+                  case 'text':
+                      return response$.pipe(map((response: HttpResponse<T>) => {
+                          if (response.body !== null && typeof response.body !== 'string') {
+                              throw new Error('Response is not a string.');
+                          }
+                          return response.body;
+                      }));
+                  case 'json':
+                  default:
+                      return response$.pipe(map((response: HttpResponse<T>) => response.body));
+              }
+          case 'response':
+              return response$;
+          default:
+              throw new Error(`Unreachable: unhandled observe type ${options.observe}}`);
+      }
+      */
+    };
+
+    HttpService.delete$ = function (url, options) {
+      if (options === void 0) {
+        options = {};
+      }
+
+      return this.request$('DELETE', url, options);
+    };
+
+    HttpService.get$ = function (url, options) {
+      if (options === void 0) {
+        options = {};
+      }
+
+      return this.request$('GET', url, options);
+    };
+
+    HttpService.head$ = function (url, options) {
+      if (options === void 0) {
+        options = {};
+      }
+
+      return this.request$('HEAD', url, options);
+    };
+
+    HttpService.jsonp$ = function (url, callbackParam) {
+      return this.request$('JSONP', url, {
+        params: new httpParams.HttpParams().append(callbackParam, 'JSONP_CALLBACK'),
+        observe: 'body',
+        responseType: 'json'
+      });
+    };
+
+    HttpService.options$ = function (url, options) {
+      if (options === void 0) {
+        options = {};
+      }
+
+      return this.request$('OPTIONS', url, options);
+    };
+
+    HttpService.patch$ = function (url, body, options) {
+      if (options === void 0) {
+        options = {};
+      }
+
+      return this.request$('PATCH', url, optionsWithBody_(options, body));
+    };
+
+    HttpService.post$ = function (url, body, options) {
+      if (options === void 0) {
+        options = {};
+      }
+
+      return this.request$('POST', url, optionsWithBody_(options, body));
+    };
+
+    HttpService.put$ = function (url, body, options) {
+      if (options === void 0) {
+        options = {};
+      }
+
+      return this.request$('PUT', url, optionsWithBody_(options, body));
+    };
+
+    HttpService.getError = function (error, response, request) {
+      if (!error.status) {
+        error.statusCode = (response === null || response === void 0 ? void 0 : response.status) || 0;
+      }
+
+      if (!error.statusMessage) {
+        error.statusMessage = (response === null || response === void 0 ? void 0 : response.statusText) || 'Unknown Error';
+      }
+
+      var options = {
+        error: error,
+        status: error.status,
+        statusText: error.statusText,
+        message: error.message,
+        request: request
+      };
+
+      if (response) {
+        options.headers = response.headers;
+        options.status = options.status || response.status;
+        options.statusText = options.statusText || response.statusText;
+        options.url = response.url;
+      }
+
+      return new httpErrorResponse.HttpErrorResponse(options);
+    };
+
+    HttpService.pendingRequests$ = new rxjs__default.BehaviorSubject(0); // static handler: HttpHandler = new HttpFetchHandler();
+
+    HttpService.handler = new httpInterceptor.HttpInterceptingHandler();
+    return HttpService;
+  }();
+
+  exports.default = HttpService;
+
+  function optionsWithBody_(options, body) {
+    return Object.assign({}, options, {
+      body: body
+    });
+  }
+});var rxcompHttp = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  Object.defineProperty(exports, "HttpModule", {
+    enumerable: true,
+    get: function get() {
+      return http_module.default;
+    }
+  });
+  Object.defineProperty(exports, "HttpErrorResponse", {
+    enumerable: true,
+    get: function get() {
+      return httpErrorResponse.HttpErrorResponse;
+    }
+  });
+  Object.defineProperty(exports, "HttpEventType", {
+    enumerable: true,
+    get: function get() {
+      return httpEvent.HttpEventType;
+    }
+  });
+  Object.defineProperty(exports, "HttpFetchHandler", {
+    enumerable: true,
+    get: function get() {
+      return httpFetch_handler.HttpFetchHandler;
+    }
+  });
+  Object.defineProperty(exports, "HttpHandler", {
+    enumerable: true,
+    get: function get() {
+      return httpHandler.HttpHandler;
+    }
+  });
+  Object.defineProperty(exports, "HttpHeaders", {
+    enumerable: true,
+    get: function get() {
+      return httpHeaders.HttpHeaders;
+    }
+  });
+  Object.defineProperty(exports, "fetchHandler", {
+    enumerable: true,
+    get: function get() {
+      return httpInterceptor.fetchHandler;
+    }
+  });
+  Object.defineProperty(exports, "HttpInterceptingHandler", {
+    enumerable: true,
+    get: function get() {
+      return httpInterceptor.HttpInterceptingHandler;
+    }
+  });
+  Object.defineProperty(exports, "HttpInterceptorHandler", {
+    enumerable: true,
+    get: function get() {
+      return httpInterceptor.HttpInterceptorHandler;
+    }
+  });
+  Object.defineProperty(exports, "HttpInterceptors", {
+    enumerable: true,
+    get: function get() {
+      return httpInterceptor.HttpInterceptors;
+    }
+  });
+  Object.defineProperty(exports, "interceptingHandler", {
+    enumerable: true,
+    get: function get() {
+      return httpInterceptor.interceptingHandler;
+    }
+  });
+  Object.defineProperty(exports, "jsonpCallbackContext", {
+    enumerable: true,
+    get: function get() {
+      return httpInterceptor.jsonpCallbackContext;
+    }
+  });
+  Object.defineProperty(exports, "NoopInterceptor", {
+    enumerable: true,
+    get: function get() {
+      return httpInterceptor.NoopInterceptor;
+    }
+  });
+  Object.defineProperty(exports, "xhrHandler", {
+    enumerable: true,
+    get: function get() {
+      return httpInterceptor.xhrHandler;
+    }
+  });
+  Object.defineProperty(exports, "HttpParams", {
+    enumerable: true,
+    get: function get() {
+      return httpParams.HttpParams;
+    }
+  });
+  Object.defineProperty(exports, "HttpUrlEncodingCodec", {
+    enumerable: true,
+    get: function get() {
+      return httpParams.HttpUrlEncodingCodec;
+    }
+  });
+  Object.defineProperty(exports, "HttpRequest", {
+    enumerable: true,
+    get: function get() {
+      return httpRequest.HttpRequest;
+    }
+  });
+  Object.defineProperty(exports, "HttpHeaderResponse", {
+    enumerable: true,
+    get: function get() {
+      return httpResponse.HttpHeaderResponse;
+    }
+  });
+  Object.defineProperty(exports, "HttpResponse", {
+    enumerable: true,
+    get: function get() {
+      return httpResponse.HttpResponse;
+    }
+  });
+  Object.defineProperty(exports, "HttpResponseBase", {
+    enumerable: true,
+    get: function get() {
+      return httpResponse.HttpResponseBase;
+    }
+  });
+  Object.defineProperty(exports, "HttpXhrHandler", {
+    enumerable: true,
+    get: function get() {
+      return httpXhr_handler.HttpXhrHandler;
+    }
+  });
+  Object.defineProperty(exports, "HttpService", {
+    enumerable: true,
+    get: function get() {
+      return http_service.default;
+    }
+  });
+});function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
     descriptor.enumerable = descriptor.enumerable || false;
@@ -1998,7 +4322,10 @@ var CacheService = /*#__PURE__*/function () {
       type = 'cache';
     }
 
-    var path = ("_" + type + "_" + name).replace(/(\/|\?|\#|\&)+/g, function (substring, group) {
+    var regExp = /(\/|\\|\:|\?|\#|\&)+/g;
+    var path = "_" + type + "_" + name; // console.log('path', path);
+
+    path = path.replace(regExp, function (substring, group) {
       return encodeURIComponent(group);
     });
     return "" + this.folder + path;
@@ -2144,7 +4471,243 @@ Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
 Cache-Control: no-cache
 Connection: keep-alive
 Pragma: no-cache
-*/// const SKIP = ['html','head','title','base','meta','script','link','body',];
+*/var RxDOMStringList = /*#__PURE__*/function (_Array) {
+  _inheritsLoose(RxDOMStringList, _Array);
+
+  function RxDOMStringList() {
+    return _Array.apply(this, arguments) || this;
+  }
+
+  var _proto = RxDOMStringList.prototype;
+
+  /*
+  private list_: string[] = [];
+  get length(): number {
+      return this.list_.length;
+  }
+  */
+  _proto.contains = function contains(string) {
+    // return this.list_.indexOf(string) !== -1;
+    return this.indexOf(string) !== -1;
+  };
+
+  _proto.item = function item(index) {
+    // if (index > 0 && index < this.list_.length) {
+    if (index > 0 && index < this.length) {
+      // return this.list_[index];
+      return this[index];
+    } else {
+      return null;
+    }
+  };
+
+  return RxDOMStringList;
+}( /*#__PURE__*/_wrapNativeSuper(Array));
+var RxLocation = /*#__PURE__*/function () {
+  function RxLocation() {
+    /*
+    private hash_: string = '';
+    get hash(): string { return this.hash_; }
+    set hash(hash: string) { this.hash_ = hash; updateLocation_(this); }
+          private host_: string = '';
+    get host(): string { return this.host_; }
+    set host(host: string) { this.host_ = host; updateLocation_(this); }
+          private hostname_: string = '';
+    get hostname(): string { return this.hostname_; }
+    set hostname(hostname: string) { this.hostname_ = hostname; updateLocation_(this); }
+          private pathname_: string = '';
+    get pathname(): string { return this.pathname_; }
+    set pathname(pathname: string) { this.pathname_ = pathname; updateLocation_(this); }
+          private port_: string = '';
+    get port(): string { return this.port_; }
+    set port(port: string) { this.port_ = port; updateLocation_(this); }
+          private protocol_: string = '';
+    get protocol(): string { return this.protocol_; }
+    set protocol(protocol: string) { this.protocol_ = protocol; updateLocation_(this); }
+          private search_: string = '';
+    get search(): string { return this.search_; }
+    set search(search: string) { this.search_ = search; updateLocation_(this); }
+    */
+    this.hash = '';
+    this.host = '';
+    this.hostname = '';
+    this.pathname = '';
+    this.port = '';
+    this.protocol = '';
+    this.search = '';
+    this.href_ = '';
+    this.ancestorOrigins_ = new RxDOMStringList();
+  }
+
+  var _proto2 = RxLocation.prototype;
+
+  _proto2.assign = function assign(url) {
+    this.href = url;
+  };
+
+  _proto2.reload = function reload() {};
+
+  _proto2.replace = function replace(url) {
+    this.href = url;
+  };
+
+  _proto2.toString = function toString() {
+    return this.href;
+  };
+
+  _createClass(RxLocation, [{
+    key: "href",
+    get: function get() {
+      var href = this.protocol + "//" + this.host + (this.port.length ? ":" + this.port : "") + this.pathname + this.search + this.hash;
+      this.href_ = href;
+      return href;
+    },
+    set: function set(href) {
+      if (this.href_ !== href) {
+        this.href_ = href;
+        var regExp = /^((http\:|https\:)?\/\/|\/)?([^\/\:]+)?(\:([^\/]+))?(\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
+        var matches = href.matchAll(regExp);
+
+        for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
+          var match = _step.value;
+
+          /*
+          0 Match	0.	https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins?pippo=shuter&a=dsok#asoka
+          1 Group 1.	https://
+          2 Group 2.	https:
+          3 Group 3.	developer.mozilla.org
+          4 Group 4.	:8080
+          5 Group 5.	8080
+          6 Group 5.	/en-US/docs/Web/API/Location/ancestorOrigins
+          7 Group 6.	?pippo=shuter&a=dsok
+          8 Group 7.	#asoka
+          */
+
+          /*
+          this.protocol_ = match[2] || '';
+          this.host_ = this.hostname_ = match[3] || '';
+          this.port_ = match[5] || '';
+          this.pathname_ = match[6] || '';
+          this.search_ = match[7] || '';
+          this.hash_ = match[8] || '';
+          */
+          this.protocol = match[2] || '';
+          this.host = this.hostname = match[3] || '';
+          this.port = match[5] || '';
+          this.pathname = match[6] || '';
+          this.search = match[7] || '';
+          this.hash = match[8] || '';
+        }
+      }
+    }
+  }, {
+    key: "origin",
+    get: function get() {
+      return this.protocol + "//" + this.host + (this.port.length ? ":" + this.port : "");
+    }
+  }, {
+    key: "ancestorOrigins",
+    get: function get() {
+      return this.ancestorOrigins_;
+    }
+  }], [{
+    key: "location",
+    get: function get() {
+      if (this.location_) {
+        return this.location_;
+      } else {
+        return this.location_ = new RxLocation();
+      }
+    }
+  }]);
+
+  return RxLocation;
+}();
+/*
+function updateLocation_(location: ILocation): void {
+    location.href = location.href;
+}
+*/var RxHistory = /*#__PURE__*/function () {
+  function RxHistory() {
+    this.currentIndex_ = 0;
+    this.history_ = [];
+    this.scrollRestoration = 'auto';
+  }
+
+  var _proto = RxHistory.prototype;
+
+  _proto.back = function back() {
+    if (this.currentIndex_ > 0) {
+      this.currentIndex_--;
+      var item = this.history_[this.currentIndex_];
+      if (item.url) RxLocation.location.href = item.url;
+    }
+  };
+
+  _proto.forward = function forward() {
+    if (this.currentIndex_ < this.history_.length - 1) {
+      this.currentIndex_++;
+      var item = this.history_[this.currentIndex_];
+      if (item.url) RxLocation.location.href = item.url;
+    }
+  };
+
+  _proto.go = function go(delta) {
+    if (typeof delta === 'number') {
+      var index = this.currentIndex_ + delta;
+
+      if (index > 0 && index < this.history_.length) {
+        var item = this.history_[index];
+        if (item.url) RxLocation.location.href = item.url;
+      }
+    }
+  };
+
+  _proto.pushState = function pushState(data, title, url) {
+    this.history_.push({
+      data: data,
+      title: title,
+      url: url
+    });
+    this.currentIndex_ = this.history_.length - 1;
+  };
+
+  _proto.replaceState = function replaceState(data, title, url) {
+    if (this.history_.length) {
+      this.history_.splice(this.history_.length - 1, 1, {
+        data: data,
+        title: title,
+        url: url
+      });
+    } else {
+      this.history_.push({
+        data: data,
+        title: title,
+        url: url
+      });
+    }
+
+    this.currentIndex_ = this.history_.length - 1;
+  };
+
+  _createClass(RxHistory, [{
+    key: "length",
+    get: function get() {
+      return this.history_.length;
+    }
+  }], [{
+    key: "history",
+    get: function get() {
+      if (this.history_) {
+        return this.history_;
+      } else {
+        return this.history_ = new RxHistory();
+      }
+    }
+  }]);
+
+  return RxHistory;
+}();// const SKIP = ['html','head','title','base','meta','script','link','body',];
 // document.createComment = nodeValue => { return new RxComment(null, nodeValue); };
 // document.createTextNode = nodeValue => { return new RxText(null, nodeValue); };
 
@@ -2170,272 +4733,6 @@ var SelectorType;
   SelectorType[SelectorType["Attribute"] = 2] = "Attribute";
   SelectorType[SelectorType["TagName"] = 3] = "TagName";
 })(SelectorType || (SelectorType = {}));
-
-function isRxElement(x) {
-  return x.nodeType === RxNodeType.ELEMENT_NODE;
-}
-function isRxText(x) {
-  return x.nodeType === RxNodeType.TEXT_NODE;
-}
-function isRxComment(x) {
-  return x.nodeType === RxNodeType.COMMENT_NODE;
-}
-function isRxDocument(x) {
-  return x.nodeType === RxNodeType.DOCUMENT_NODE;
-}
-function isRxDocumentFragment(x) {
-  return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
-}
-function isRxDocumentType(x) {
-  return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
-}
-function parse(html) {
-  var doc = new RxDocument();
-  var parentNode = doc,
-      node;
-  var parser = new htmlparser2.Parser({
-    onopentag: function onopentag(nodeName, attributes) {
-      // console.log(nodeName);
-      node = new RxElement(parentNode, nodeName, attributes);
-      parentNode.childNodes.push(node);
-      parentNode = node; // if (NO_CHILDS.indexOf(nodeName) === -1) {
-      //	console.log(nodeName);
-      //	parentNode = node;
-      // }
-    },
-    onclosetag: function onclosetag(nodeName) {
-      if (parentNode.parentNode) {
-        parentNode = parentNode.parentNode;
-      }
-    },
-    ontext: function ontext(nodeValue) {
-      // console.log('ontext', nodeValue);
-      // if (nodeValue.length) {
-      var textNode = new RxText(parentNode, nodeValue);
-      parentNode.childNodes.push(textNode); // }
-    },
-    onprocessinginstruction: function onprocessinginstruction(nodeName, nodeValue) {
-      // console.log('onprocessinginstruction', nodeName, nodeValue);
-      if (nodeName === '!doctype') {
-        node = new RxDocumentType(parentNode, nodeValue);
-      } else {
-        node = new RxProcessingInstruction(parentNode, nodeValue);
-      }
-
-      parentNode.childNodes.push(node);
-    },
-    oncomment: function oncomment(nodeValue) {
-      // console.log('oncomment', nodeValue);
-      node = new RxComment(parentNode, nodeValue);
-      parentNode.childNodes.push(node); // parentNode = node;
-    },
-    oncommentend: function oncommentend() {// console.log('oncommentend');
-      // parentNode = parentNode.parentNode;
-    },
-    oncdatastart: function oncdatastart() {
-      console.log('oncdatastart');
-    },
-    oncdataend: function oncdataend() {
-      console.log('oncdataend');
-    },
-    onerror: function onerror(error) {
-      console.log('error', error);
-    }
-  }, {
-    decodeEntities: false,
-    lowerCaseTags: true
-  });
-  parser.write(html);
-  parser.end();
-  return doc;
-}
-function getQueries(selector) {
-  var queries = [];
-  selector.trim().split(' ').forEach(function (x) {
-    x.trim().split('>').forEach(function (x, i) {
-      // const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
-      // const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
-      var regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
-      /* eslint no-useless-escape: "off" */
-
-      var selectors = [];
-      var matches = x.matchAll(regex);
-
-      for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
-        var match = _step.value;
-
-        if (match[1]) {
-          selectors.push({
-            selector: match[1],
-            type: SelectorType.Id,
-            negate: true
-          });
-        } else if (match[2]) {
-          selectors.push({
-            selector: match[2],
-            type: SelectorType.Class,
-            negate: true
-          });
-        } else if (match[3]) {
-          selectors.push({
-            selector: match[3],
-            type: SelectorType.Attribute,
-            negate: true
-          });
-        } else if (match[4]) {
-          selectors.push({
-            selector: match[4],
-            type: SelectorType.TagName,
-            negate: true
-          });
-        } else if (match[5]) {
-          selectors.push({
-            selector: match[5],
-            type: SelectorType.Id,
-            negate: false
-          });
-        } else if (match[6]) {
-          selectors.push({
-            selector: match[6],
-            type: SelectorType.Class,
-            negate: false
-          });
-        } else if (match[7]) {
-          selectors.push({
-            selector: match[7],
-            type: SelectorType.Attribute,
-            negate: false
-          });
-        } else if (match[8]) {
-          selectors.push({
-            selector: match[8],
-            type: SelectorType.TagName,
-            negate: false
-          });
-        } // console.log('match', match);
-
-      }
-
-      var selector = i > 0 ? {
-        selector: x,
-        selectors: selectors,
-        inner: true
-      } : {
-        selector: x,
-        selectors: selectors,
-        inner: false
-      };
-      queries.push.call(queries, selector);
-    });
-  });
-  return queries;
-}
-function matchSelector(child, selector) {
-  switch (selector.type) {
-    case SelectorType.Id:
-      return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
-
-    case SelectorType.Class:
-      return child.classList.indexOf(selector.selector) !== -1 !== selector.negate;
-
-    case SelectorType.Attribute:
-      return Object.keys(child.attributes).indexOf(selector.selector) !== -1 !== selector.negate;
-
-    case SelectorType.TagName:
-      return child.nodeName === selector.selector !== selector.negate;
-
-    default:
-      return false;
-  }
-}
-function matchSelectors(child, selectors) {
-  return selectors.reduce(function (p, selector) {
-    return p && matchSelector(child, selector);
-  }, true);
-}
-
-function _querySelector(queries, childNodes, query) {
-  if (query === void 0) {
-    query = null;
-  }
-
-  var node = null;
-
-  if (query || queries.length) {
-    query = query || queries.shift();
-
-    for (var _iterator3 = _createForOfIteratorHelperLoose(childNodes), _step3; !(_step3 = _iterator3()).done;) {
-      var child = _step3.value;
-
-      if (child instanceof RxElement) {
-        if (matchSelectors(child, query.selectors)) {
-          // console.log(query);
-          if (queries.length) {
-            return _querySelector(queries, child.childNodes);
-          } else {
-            return child;
-          }
-        } else if (!query.inner) {
-          node = _querySelector(queries, child.childNodes, query);
-        }
-      }
-    }
-  }
-
-  return node;
-}
-
-function _cloneNode(source, deep, parentNode) {
-  if (deep === void 0) {
-    deep = false;
-  }
-
-  if (parentNode === void 0) {
-    parentNode = null;
-  }
-
-  var node;
-
-  if (isRxElement(source)) {
-    var nodeElement = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
-
-    if (deep) {
-      nodeElement.childNodes = source.childNodes.map(function (x) {
-        return _cloneNode.apply(x, [x, deep, nodeElement]);
-      });
-    }
-
-    node = nodeElement;
-  } else if (isRxDocumentFragment(source)) {
-    var nodeDocumentFragment = new RxDocumentFragment();
-
-    if (deep) {
-      nodeDocumentFragment.childNodes = source.childNodes.map(function (x) {
-        return _cloneNode.apply(x, [x, deep, nodeDocumentFragment]);
-      });
-    }
-
-    node = nodeDocumentFragment;
-  } else if (isRxText(source)) {
-    node = new RxText(parentNode, source.nodeValue);
-  } else if (isRxComment(source)) {
-    node = new RxComment(parentNode, source.nodeValue);
-  } else if (isRxDocument(source)) {
-    var documentElement = new RxDocument();
-
-    if (deep) {
-      documentElement.childNodes = source.childNodes.map(function (x) {
-        return _cloneNode.apply(x, [x, deep, documentElement]);
-      });
-    }
-
-    node = documentElement;
-  } else {
-    throw new Error('Invalid node type');
-  }
-
-  return node;
-}
 var RxNode = /*#__PURE__*/function () {
   function RxNode(parentNode) {
     if (parentNode === void 0) {
@@ -2945,8 +5242,8 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
   }, {
     key: "firstElementChild",
     get: function get() {
-      for (var _iterator4 = _createForOfIteratorHelperLoose(this.childNodes), _step4; !(_step4 = _iterator4()).done;) {
-        var node = _step4.value;
+      for (var _iterator = _createForOfIteratorHelperLoose(this.childNodes), _step; !(_step = _iterator()).done;) {
+        var node = _step.value;
 
         if (isRxElement(node)) {
           return node;
@@ -3257,70 +5554,40 @@ var RxDocumentFragment = /*#__PURE__*/function (_RxElement) {
 var RxDocument = /*#__PURE__*/function (_RxElement2) {
   _inheritsLoose(RxDocument, _RxElement2);
 
-  _createClass(RxDocument, [{
-    key: "hidden",
-    get: function get() {
-      return true;
-    }
-  }, {
-    key: "visibilityState",
-    get: function get() {
-      return 'prerender';
-    }
-  }, {
-    key: "doctype",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxDocumentType(x);
-      });
-    }
-  }, {
-    key: "body",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'body';
-      });
-    }
-  }, {
-    key: "head",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'head';
-      });
-    }
-  }, {
-    key: "title",
-    get: function get() {
-      var title = this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'title';
-      });
-
-      if (title) {
-        return title.innerText;
-      } else {
-        return null;
-      }
-    },
-    set: function set(nodeValue) {
-      var title = this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'title';
-      });
-
-      if (title) {
-        title.innerText = nodeValue;
-      }
-    }
-  }, {
-    key: "documentElement",
-    get: function get() {
-      return this.firstElementChild;
-    }
-  }]);
-
+  /*
+      readonly characterSet: string; // Returns document's encoding.
+      readonly charset: string; // Gets or sets the character set used to encode the object.
+      readonly compatMode: string; // Gets a value that indicates whether standards-compliant mode is switched on for the object.
+      readonly contentType: string; // Returns document's content type.
+      readonly currentScript: HTMLOrSVGScriptElement | null; // Returns the script element, or the SVG script element, that is currently executing, as long as the element represents a classic script. In the case of reentrant script execution, returns the one that most recently started executing amongst those that have not yet finished executing.
+      readonly defaultView: (WindowProxy & typeof globalThis) | null; // Returns null if the Document is not currently executing a script or SVG script element (e.g., because the running script is an event handler, or a timeout), or if the currently executing script or SVG script element represents a module script.
+      readonly documentElement: HTMLElement; // Gets a reference to the root node of the document.
+      readonly documentURI: string; // Returns document's URL.
+      readonly embeds: HTMLCollectionOf<HTMLEmbedElement>; // Retrieves a collection of all embed objects in the document.
+      readonly forms: HTMLCollectionOf<HTMLFormElement>; // Retrieves a collection, in source order, of all form objects in the document.
+      readonly fullscreenEnabled: boolean; // Returns true if document has the ability to display elements fullscreen and fullscreen is supported, or false otherwise.
+      readonly head: HTMLHeadElement; // Returns the head element.
+      readonly hidden: boolean;
+      readonly images: HTMLCollectionOf<HTMLImageElement>; // Retrieves a collection, in source order, of img objects in the document.
+      readonly implementation: DOMImplementation; // Gets the implementation object of the current document.
+      readonly inputEncoding: string; // Returns the character encoding used to create the webpage that is loaded into the document object.
+      readonly lastModified: string; // Gets the date that the page was last modified, if the page supplies one.
+      readonly links: HTMLCollectionOf<HTMLAnchorElement | HTMLAreaElement>; // Retrieves a collection of all a objects that specify the href property and all area objects in the document.
+      readonly origin: string; // Returns document's origin.
+      readonly ownerDocument: null;
+      readonly plugins: HTMLCollectionOf<HTMLEmbedElement>; // Return an HTMLCollection of the embed elements in the Document.
+      readonly readyState: DocumentReadyState; // Retrieves a value that indicates the current state of the object.
+      readonly referrer: string; // Gets the URL of the location that referred the user to the current page.
+      readonly scripts: HTMLCollectionOf<HTMLScriptElement>; // Retrieves a collection of all script objects in the document.
+      readonly scrollingElement: Element | null;
+      readonly timeline: DocumentTimeline;
+      readonly visibilityState: VisibilityState;
+      */
   function RxDocument() {
     var _this18;
 
     _this18 = _RxElement2.call(this, null, '#document') || this;
+    _this18.location_ = RxLocation.location;
     _this18.nodeType = RxNodeType.DOCUMENT_NODE;
     _this18.childNodes = [];
     return _this18;
@@ -3388,8 +5655,343 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
     }).join('');
   };
 
+  _createClass(RxDocument, [{
+    key: "location",
+    get: function get() {
+      return this.location_;
+    }
+  }, {
+    key: "URL",
+    get: function get() {
+      return this.location_.href;
+    }
+  }, {
+    key: "hidden",
+    get: function get() {
+      return true;
+    }
+  }, {
+    key: "visibilityState",
+    get: function get() {
+      return 'prerender';
+    }
+  }, {
+    key: "doctype",
+    get: function get() {
+      return this.childNodes.find(function (x) {
+        return isRxDocumentType(x);
+      });
+    }
+  }, {
+    key: "body",
+    get: function get() {
+      return this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'body';
+      });
+    }
+  }, {
+    key: "head",
+    get: function get() {
+      return this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'head';
+      });
+    }
+  }, {
+    key: "title",
+    get: function get() {
+      var title = this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'title';
+      });
+
+      if (title) {
+        return title.innerText;
+      } else {
+        return null;
+      }
+    },
+    set: function set(nodeValue) {
+      var title = this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'title';
+      });
+
+      if (title) {
+        title.innerText = nodeValue;
+      }
+    }
+  }, {
+    key: "documentElement",
+    get: function get() {
+      return this.firstElementChild;
+    }
+  }]);
+
   return RxDocument;
-}(RxElement);var fs$1 = require('fs');
+}(RxElement);
+function isRxElement(x) {
+  return x.nodeType === RxNodeType.ELEMENT_NODE;
+}
+function isRxText(x) {
+  return x.nodeType === RxNodeType.TEXT_NODE;
+}
+function isRxComment(x) {
+  return x.nodeType === RxNodeType.COMMENT_NODE;
+}
+function isRxDocument(x) {
+  return x.nodeType === RxNodeType.DOCUMENT_NODE;
+}
+function isRxDocumentFragment(x) {
+  return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
+}
+function isRxDocumentType(x) {
+  return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
+}
+function parse(html) {
+  var doc = new RxDocument();
+  var parentNode = doc,
+      node;
+  var parser = new htmlparser2.Parser({
+    onopentag: function onopentag(nodeName, attributes) {
+      // console.log(nodeName);
+      node = new RxElement(parentNode, nodeName, attributes);
+      parentNode.childNodes.push(node);
+      parentNode = node; // if (NO_CHILDS.indexOf(nodeName) === -1) {
+      //	console.log(nodeName);
+      //	parentNode = node;
+      // }
+    },
+    onclosetag: function onclosetag(nodeName) {
+      if (parentNode.parentNode) {
+        parentNode = parentNode.parentNode;
+      }
+    },
+    ontext: function ontext(nodeValue) {
+      // console.log('ontext', nodeValue);
+      // if (nodeValue.length) {
+      var textNode = new RxText(parentNode, nodeValue);
+      parentNode.childNodes.push(textNode); // }
+    },
+    onprocessinginstruction: function onprocessinginstruction(nodeName, nodeValue) {
+      // console.log('onprocessinginstruction', nodeName, nodeValue);
+      if (nodeName === '!doctype') {
+        node = new RxDocumentType(parentNode, nodeValue);
+      } else {
+        node = new RxProcessingInstruction(parentNode, nodeValue);
+      }
+
+      parentNode.childNodes.push(node);
+    },
+    oncomment: function oncomment(nodeValue) {
+      // console.log('oncomment', nodeValue);
+      node = new RxComment(parentNode, nodeValue);
+      parentNode.childNodes.push(node); // parentNode = node;
+    },
+    oncommentend: function oncommentend() {// console.log('oncommentend');
+      // parentNode = parentNode.parentNode;
+    },
+    oncdatastart: function oncdatastart() {
+      console.log('oncdatastart');
+    },
+    oncdataend: function oncdataend() {
+      console.log('oncdataend');
+    },
+    onerror: function onerror(error) {
+      console.log('error', error);
+    }
+  }, {
+    decodeEntities: false,
+    lowerCaseTags: true
+  });
+  parser.write(html);
+  parser.end();
+  return doc;
+}
+function getQueries(selector) {
+  var queries = [];
+  selector.trim().split(' ').forEach(function (x) {
+    x.trim().split('>').forEach(function (x, i) {
+      // const regex = /\.([^\.[]+)|\[([^\.\[]+)\]|([^\.\[\]]+)/g;
+      // const regex = /\#([^\.[#]+)|\.([^\.[#]+)|\[([^\.\[#]+)\]|([^\.\[#\]]+)/g;
+      var regex = /\:not\(\#([^\.[#:]+)\)|\:not\(\.([^\.[#:]+)\)|\:not\(\[([^\.\[#:]+)\]\)|\:not\(([^\.\[#:\]]+)\)|\#([^\.[#:]+)|\.([^\.[#:]+)|\[([^\.\[#:]+)\]|([^\.\[#:\]]+)/g;
+      /* eslint no-useless-escape: "off" */
+
+      var selectors = [];
+      var matches = x.matchAll(regex);
+
+      for (var _iterator2 = _createForOfIteratorHelperLoose(matches), _step2; !(_step2 = _iterator2()).done;) {
+        var match = _step2.value;
+
+        if (match[1]) {
+          selectors.push({
+            selector: match[1],
+            type: SelectorType.Id,
+            negate: true
+          });
+        } else if (match[2]) {
+          selectors.push({
+            selector: match[2],
+            type: SelectorType.Class,
+            negate: true
+          });
+        } else if (match[3]) {
+          selectors.push({
+            selector: match[3],
+            type: SelectorType.Attribute,
+            negate: true
+          });
+        } else if (match[4]) {
+          selectors.push({
+            selector: match[4],
+            type: SelectorType.TagName,
+            negate: true
+          });
+        } else if (match[5]) {
+          selectors.push({
+            selector: match[5],
+            type: SelectorType.Id,
+            negate: false
+          });
+        } else if (match[6]) {
+          selectors.push({
+            selector: match[6],
+            type: SelectorType.Class,
+            negate: false
+          });
+        } else if (match[7]) {
+          selectors.push({
+            selector: match[7],
+            type: SelectorType.Attribute,
+            negate: false
+          });
+        } else if (match[8]) {
+          selectors.push({
+            selector: match[8],
+            type: SelectorType.TagName,
+            negate: false
+          });
+        } // console.log('match', match);
+
+      }
+
+      var selector = i > 0 ? {
+        selector: x,
+        selectors: selectors,
+        inner: true
+      } : {
+        selector: x,
+        selectors: selectors,
+        inner: false
+      };
+      queries.push.call(queries, selector);
+    });
+  });
+  return queries;
+}
+function matchSelector(child, selector) {
+  switch (selector.type) {
+    case SelectorType.Id:
+      return (selector.selector !== '' && child.attributes.id === selector.selector) !== selector.negate;
+
+    case SelectorType.Class:
+      return child.classList.indexOf(selector.selector) !== -1 !== selector.negate;
+
+    case SelectorType.Attribute:
+      return Object.keys(child.attributes).indexOf(selector.selector) !== -1 !== selector.negate;
+
+    case SelectorType.TagName:
+      return child.nodeName === selector.selector !== selector.negate;
+
+    default:
+      return false;
+  }
+}
+function matchSelectors(child, selectors) {
+  return selectors.reduce(function (p, selector) {
+    return p && matchSelector(child, selector);
+  }, true);
+}
+
+function _querySelector(queries, childNodes, query) {
+  if (query === void 0) {
+    query = null;
+  }
+
+  var node = null;
+
+  if (query || queries.length) {
+    query = query || queries.shift();
+
+    for (var _iterator4 = _createForOfIteratorHelperLoose(childNodes), _step4; !(_step4 = _iterator4()).done;) {
+      var child = _step4.value;
+
+      if (child instanceof RxElement) {
+        if (matchSelectors(child, query.selectors)) {
+          // console.log(query);
+          if (queries.length) {
+            return _querySelector(queries, child.childNodes);
+          } else {
+            return child;
+          }
+        } else if (!query.inner) {
+          node = _querySelector(queries, child.childNodes, query);
+        }
+      }
+    }
+  }
+
+  return node;
+}
+
+function _cloneNode(source, deep, parentNode) {
+  if (deep === void 0) {
+    deep = false;
+  }
+
+  if (parentNode === void 0) {
+    parentNode = null;
+  }
+
+  var node;
+
+  if (isRxElement(source)) {
+    var nodeElement = new RxElement(parentNode, source.nodeName, Object.assign({}, source.attributes));
+
+    if (deep) {
+      nodeElement.childNodes = source.childNodes.map(function (x) {
+        return _cloneNode.apply(x, [x, deep, nodeElement]);
+      });
+    }
+
+    node = nodeElement;
+  } else if (isRxDocumentFragment(source)) {
+    var nodeDocumentFragment = new RxDocumentFragment();
+
+    if (deep) {
+      nodeDocumentFragment.childNodes = source.childNodes.map(function (x) {
+        return _cloneNode.apply(x, [x, deep, nodeDocumentFragment]);
+      });
+    }
+
+    node = nodeDocumentFragment;
+  } else if (isRxText(source)) {
+    node = new RxText(parentNode, source.nodeValue);
+  } else if (isRxComment(source)) {
+    node = new RxComment(parentNode, source.nodeValue);
+  } else if (isRxDocument(source)) {
+    var documentElement = new RxDocument();
+
+    if (deep) {
+      documentElement.childNodes = source.childNodes.map(function (x) {
+        return _cloneNode.apply(x, [x, deep, documentElement]);
+      });
+    }
+
+    node = documentElement;
+  } else {
+    throw new Error('Invalid node type');
+  }
+
+  return node;
+}var fs$1 = require('fs');
 
 var ServerRequest = function ServerRequest(options) {
   if (options) {
@@ -3428,7 +6030,7 @@ var Server = /*#__PURE__*/function (_Platform) {
    * @param moduleFactory
    * @description This method returns a Server compiled module
    */
-  Server.bootstrap = function bootstrap(moduleFactory, template) {
+  Server.bootstrap = function bootstrap(moduleFactory, request) {
     if (!rxcomp.isPlatformServer) {
       throw new rxcomp.ModuleError('missing platform server, node process not found');
     }
@@ -3453,7 +6055,7 @@ var Server = /*#__PURE__*/function (_Platform) {
       throw new rxcomp.ModuleError('missing bootstrap meta selector');
     }
 
-    if (!template) {
+    if (!(request == null ? void 0 : request.template)) {
       throw new rxcomp.ModuleError('missing template');
     }
     /*
@@ -3472,7 +6074,7 @@ var Server = /*#__PURE__*/function (_Platform) {
     */
 
 
-    var document = this.resolveGlobals(template);
+    var document = this.resolveGlobals(request);
     var meta = this.resolveMeta(moduleFactory);
 
     if (meta.node instanceof RxElement) {
@@ -3505,8 +6107,7 @@ var Server = /*#__PURE__*/function (_Platform) {
   };
 
   Server.serialize = function serialize() {
-    console.log('Server.serialize');
-
+    // console.log('Server.serialize');
     if (this.document instanceof RxDocument) {
       var serialized = this.document.serialize(); // console.log('serialized', serialized);
 
@@ -3516,10 +6117,20 @@ var Server = /*#__PURE__*/function (_Platform) {
     }
   };
 
-  Server.resolveGlobals = function resolveGlobals(documentOrHtml) {
+  Server.resolveGlobals = function resolveGlobals(request) {
+    var url = request.url;
+    var location = RxLocation.location;
+    location.assign(url);
+    global.location = location;
+    var history = RxHistory.history;
+    history.replaceState(null, '', location.origin);
+    global.history = history;
+    var documentOrHtml = request.template;
     var document = typeof documentOrHtml === 'string' ? parse(documentOrHtml) : documentOrHtml;
-    this.document = document;
+    this.document = document; // !!!
+
     global.document = this.document;
+    history.replaceState(null, document.title || '', location.origin);
     return this.document;
   };
 
@@ -3541,7 +6152,7 @@ function render$(iRequest, renderRequest$) {
     }
 
     var cached = CacheService.get('cached', request.url);
-    console.log('cached', !!cached);
+    console.log('Server.render$.fromCache', !!cached, request.url);
 
     if (cached) {
       observer.next(cached);
@@ -3567,7 +6178,7 @@ function template$(request) {
 
     if (src) {
       var template = CacheService.get('template', src);
-      console.log('template', !!template);
+      console.log('Server.template$.fromCache', !!template, src);
 
       if (template) {
         observer.next(template);
@@ -3589,7 +6200,7 @@ function template$(request) {
   });
 }
 function bootstrap$(moduleFactory, request) {
-  console.log('bootstrap$', request);
+  // console.log('Server.bootstrap$', request);
   return rxjs.Observable.create(function (observer) {
     if (!request.template) {
       return observer.error(new Error('ServerError: missing template'));
@@ -3597,7 +6208,7 @@ function bootstrap$(moduleFactory, request) {
 
     try {
       // const module = Server.bootstrap(moduleFactory, request.template);
-      Server.bootstrap(moduleFactory, request.template);
+      Server.bootstrap(moduleFactory, request);
 
       var serialize = function serialize() {
         return Server.serialize();
@@ -3613,2634 +6224,7 @@ function bootstrap$(moduleFactory, request) {
       }, request)));
     }
   });
-}var HttpEventType;
-
-(function (HttpEventType) {
-  HttpEventType[HttpEventType["Sent"] = 0] = "Sent";
-  HttpEventType[HttpEventType["UploadProgress"] = 1] = "UploadProgress";
-  HttpEventType[HttpEventType["ResponseHeader"] = 2] = "ResponseHeader";
-  HttpEventType[HttpEventType["DownloadProgress"] = 3] = "DownloadProgress";
-  HttpEventType[HttpEventType["Response"] = 4] = "Response";
-  HttpEventType[HttpEventType["User"] = 5] = "User";
-  HttpEventType[HttpEventType["ResponseError"] = 6] = "ResponseError";
-})(HttpEventType || (HttpEventType = {}));var HttpHeaders = /*#__PURE__*/function () {
-  function HttpHeaders(options) {
-    var _this = this;
-
-    this.headers_ = new Map();
-    var headers = this.headers_;
-
-    if (options instanceof HttpHeaders) {
-      options.headers_.forEach(function (value, key) {
-        headers.set(key, value);
-      });
-    } else if (typeof (options == null ? void 0 : options.forEach) === 'function') {
-      options.forEach(function (value, key) {
-        headers.set(key, value.split(', '));
-      });
-    } else if (typeof options === 'object') {
-      Object.keys(options).forEach(function (key) {
-        var values = options[key];
-
-        if (typeof values === 'string') {
-          values = [values];
-        }
-
-        if (headers.has(key)) {
-          values.forEach(function (value) {
-            return _this.append(key, value);
-          });
-        } else {
-          headers.set(key, values);
-        }
-      });
-    } else if (typeof options === 'string') {
-      options.split('\n').forEach(function (line) {
-        var index = line.indexOf(':');
-
-        if (index > 0) {
-          var key = line.slice(0, index);
-          var value = line.slice(index + 1).trim();
-
-          if (headers.has(key)) {
-            _this.append(key, value);
-          } else {
-            headers.set(key, [value]);
-          }
-        }
-      });
-    }
-
-    if (!headers.has('Accept')) {
-      headers.set('Accept', ['application/json', 'text/plain', '*/*']);
-    }
-
-    if (!headers.has('Content-Type')) {
-      headers.set('Content-Type', ['application/json']);
-    }
-  }
-
-  var _proto = HttpHeaders.prototype;
-
-  _proto.has = function has(key) {
-    return this.headers_.has(key);
-  };
-
-  _proto.get = function get(key) {
-    var values = this.headers_.get(key);
-    return values ? values.join(', ') : null;
-  };
-
-  _proto.set = function set(key, value) {
-    var clone = this.clone_();
-    clone.headers_.set(key, value.split(', '));
-    return clone;
-  };
-
-  _proto.append = function append(key, value) {
-    var clone = this.clone_();
-    var values = clone.headers_.has(key) ? clone.headers_.get(key) || [] : [];
-    values.push(value);
-    clone.headers_.set(key, values);
-    return clone;
-  };
-
-  _proto.delete = function _delete(key) {
-    var clone = this.clone_();
-    clone.headers_.delete(key);
-    return clone;
-  };
-
-  _proto.forEach = function forEach(callback, thisArg) {
-    var _this2 = this;
-
-    this.headers_.forEach(function (v, k) {
-      callback(v.join(', '), k, _this2);
-    });
-  };
-
-  _proto.serialize = function serialize() {
-    var headers = [];
-    this.forEach(function (value, key) {
-      headers.push([key, value]);
-    });
-    return headers;
-  };
-
-  _proto.clone_ = function clone_() {
-    var clone = new HttpHeaders();
-    this.headers_.forEach(function (value, key) {
-      clone.headers_.set(key, value);
-    });
-    return clone;
-  };
-
-  return HttpHeaders;
-}();
-/*
-export class HttpHeaders implements Headers {
-
-    private headers: Map<string, string[]> = new Map<string, string[]>();;
-    private normalizedNames: Map<string, string> = new Map();
-
-    constructor(headers?: IHttpHeaders) {
-        if (typeof headers === 'string') {
-            headers.split('\n').forEach(line => {
-                const index = line.indexOf(':');
-                if (index > 0) {
-                    const name = line.slice(0, index);
-                    const key = name.toLowerCase();
-                    const value = line.slice(index + 1).trim();
-                    if (!this.normalizedNames.has(key)) {
-                        this.normalizedNames.set(key, name);
-                    }
-                    if (this.headers.has(key)) {
-                        this.headers.get(key)!.push(value);
-                    } else {
-                        this.headers.set(key, [value]);
-                    }
-                }
-            });
-        } else if (typeof headers === 'object') {
-            Object.keys(headers).forEach(name => {
-                let values: string | string[] = headers[name];
-                const key = name.toLowerCase();
-                if (typeof values === 'string') {
-                    values = [values];
-                }
-                if (values.length > 0) {
-                    this.headers.set(key, values);
-                    if (!this.normalizedNames.has(key)) {
-                        this.normalizedNames.set(key, name);
-                    }
-                }
-            });
-        }
-    }
-
-    append(name: string, value: string): void {
-        this.applyUpdate({ name, value, operation: 'append' });
-    }
-
-    delete(name: string): void {
-        this.applyUpdate({ name, operation: 'delete' });
-    }
-
-    get(name: string): string | null {
-        const values = this.headers.get(name.toLowerCase());
-        return values && values.length > 0 ? values[0] : null;
-    }
-
-    has(name: string): boolean {
-        // this.init();
-        return this.headers.has(name.toLowerCase());
-    }
-
-    set(name: string, value: string | string[]): void {
-        this.applyUpdate({ name, value, operation: 'set' });
-    }
-
-    // forEach(callback: (name: string, values: string[]) => void):void {
-    // 	this.init();
-    //	Array.from(this.normalizedNames.keys()).forEach(key => callback(this.normalizedNames.get(key)!, this.headers.get(key)!));
-    // }
-
-    forEach(callback: (value: string, key: string, parent: Headers) => void, thisArg?: any): void {
-        Array.from(this.normalizedNames.keys()).forEach(key => {
-            const value = this.headers.get(key)!;
-            callback((Array.isArray(value) ? value.join(',') : value), this.normalizedNames.get(key)!, this);
-        });
-    }
-
-    serialize(): Headers | string[][] | Record<string, string> | undefined {
-        const headers: string[][] = [];
-        Object.keys(this.headers.keys()).forEach(key => {
-            const value = this.headers.get(key);
-            if (value) {
-                headers.push([key, ...value]);
-            }
-        });
-        return headers;
-    }
-
-    private clone(update: any): HttpHeaders {
-        const headers: IHttpHeaders = {};
-        Object.keys(this.headers.keys()).forEach(key => {
-            const value = this.headers.get(key);
-            if (value) {
-                headers[key] = value;
-            }
-        });
-        this.applyUpdate(update);
-        return new HttpHeaders(headers);
-    }
-
-    private applyUpdate(update: any): void {
-        const key = update.name.toLowerCase();
-        switch (update.operation) {
-            case 'appen':
-            case 'set':
-                let value = update.value!;
-                if (typeof value === 'string') {
-                    value = [value];
-                }
-                if (value.length === 0) {
-                    return;
-                }
-                if (!this.normalizedNames.has(key)) {
-                    this.normalizedNames.set(key, update.name);
-                }
-                const base = (update.op === 'append' ? this.headers.get(key) : undefined) || [];
-                base.push(...value);
-                this.headers.set(key, base);
-                break;
-            case 'delete':
-                const toDelete = update.value as string | undefined;
-                if (!toDelete) {
-                    this.headers.delete(key);
-                    this.normalizedNames.delete(key);
-                } else {
-                    let existing = this.headers.get(key);
-                    if (!existing) {
-                        return;
-                    }
-                    existing = existing.filter(value => toDelete.indexOf(value) === -1);
-                    if (existing.length === 0) {
-                        this.headers.delete(key);
-                        this.normalizedNames.delete(key);
-                    } else {
-                        this.headers.set(key, existing);
-                    }
-                }
-                break;
-        }
-    }
-
-}
-*/
-
-/*
-export class HttpHeaders {
-
-    private headers!: Map<string, string[]>;
-    private normalizedNames: Map<string, string> = new Map();
-    private lazyInit!: HttpHeaders | Function | null;
-    private lazyUpdate: Update[] | null = null;
-
-    constructor(headers?: string | { [name: string]: string | string[] }) {
-        if (!headers) {
-            this.headers = new Map<string, string[]>();
-        } else if (typeof headers === 'string') {
-            this.lazyInit = () => {
-                this.headers = new Map<string, string[]>();
-                headers.split('\n').forEach(line => {
-                    const index = line.indexOf(':');
-                    if (index > 0) {
-                        const name = line.slice(0, index);
-                        const key = name.toLowerCase();
-                        const value = line.slice(index + 1).trim();
-                        this.maybeSetNormalizedName(name, key);
-                        if (this.headers.has(key)) {
-                            this.headers.get(key)!.push(value);
-                        } else {
-                            this.headers.set(key, [value]);
-                        }
-                    }
-                });
-            };
-        } else {
-            this.lazyInit = () => {
-                this.headers = new Map<string, string[]>();
-                Object.keys(headers).forEach(name => {
-                    let values: string | string[] = headers[name];
-                    const key = name.toLowerCase();
-                    if (typeof values === 'string') {
-                        values = [values];
-                    }
-                    if (values.length > 0) {
-                        this.headers.set(key, values);
-                        this.maybeSetNormalizedName(name, key);
-                    }
-                });
-            };
-        }
-    }
-
-    has(name: string): boolean {
-        this.init();
-        return this.headers.has(name.toLowerCase());
-    }
-
-    get(name: string): string | null {
-        this.init();
-        const values = this.headers.get(name.toLowerCase());
-        return values && values.length > 0 ? values[0] : null;
-    }
-
-    keys(): string[] {
-        this.init();
-        return Array.from(this.normalizedNames.values());
-    }
-
-    getAll(name: string): string[] | null {
-        this.init();
-        return this.headers.get(name.toLowerCase()) || null;
-    }
-
-    append(name: string, value: string | string[]): HttpHeaders {
-        return this.clone({ name, value, operation: 'a' });
-    }
-
-    set(name: string, value: string | string[]): HttpHeaders {
-        return this.clone({ name, value, operation: 's' });
-    }
-
-    delete(name: string, value?: string | string[]): HttpHeaders {
-        return this.clone({ name, value, operation: 'd' });
-    }
-
-    private maybeSetNormalizedName(name: string, key: string): void {
-        if (!this.normalizedNames.has(key)) {
-            this.normalizedNames.set(key, name);
-        }
-    }
-
-    private init(): void {
-        if (!!this.lazyInit) {
-            if (this.lazyInit instanceof HttpHeaders) {
-                this.copyFrom(this.lazyInit);
-            } else {
-                this.lazyInit();
-            }
-            this.lazyInit = null;
-            if (!!this.lazyUpdate) {
-                this.lazyUpdate.forEach(update => this.applyUpdate(update));
-                this.lazyUpdate = null;
-            }
-        }
-    }
-
-    private copyFrom(other: HttpHeaders) {
-        other.init();
-        Array.from(other.headers.keys()).forEach(key => {
-            this.headers.set(key, other.headers.get(key)!);
-            this.normalizedNames.set(key, other.normalizedNames.get(key)!);
-        });
-    }
-
-    private clone(update: Update): HttpHeaders {
-        const clone = new HttpHeaders();
-        clone.lazyInit =
-            (!!this.lazyInit && this.lazyInit instanceof HttpHeaders) ? this.lazyInit : this;
-        clone.lazyUpdate = (this.lazyUpdate || []).concat([update]);
-        return clone;
-    }
-
-    private applyUpdate(update: Update): void {
-        const key = update.name.toLowerCase();
-        switch (update.operation) {
-            case 'a':
-            case 's':
-                let value = update.value!;
-                if (typeof value === 'string') {
-                    value = [value];
-                }
-                if (value.length === 0) {
-                    return;
-                }
-                this.maybeSetNormalizedName(update.name, key);
-                const base = (update.op === 'a' ? this.headers.get(key) : undefined) || [];
-                base.push(...value);
-                this.headers.set(key, base);
-                break;
-            case 'd':
-                const toDelete = update.value as string | undefined;
-                if (!toDelete) {
-                    this.headers.delete(key);
-                    this.normalizedNames.delete(key);
-                } else {
-                    let existing = this.headers.get(key);
-                    if (!existing) {
-                        return;
-                    }
-                    existing = existing.filter(value => toDelete.indexOf(value) === -1);
-                    if (existing.length === 0) {
-                        this.headers.delete(key);
-                        this.normalizedNames.delete(key);
-                    } else {
-                        this.headers.set(key, existing);
-                    }
-                }
-                break;
-        }
-    }
-
-    forEach(fn: (name: string, values: string[]) => void) {
-        this.init();
-        Array.from(this.normalizedNames.keys()).forEach(key => fn(this.normalizedNames.get(key)!, this.headers.get(key)!));
-    }
-
-}
-*/var HttpErrorResponse = /*#__PURE__*/function (_Error) {
-  _inheritsLoose(HttpErrorResponse, _Error);
-
-  function HttpErrorResponse(options) {
-    var _this;
-
-    _this = _Error.call(this, (options == null ? void 0 : options.message) || 'Unknown Error') || this;
-    _this.status = 0;
-    _this.statusText = 'Unknown Error';
-    _this.ok = false;
-    _this.type = HttpEventType.ResponseError;
-    _this.message = 'Unknown Error';
-    _this.name = 'HttpErrorResponse';
-
-    if (options) {
-      _this.headers = new HttpHeaders(options.headers);
-      _this.status = options.status || _this.status;
-      _this.statusText = options.statusText || _this.statusText;
-      _this.url = options.url || _this.url;
-      _this.error = options.error || _this.error;
-      _this.name = options.name || _this.name;
-      _this.request = options.request || null;
-    }
-
-    return _this;
-  }
-
-  var _proto = HttpErrorResponse.prototype;
-
-  _proto.clone = function clone(options) {
-    options = Object.assign({
-      headers: this.headers,
-      status: this.status,
-      statusText: this.statusText,
-      url: this.url,
-      error: this.error,
-      message: this.message,
-      name: this.name,
-      request: this.request
-    }, options || {});
-    var clone = new HttpErrorResponse(options);
-    return clone;
-  };
-
-  return HttpErrorResponse;
-}( /*#__PURE__*/_wrapNativeSuper(Error));
-/*
-export class HttpErrorResponse<T> extends HttpResponseBase implements Error {
-    readonly name = 'HttpErrorResponse';
-    readonly message: string;
-    readonly error: any | null;
-    readonly ok = false;
-    constructor(errorResponse: IHttpErrorResponse, response: HttpResponse<T> | null = null) {
-        super(errorResponse, 0, 'Unknown Error');
-        if (Error.captureStackTrace) {
-            Error.captureStackTrace(this, HttpErrorResponse);
-        }
-        if (this.status >= 200 && this.status < 300) {
-            this.message = `Http failure during parsing for ${errorResponse.url || '(unknown url)'}`;
-        } else {
-            this.message = `Http failure response for ${errorResponse.url || '(unknown url)'}: ${errorResponse.status} ${errorResponse.statusText}`;
-        }
-        this.error = errorResponse.error || null;
-    }
-}
-*/var HttpResponse = /*#__PURE__*/function () {
-  function HttpResponse(options) {
-    this.status = 200;
-    this.statusText = 'OK';
-    this.type = HttpEventType.Response;
-    this.body = null;
-
-    if (options) {
-      this.headers = new HttpHeaders(options.headers);
-      this.status = options.status || this.status;
-      this.statusText = options.statusText || this.statusText;
-      this.url = options.url || this.url;
-      this.body = options.body || this.body;
-    }
-
-    this.ok = this.status >= 200 && this.status < 300;
-  }
-
-  var _proto2 = HttpResponse.prototype;
-
-  _proto2.clone = function clone(options) {
-    options = Object.assign({
-      headers: this.headers,
-      status: this.status,
-      statusText: this.statusText,
-      url: this.url,
-      ok: this.ok,
-      type: this.type,
-      body: this.body
-    }, options || {});
-    var clone = new HttpResponse(options);
-    return clone;
-  };
-
-  return HttpResponse;
-}();
-/*
-// !!!
-export default class HttpResponse {
-    data?: any;
-    url: string = '';
-    status: number = 0;
-    statusText: string = '';
-    ok: boolean = false;
-    redirected: boolean = false;
-    get static() {
-        return this.url!.indexOf('.json') === this.url!.length - 5;
-    }
-    constructor(response: Response) {
-        this.data = null;
-        if (response) {
-            this.url = response.url;
-            this.status = response.status;
-            this.statusText = response.statusText;
-            this.ok = response.ok;
-            this.redirected = response.redirected;
-        }
-    }
-}
-*/var HttpFetchHandler = /*#__PURE__*/function () {
-  function HttpFetchHandler() {
-    this.response_ = null;
-  }
-
-  var _proto = HttpFetchHandler.prototype;
-
-  _proto.handle = function handle(request) {
-    var _this = this;
-
-    if (!request.method) {
-      throw new Error("missing method");
-    }
-
-    var requestInfo = request.urlWithParams;
-    var requestInit = request.toInitRequest(); // const fetchRequest: Request = request.toFetchRequest__();
-    // console.log('fetchRequest', fetchRequest);
-    // fetchRequest.headers.forEach((value, key) => console.log('HttpFetchHandler.handle', key, value));
-    // request = request.clone({ headers: fetchRequest.headers });
-    // console.log('HttpFetchHandler.handle', 'requestInfo', requestInfo, 'requestInit', requestInit);
-
-    return rxjs.from(fetch(requestInfo, requestInit) // fetch(fetchRequest)
-    .then(function (response) {
-      return _this.getProgress(response, request);
-    }).then(function (response) {
-      return _this.getResponse(response, request);
-    })).pipe(operators.catchError(function (error) {
-      var errorResponse = {
-        error: error
-      };
-
-      if (_this.response_) {
-        errorResponse.headers = _this.response_.headers;
-        errorResponse.status = _this.response_.status;
-        errorResponse.statusText = _this.response_.statusText;
-        errorResponse.url = _this.response_.url;
-        errorResponse.request = request;
-      }
-
-      var httpErrorResponse = new HttpErrorResponse(errorResponse); // console.log('httpErrorResponse', httpErrorResponse);
-
-      rxcomp.nextError$.next(httpErrorResponse);
-      return rxjs.of(_this.response_); // return throwError(httpErrorResponse);
-    }), operators.finalize(function () {
-      _this.response_ = null;
-    }));
-  }
-  /*
-  onProgress(value: Uint8Array, done: boolean, request, reader, progress) {
-      console.log("value:", value);
-      if (value || done) {
-          console.log("upload complete, request.bodyUsed:", request.bodyUsed);
-          progress.value = progress.max;
-          return reader.closed.then(() => fileUpload);
-      };
-      console.log("upload progress:", value);
-      if (progress.value < file.size) {
-          progress.value += 1;
-      }
-      return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
-  };
-   getProgress_(request) {
-      const uploadProgress = new ReadableStream({
-          start(controller) {
-              console.log("starting upload, request.bodyUsed:", request.bodyUsed);
-              controller.enqueue(request.bodyUsed);
-          },
-          pull(controller) {
-              if (request.bodyUsed) {
-                  controller.close();
-              }
-              controller.enqueue(request.bodyUsed);
-              console.log("pull, request.bodyUsed:", request.bodyUsed);
-          },
-          cancel(reason) {
-              console.log(reason);
-          }
-      });
-       const [fileUpload, reader] = [
-          upload(request).catch(e => {
-              reader.cancel();
-              console.log(e);
-              throw e
-          }), uploadProgress.getReader()
-      ];
-  }
-  */
-  ;
-
-  _proto.getProgress = function getProgress(response, request) {
-    var _this2 = this;
-
-    // console.log('HttpFetchHandler.setProgress', request.reportProgress, response.body);
-    var clonedBody = response.clone().body;
-
-    if (rxcomp.isPlatformBrowser && request.reportProgress && clonedBody) {
-      var reader = clonedBody.getReader();
-      var contentLength = response.headers && response.headers.has('Content-Length') ? +(response.headers.get('Content-Length') || 0) : 0;
-      return new Promise(function (resolve, reject) {
-        /*
-        let receivedLength = 0; // received that many bytes at the moment
-        const chunks: Uint8Array[] = []; // array of received binary chunks (comprises the body)
-        const getChunk = () => {
-            return reader.read().then(({ done, value }) => {
-                if (!done) {
-                    if (value) {
-                        chunks.push(value);
-                        receivedLength += value.length || 0;
-                        console.log(`HttpFetchHandler.setProgress ${(receivedLength / contentLength * 100).toFixed(2)}% ${receivedLength} of ${contentLength}`);
-                    }
-                    getChunk();
-                } else {
-                    reader.cancel();
-                    resolve(response);
-                    if (false) {
-                        // Step 4: concatenate chunks into single Uint8Array
-                        const chunksAll = new Uint8Array(receivedLength); // (4.1)
-                        let position = 0;
-                        for (let chunk of chunks) {
-                            chunksAll.set(chunk, position); // (4.2)
-                            position += chunk.length;
-                        }
-                        // Step 5: decode into a string
-                        const result = new TextDecoder("utf-8").decode(chunksAll);
-                        // We're done!
-                        const data = JSON.parse(result);
-                        console.log('HttpFetchHandler.setProgress data', data);
-                        resolve(response);
-                    }
-                }
-            }).catch(error => {
-                reader.cancel();
-                reject(error);
-            });
-        };
-        getChunk();
-        */
-        var progress = {
-          progress: 0,
-          percent: 0,
-          current: 0,
-          total: 0
-        };
-
-        var onProgress = function onProgress(value, done) {
-          var receivedLength = progress.current;
-
-          if (!done) {
-            if (value) {
-              receivedLength += value.length || 0;
-              progress.total = contentLength;
-              progress.current = receivedLength;
-              progress.progress = receivedLength / contentLength;
-              progress.percent = progress.progress * 100;
-            } // console.log('progress', progress);
-
-
-            return reader.read().then(function (_ref) {
-              var value = _ref.value,
-                  done = _ref.done;
-              return onProgress(value, done);
-            });
-          } else {
-            progress.total = contentLength;
-            progress.current = contentLength;
-            progress.progress = 1;
-            progress.percent = 100; // console.log('progress', progress);
-
-            return reader.closed.then(function () {
-              return response.clone();
-            });
-          }
-        };
-
-        reader.read().then(function (_ref2) {
-          var value = _ref2.value,
-              done = _ref2.done;
-          return onProgress(value, done);
-        }).then(function (response) {
-          _this2.response_ = new HttpResponse(response);
-
-          if (typeof response[request.responseType] === 'function') {
-            return response[request.responseType]().then(function (json) {
-              _this2.response_ = new HttpResponse(Object.assign(_this2.response_, {
-                body: json
-              }));
-
-              if (response.ok) {
-                return resolve(_this2.response_);
-              } else {
-                return reject(_this2.response_);
-              }
-            });
-          } else {
-            return reject(_this2.response_);
-          }
-        }).catch(function (err) {
-          return console.log("upload error:", err);
-        });
-      });
-    } else {
-      return Promise.resolve(response);
-    }
-  };
-
-  _proto.getResponse = function getResponse(response, request) {
-    this.response_ = new HttpResponse(response);
-
-    if (rxcomp.isPlatformBrowser && request.reportProgress && response.body) {
-      return Promise.resolve(this.response_);
-    } else {
-      return this.getResponseType(response, request);
-    }
-  };
-
-  _proto.getResponseType = function getResponseType(response, request) {
-    var _this3 = this;
-
-    return new Promise(function (resolve, reject) {
-      _this3.response_ = new HttpResponse(response);
-
-      if (typeof response[request.responseType] === 'function') {
-        return response[request.responseType]().then(function (json) {
-          _this3.response_ = new HttpResponse(Object.assign(_this3.response_, {
-            body: json
-          }));
-
-          if (response.ok) {
-            return resolve(_this3.response_);
-          } else {
-            return reject(_this3.response_);
-          }
-        });
-      } else {
-        return reject(_this3.response_);
-      }
-    });
-  };
-
-  _proto.getReadableStream = function getReadableStream(response, request) {
-    var reader = response.body.getReader();
-    var readableStream = new ReadableStream({
-      start: function start(controller) {
-        // console.log("starting upload, request.bodyUsed:", request.bodyUsed);
-        // controller.enqueue(request.bodyUsed);
-        // The following function handles each data chunk
-        var push = function push() {
-          // "done" is a Boolean and value a "Uint8Array"
-          reader.read().then(function (_ref3) {
-            var done = _ref3.done,
-                value = _ref3.value;
-
-            // Is there no more data to read?
-            if (done) {
-              // Tell the browser that we have finished sending data
-              controller.close();
-              return;
-            } // Get the data and send it to the browser via the controller
-
-
-            controller.enqueue(value);
-            push();
-          });
-        };
-
-        push();
-      }
-    });
-    return readableStream;
-  };
-
-  return HttpFetchHandler;
-}();var HttpInterceptorHandler = /*#__PURE__*/function () {
-  function HttpInterceptorHandler(next, interceptor) {
-    this.next = next;
-    this.interceptor = interceptor;
-  }
-
-  var _proto = HttpInterceptorHandler.prototype;
-
-  _proto.handle = function handle(req) {
-    return this.interceptor.intercept(req, this.next);
-  };
-
-  return HttpInterceptorHandler;
-}();
-var HttpInterceptors = [];
-var fetchHandler = new HttpFetchHandler();
-var HttpInterceptingHandler = /*#__PURE__*/function () {
-  function HttpInterceptingHandler() {
-    this.chain = null;
-  }
-
-  var _proto3 = HttpInterceptingHandler.prototype;
-
-  _proto3.handle = function handle(req) {
-    if (this.chain === null) {
-      var interceptors = HttpInterceptors;
-      this.chain = interceptors.reduceRight(function (next, interceptor) {
-        return new HttpInterceptorHandler(next, interceptor);
-      }, fetchHandler);
-    }
-
-    return this.chain.handle(req);
-  };
-
-  return HttpInterceptingHandler;
-}();var HttpUrlEncodingCodec = /*#__PURE__*/function () {
-  function HttpUrlEncodingCodec() {}
-
-  var _proto = HttpUrlEncodingCodec.prototype;
-
-  _proto.encodeKey = function encodeKey(key) {
-    return encodeParam_(key);
-  };
-
-  _proto.encodeValue = function encodeValue(value) {
-    return encodeParam_(value);
-  };
-
-  _proto.decodeKey = function decodeKey(key) {
-    return decodeURIComponent(key);
-  };
-
-  _proto.decodeValue = function decodeValue(value) {
-    return decodeURIComponent(value);
-  };
-
-  return HttpUrlEncodingCodec;
-}();
-var HttpParams = /*#__PURE__*/function () {
-  function HttpParams(options, encoder) {
-    if (encoder === void 0) {
-      encoder = new HttpUrlEncodingCodec();
-    }
-
-    this.params_ = new Map();
-    this.encoder = encoder;
-    var params = this.params_;
-
-    if (options instanceof HttpParams) {
-      options.params_.forEach(function (value, key) {
-        params.set(key, value);
-      });
-    } else if (typeof options === 'object') {
-      Object.keys(options).forEach(function (key) {
-        var value = options[key];
-        params.set(key, Array.isArray(value) ? value : [value]);
-      });
-    } else if (typeof options === 'string') {
-      parseRawParams_(params, options, this.encoder);
-    } // ?updates=null&cloneFrom=null&encoder=%5Bobject%20Object%5D&params_=%5Bobject%20Map%5D
-
-  }
-
-  var _proto2 = HttpParams.prototype;
-
-  _proto2.keys = function keys() {
-    return Array.from(this.params_.keys());
-  };
-
-  _proto2.has = function has(key) {
-    return this.params_.has(key);
-  };
-
-  _proto2.get = function get(key) {
-    var value = this.params_.get(key);
-    return value ? value[0] : null;
-  };
-
-  _proto2.getAll = function getAll(key) {
-    return this.params_.get(key) || null;
-  };
-
-  _proto2.set = function set(key, value) {
-    var clone = this.clone_();
-    clone.params_.set(key, [value]);
-    return clone;
-  };
-
-  _proto2.append = function append(key, value) {
-    var clone = this.clone_();
-
-    if (clone.has(key)) {
-      var values = clone.params_.get(key) || [];
-      values.push(value);
-      clone.params_.set(key, values);
-    } else {
-      clone.params_.set(key, [value]);
-    }
-
-    return clone;
-  };
-
-  _proto2.delete = function _delete(key) {
-    var clone = this.clone_();
-    clone.params_.delete(key);
-    return clone;
-  };
-
-  _proto2.toString = function toString() {
-    var _this = this;
-
-    return this.keys().map(function (key) {
-      var values = _this.params_.get(key);
-
-      return _this.encoder.encodeKey(key) + (values ? '=' + values.map(function (x) {
-        return _this.encoder.encodeValue(x);
-      }).join('&') : '');
-    }).filter(function (keyValue) {
-      return keyValue !== '';
-    }).join('&');
-  };
-
-  _proto2.clone_ = function clone_() {
-    var clone = new HttpParams(undefined, this.encoder);
-    this.params_.forEach(function (value, key) {
-      clone.params_.set(key, value);
-    });
-    return clone;
-  };
-
-  return HttpParams;
-}();
-
-function parseRawParams_(params, queryString, encoder) {
-  if (queryString.length > 0) {
-    var keyValueParams = queryString.split('&');
-    keyValueParams.forEach(function (keyValue) {
-      var index = keyValue.indexOf('=');
-
-      var _ref = index == -1 ? [encoder.decodeKey(keyValue), ''] : [encoder.decodeKey(keyValue.slice(0, index)), encoder.decodeValue(keyValue.slice(index + 1))],
-          key = _ref[0],
-          value = _ref[1];
-
-      var values = params.get(key) || [];
-      values.push(value);
-      params.set(key, values);
-    });
-  }
-
-  return params;
-}
-
-function encodeParam_(v) {
-  return encodeURIComponent(v).replace(/%40/gi, '@').replace(/%3A/gi, ':').replace(/%24/gi, '$').replace(/%2C/gi, ',').replace(/%3B/gi, ';').replace(/%2B/gi, '+').replace(/%3D/gi, '=').replace(/%3F/gi, '?').replace(/%2F/gi, '/');
-}var HttpRequest = /*#__PURE__*/function () {
-  function HttpRequest(method, url, third, fourth) {
-    this.url = url;
-    this.reportProgress = false;
-    this.withCredentials = false;
-    this.observe = 'body';
-    this.responseType = 'json'; // !!! remove, rethink
-
-    var isStaticFile = /\.(json|xml|txt)(\?.*)?$/.test(url);
-    this.method = isStaticFile ? 'GET' : method.toUpperCase();
-    var options;
-
-    if (methodHasBody(this.method) || !!fourth) {
-      this.body = third !== undefined ? third : null;
-      options = fourth;
-    } else {
-      options = third;
-    }
-
-    if (options) {
-      this.reportProgress = !!options.reportProgress;
-      this.withCredentials = !!options.withCredentials;
-      this.observe = options.observe || this.observe;
-
-      if (options.responseType) {
-        this.responseType = options.responseType;
-      }
-
-      if (options.headers) {
-        this.headers = new HttpHeaders(options.headers);
-      }
-
-      if (options.params) {
-        this.params = new HttpParams(options.params);
-      }
-    }
-
-    if (!this.headers) {
-      this.headers = new HttpHeaders();
-    }
-
-    if (!this.params) {
-      this.params = new HttpParams();
-    }
-
-    var params = this.params.toString();
-    var index = url.indexOf('?');
-    var sep = index === -1 ? '?' : index < url.length - 1 ? '&' : '';
-    this.urlWithParams = url + (params.length ? sep + params : params);
-  }
-
-  var _proto = HttpRequest.prototype;
-
-  _proto.serializeBody = function serializeBody() {
-    if (this.body === null) {
-      return null;
-    }
-
-    if (isArrayBuffer(this.body) || isBlob$1(this.body) || isFormData(this.body) || typeof this.body === 'string') {
-      return this.body;
-    }
-
-    if (this.body instanceof HttpParams) {
-      return this.body.toString();
-    }
-
-    if (typeof this.body === 'object' || typeof this.body === 'boolean' || Array.isArray(this.body)) {
-      return JSON.stringify(this.body);
-    }
-
-    return this.body.toString();
-  };
-
-  _proto.detectContentTypeHeader = function detectContentTypeHeader() {
-    if (this.body === null) {
-      return null;
-    }
-
-    if (isFormData(this.body)) {
-      return null;
-    }
-
-    if (isBlob$1(this.body)) {
-      return this.body.type || null;
-    }
-
-    if (isArrayBuffer(this.body)) {
-      return null;
-    }
-
-    if (typeof this.body === 'string') {
-      return 'text/plain';
-    }
-
-    if (this.body instanceof HttpParams) {
-      return 'application/x-www-form-urlencoded;charset=UTF-8';
-    }
-
-    if (typeof this.body === 'object' || typeof this.body === 'number' || Array.isArray(this.body)) {
-      return 'application/json';
-    }
-
-    return null;
-  };
-
-  _proto.toInitRequest = function toInitRequest() {
-    return {
-      method: this.method,
-      headers: this.headers.serialize(),
-      body: this.serializeBody(),
-      mode: 'same-origin',
-      credentials: 'same-origin',
-      cache: 'default',
-      redirect: 'error'
-    };
-  };
-
-  _proto.toFetchRequest__ = function toFetchRequest__() {
-    return new Request(this.urlWithParams, this.toInitRequest());
-    /*
-    Request.cache Read only
-    Contains the cache mode of the request (e.g., default, reload, no-cache).
-    Request.context Read only
-    Contains the context of the request (e.g., audio, image, iframe, etc.)
-    Request.credentials Read only
-    Contains the credentials of the request (e.g., omit, same-origin, include). The default is same-origin.
-    Request.destination Read only
-    Returns a string from the RequestDestination enum describing the request's destination. This is a string indicating the type of content being requested.
-    Request.headers Read only
-    Contains the associated Headers object of the request.
-    Request.integrity Read only
-    Contains the subresource integrity value of the request (e.g., sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=).
-    Request.method Read only
-    Contains the request's method (GET, POST, etc.)
-    Request.mode Read only
-    Contains the mode of the request (e.g., cors, no-cors, same-origin, navigate.)
-    Request.redirect Read only
-    Contains the mode for how redirects are handled. It may be one of follow, error, or manual.
-    Request.referrer Read only
-    Contains the referrer of the request (e.g., client).
-    Request.referrerPolicy Read only
-    Contains the referrer policy of the request (e.g., no-referrer).
-    Request.url Read only
-    Contains the URL of the request.
-    Request implements Body, so it also inherits the following properties:
-    body Read only
-    A simple getter used to expose a ReadableStream of the body contents.
-    bodyUsed Read only
-    Stores a Boolean that declares whether the body has been used in a response yet.
-    */
-  };
-
-  _proto.clone = function clone(options) {
-    options = Object.assign({
-      headers: this.headers,
-      reportProgress: this.reportProgress,
-      params: this.params,
-      responseType: this.responseType,
-      withCredentials: this.withCredentials,
-      observe: this.observe,
-      body: this.body,
-      url: this.url,
-      method: this.method
-    }, options || {});
-    var clone = new HttpRequest(this.method, this.url, this.body, options);
-    return clone;
-  };
-
-  return HttpRequest;
-}();
-
-function methodHasBody(method) {
-  switch (method) {
-    case 'DELETE':
-    case 'GET':
-    case 'HEAD':
-    case 'OPTIONS':
-    case 'JSONP':
-      return false;
-
-    default:
-      return true;
-  }
-}
-
-function isArrayBuffer(value) {
-  return typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer;
-}
-
-function isBlob$1(value) {
-  return typeof Blob !== 'undefined' && value instanceof Blob;
-}
-
-function isFormData(value) {
-  return typeof FormData !== 'undefined' && value instanceof FormData;
-}var HttpClient = /*#__PURE__*/function () {
-  function HttpClient() {}
-
-  HttpClient.incrementPendingRequest = function incrementPendingRequest() {
-    HttpClient.pendingRequests$.next(HttpClient.pendingRequests$.getValue() + 1);
-  };
-
-  HttpClient.decrementPendingRequest = function decrementPendingRequest() {
-    HttpClient.pendingRequests$.next(HttpClient.pendingRequests$.getValue() - 1);
-  };
-
-  HttpClient.request$ = function request$(first, url, options) {
-    var _this = this;
-
-    if (options === void 0) {
-      options = {};
-    }
-
-    var request;
-
-    if (first instanceof HttpRequest) {
-      request = first;
-    } else {
-      var headers = undefined;
-
-      if (options.headers instanceof HttpHeaders) {
-        headers = options.headers;
-      } else {
-        headers = new HttpHeaders(options.headers);
-      }
-
-      var params = undefined;
-
-      if (options.params) {
-        params = new HttpParams(options.params);
-      }
-
-      request = new HttpRequest(first, url, options.body !== undefined ? options.body : null, {
-        headers: headers,
-        params: params,
-        reportProgress: options.reportProgress,
-        responseType: options.responseType || 'json',
-        withCredentials: options.withCredentials
-      });
-    } // console.log('HttpClient.request$', request);
-
-
-    HttpClient.incrementPendingRequest();
-    var events$ = rxjs.of(request).pipe(operators.concatMap(function (request) {
-      return _this.handler.handle(request);
-    }), // tap((response: HttpEvent<any>) => console.log('HttpClient.response', response)),
-    operators.finalize(function () {
-      return HttpClient.decrementPendingRequest();
-    }));
-
-    if (first instanceof HttpRequest || options.observe === 'events') {
-      return events$.pipe(operators.catchError(function (error) {
-        console.log('error', error);
-        return rxjs.throwError(_this.getError(error, null, request));
-      }));
-    }
-
-    var response$ = events$.pipe(operators.filter(function (event) {
-      return event instanceof HttpResponse;
-    }));
-    var response_;
-    var observe$ = response$.pipe(operators.map(function (response) {
-      response_ = response;
-
-      switch (options.observe || 'body') {
-        case 'body':
-          switch (request.responseType) {
-            case 'arraybuffer':
-              if (response.body !== null && !(response.body instanceof ArrayBuffer)) {
-                throw new Error('Response is not an ArrayBuffer.');
-              }
-
-              return response.body;
-
-            case 'blob':
-              if (response.body !== null && !(response.body instanceof Blob)) {
-                throw new Error('Response is not a Blob.');
-              }
-
-              return response.body;
-
-            case 'text':
-              if (response.body !== null && typeof response.body !== 'string') {
-                throw new Error('Response is not a string.');
-              }
-
-              return response.body;
-
-            case 'json':
-            default:
-              return response.body;
-          }
-
-        case 'response':
-          return response;
-
-        default:
-          throw new Error("Unreachable: unhandled observe type " + options.observe + "}");
-      }
-    }), operators.catchError(function (error) {
-      console.log('error', error);
-      return rxjs.throwError(_this.getError(error, response_, request));
-    }));
-    return observe$;
-  };
-
-  HttpClient.delete$ = function delete$(url, options) {
-    if (options === void 0) {
-      options = {};
-    }
-
-    return this.request$('DELETE', url, options);
-  };
-
-  HttpClient.get$ = function get$(url, options) {
-    if (options === void 0) {
-      options = {};
-    }
-
-    return this.request$('GET', url, options);
-  };
-
-  HttpClient.head$ = function head$(url, options) {
-    if (options === void 0) {
-      options = {};
-    }
-
-    return this.request$('HEAD', url, options);
-  };
-
-  HttpClient.jsonp$ = function jsonp$(url, callbackParam) {
-    return this.request$('JSONP', url, {
-      params: new HttpParams().append(callbackParam, 'JSONP_CALLBACK'),
-      observe: 'body',
-      responseType: 'json'
-    });
-  };
-
-  HttpClient.options$ = function options$(url, options) {
-    if (options === void 0) {
-      options = {};
-    }
-
-    return this.request$('OPTIONS', url, options);
-  };
-
-  HttpClient.patch$ = function patch$(url, body, options) {
-    if (options === void 0) {
-      options = {};
-    }
-
-    return this.request$('PATCH', url, optionsWithBody_(options, body));
-  };
-
-  HttpClient.post$ = function post$(url, body, options) {
-    if (options === void 0) {
-      options = {};
-    }
-
-    return this.request$('POST', url, optionsWithBody_(options, body));
-  };
-
-  HttpClient.put$ = function put$(url, body, options) {
-    if (options === void 0) {
-      options = {};
-    }
-
-    return this.request$('PUT', url, optionsWithBody_(options, body));
-  };
-
-  HttpClient.getError = function getError(error, response, request) {
-    if (!error.status) {
-      error.statusCode = (response == null ? void 0 : response.status) || 0;
-    }
-
-    if (!error.statusMessage) {
-      error.statusMessage = (response == null ? void 0 : response.statusText) || 'Unknown Error';
-    }
-
-    var options = {
-      error: error,
-      status: error.status,
-      statusText: error.statusText,
-      message: error.message,
-      request: request
-    };
-
-    if (response) {
-      options.headers = response.headers;
-      options.status = options.status || response.status;
-      options.statusText = options.statusText || response.statusText;
-      options.url = response.url;
-    }
-
-    return new HttpErrorResponse(options);
-  };
-
-  return HttpClient;
-}();
-HttpClient.pendingRequests$ = new rxjs.BehaviorSubject(0); // static handler: HttpHandler = new HttpFetchHandler();
-
-HttpClient.handler = new HttpInterceptingHandler();
-
-function optionsWithBody_(options, body) {
-  return Object.assign({}, options, {
-    body: body
-  });
-}
-/*
-
-export class HttpClient {
-
-    constructor(private handler: HttpHandler) { }
-
-    request<R>(request: HttpRequest<any>): Observable<HttpEvent<R>>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<ArrayBuffer>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<Blob>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<string>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        params?: HttpParams | { [param: string]: string | string[] }, observe: 'events',
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<ArrayBuffer>>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Blob>>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<string>>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        reportProgress?: boolean, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<any>>;
-    request<R>(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        reportProgress?: boolean, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<R>>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<ArrayBuffer>>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Blob>>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<string>>;
-    request(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        reportProgress?: boolean, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Object>>;
-    request<R>(method: string, url: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        reportProgress?: boolean, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<R>>;
-    request(method: string, url: string, options?: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        responseType?: 'json',
-        reportProgress?: boolean,
-        withCredentials?: boolean,
-    }): Observable<Object>;
-    request<R>(method: string, url: string, options?: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        responseType?: 'json',
-        reportProgress?: boolean,
-        withCredentials?: boolean,
-    }): Observable<R>;
-    request(method: string, url: string, options?: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        params?: HttpParams | { [param: string]: string | string[] },
-        observe?: HttpObserve,
-        reportProgress?: boolean,
-        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
-        withCredentials?: boolean,
-    }): Observable<any>;
-    request(first: string | HttpRequest<any>, url?: string, options: {
-        body?: any,
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: HttpObserveType,
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
-        withCredentials?: boolean,
-    } = {}): Observable<any> {
-        let request: HttpRequest<any>;
-        if (first instanceof HttpRequest) {
-            request = first;
-        } else {
-            let headers: HttpHeaders | undefined = undefined;
-            if (options.headers instanceof HttpHeaders) {
-                headers = options.headers;
-            } else {
-                headers = new HttpHeaders(options.headers);
-            }
-            let params: HttpParams | undefined = undefined;
-            if (!!options.params) {
-                if (options.params instanceof HttpParams) {
-                    params = options.params;
-                } else {
-                    params = new HttpParams({ fromObject: options.params } as HttpParamsOptions);
-                }
-            }
-            request = new HttpRequest(first, url!, (options.body !== undefined ? options.body : null), {
-                headers,
-                params,
-                reportProgress: options.reportProgress,
-                responseType: options.responseType || 'json',
-                withCredentials: options.withCredentials,
-            });
-        }
-        const events$: Observable<HttpEvent<any>> = of(request).pipe(concatMap((request: HttpRequest<any>) => this.handler.handle(request)));
-        if (first instanceof HttpRequest || options.observe === 'events') {
-            return events$;
-        }
-        const response$: Observable<HttpResponse<any>> = <Observable<HttpResponse<any>>>events$.pipe(
-            filter((event: HttpEvent<any>) => event instanceof HttpResponse),
-        );
-        switch (options.observe || 'body') {
-            case 'body':
-                switch (request.responseType) {
-                    case 'arraybuffer':
-                        return response$.pipe(map((res: HttpResponse<any>) => {
-                            if (res.body !== null && !(res.body instanceof ArrayBuffer)) {
-                                throw new Error('Response is not an ArrayBuffer.');
-                            }
-                            return res.body;
-                        }));
-                    case 'blob':
-                        return response$.pipe(map((res: HttpResponse<any>) => {
-                            if (res.body !== null && !(res.body instanceof Blob)) {
-                                throw new Error('Response is not a Blob.');
-                            }
-                            return res.body;
-                        }));
-                    case 'text':
-                        return response$.pipe(map((res: HttpResponse<any>) => {
-                            if (res.body !== null && typeof res.body !== 'string') {
-                                throw new Error('Response is not a string.');
-                            }
-                            return res.body;
-                        }));
-                    case 'json':
-                    default:
-                        return response$.pipe(map((res: HttpResponse<any>) => res.body));
-                }
-            case 'response':
-                return response$;
-            default:
-                throw new Error(`Unreachable: unhandled observe type ${options.observe}}`);
-        }
-    }
-
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<ArrayBuffer>;
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<Blob>;
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<string>;
-
-
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<ArrayBuffer>>;
-
-
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Blob>>;
-
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<string>>;
-
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Object>>;
-
-
-    delete<T>(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<T>>;
-
-
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<ArrayBuffer>>;
-
-
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Blob>>;
-
-
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<string>>;
-
-
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Object>>;
-
-
-    delete<T>(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<T>>;
-
-
-    delete(url: string, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<Object>;
-
-
-    delete<T>(url: string, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<T>;
-
-
-    delete(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: HttpObserveType,
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
-        withCredentials?: boolean,
-    } = {}): Observable<any> {
-        return this.request<any>('DELETE', url, options as any);
-    }
-
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<ArrayBuffer>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<Blob>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<string>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<ArrayBuffer>>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Blob>>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<string>>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Object>>;
-
-
-    get<T>(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<T>>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<ArrayBuffer>>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Blob>>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<string>>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Object>>;
-
-
-    get<T>(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<T>>;
-
-
-    get(url: string, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<Object>;
-
-
-    get<T>(url: string, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<T>;
-
-
-    get(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: HttpObserveType,
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
-        withCredentials?: boolean,
-    } = {}): Observable<any> {
-        return this.request<any>('GET', url, options as any);
-    }
-
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<ArrayBuffer>;
-
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<Blob>;
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<string>;
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<ArrayBuffer>>;
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Blob>>;
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<string>>;
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Object>>;
-
-
-    head<T>(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<T>>;
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<ArrayBuffer>>;
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Blob>>;
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<string>>;
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Object>>;
-
-
-    head<T>(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<T>>;
-
-
-    head(url: string, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<Object>;
-
-
-    head<T>(url: string, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<T>;
-
-
-    head(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: HttpObserveType,
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
-        withCredentials?: boolean,
-    } = {}): Observable<any> {
-        return this.request<any>('HEAD', url, options as any);
-    }
-
-
-    jsonp(url: string, callbackParam: string): Observable<Object>;
-
-
-    jsonp<T>(url: string, callbackParam: string): Observable<T>;
-
-
-    jsonp<T>(url: string, callbackParam: string): Observable<T> {
-        return this.request<any>('JSONP', url, {
-            params: new HttpParams().append(callbackParam, 'JSONP_CALLBACK'),
-            observe: 'body',
-            responseType: 'json',
-        });
-    }
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<ArrayBuffer>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<Blob>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<string>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<ArrayBuffer>>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Blob>>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<string>>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Object>>;
-
-
-    options<T>(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<T>>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<ArrayBuffer>>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Blob>>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<string>>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Object>>;
-
-
-    options<T>(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<T>>;
-
-
-    options(url: string, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<Object>;
-
-
-    options<T>(url: string, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<T>;
-
-
-    options(url: string, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: HttpObserveType,
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
-        withCredentials?: boolean,
-    } = {}): Observable<any> {
-        return this.request<any>('OPTIONS', url, options as any);
-    }
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<ArrayBuffer>;
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<Blob>;
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<string>;
-
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<ArrayBuffer>>;
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Blob>>;
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<string>>;
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Object>>;
-
-
-    patch<T>(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<T>>;
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<ArrayBuffer>>;
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Blob>>;
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<string>>;
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Object>>;
-
-
-    patch<T>(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<T>>;
-
-
-    patch$(url: string, body: any | null, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<Object>;
-
-
-    patch<T>(url: string, body: any | null, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<T>;
-
-
-    patch$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: HttpObserveType,
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
-        withCredentials?: boolean,
-    } = {}): Observable<any> {
-        return this.request<any>('PATCH', url, optionsWithBody_<T>(options, body));
-    }
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<ArrayBuffer>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<Blob>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<string>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<ArrayBuffer>>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Blob>>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<string>>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Object>>;
-
-
-    post<T>(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<T>>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<ArrayBuffer>>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Blob>>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<string>>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Object>>;
-
-
-    post<T>(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<T>>;
-
-
-    post$(url: string, body: any | null, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<Object>;
-
-
-    post<T>(url: string, body: any | null, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<T>;
-
-
-    post$(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: HttpObserveType,
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
-        withCredentials?: boolean,
-    } = {}): Observable<any> {
-        return this.request<any>('POST', url, optionsWithBody_<T>(options, body));
-    }
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<ArrayBuffer>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<Blob>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<string>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<ArrayBuffer>>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Blob>>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<string>>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<Object>>;
-
-
-    put<T>(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'events',
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpEvent<T>>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'arraybuffer',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<ArrayBuffer>>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'blob',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Blob>>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean, responseType: 'text',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<string>>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<Object>>;
-
-
-    put<T>(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined, observe: 'response',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<HttpResponse<T>>;
-
-
-    put(url: string, body: any | null, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<Object>;
-
-
-    put<T>(url: string, body: any | null, options?: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: 'body',
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'json',
-        withCredentials?: boolean,
-    }): Observable<T>;
-
-
-    put(url: string, body: any | null, options: {
-        headers?: HttpHeaders | Headers | { [key: string]: string | string[] } | string | undefined,
-        observe?: HttpObserveType,
-        params?: HttpParams | { [param: string]: string | string[] },
-        reportProgress?: boolean,
-        responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
-        withCredentials?: boolean,
-    } = {}): Observable<any> {
-        return this.request<any>('PUT', url, optionsWithBody_<T>(options, body));
-    }
-}
-
-*/var Vars = {
+}var Vars = {
   name: 'rxcomp-server',
   host: '',
   resource: '/',
@@ -6286,26 +6270,7 @@ export function getSlug(url) {
     url = url.replace('.html', '');
     return `/it/it${url}`;
 }
-*/var CustomInterceptor = /*#__PURE__*/function () {
-  function CustomInterceptor() {}
-
-  var _proto = CustomInterceptor.prototype;
-
-  _proto.intercept = function intercept(request, next) {
-
-    var clonedRequest = request.clone({
-      url: request.url
-    }); // console.log('CustomInterceptor.clonedRequest', clonedRequest);
-
-    return next.handle(clonedRequest);
-  };
-
-  return CustomInterceptor;
-}();
-var interceptor = new CustomInterceptor();
-HttpInterceptors.push(interceptor);
-
-var AppComponent = /*#__PURE__*/function (_Component) {
+*/var AppComponent = /*#__PURE__*/function (_Component) {
   _inheritsLoose(AppComponent, _Component);
 
   function AppComponent() {
@@ -6317,9 +6282,9 @@ var AppComponent = /*#__PURE__*/function (_Component) {
     return _this;
   }
 
-  var _proto2 = AppComponent.prototype;
+  var _proto = AppComponent.prototype;
 
-  _proto2.onInit = function onInit() {
+  _proto.onInit = function onInit() {
     var _this2 = this;
 
     // console.log('AppComponent.onInit', this);
@@ -6343,7 +6308,7 @@ var AppComponent = /*#__PURE__*/function (_Component) {
       query: "{ getTodos { id, title, completed } }"
     };
     /*
-    HttpClient.post$<IResponseData>(`${Vars.host}${Vars.api}`, payload, {
+    HttpService.post$<IResponseData>(`${Vars.host}${Vars.api}`, payload, {
         params: { query: `{ getTodos { id, title, completed } }` },
         reportProgress: true
     }).pipe(
@@ -6351,7 +6316,9 @@ var AppComponent = /*#__PURE__*/function (_Component) {
 
     var methodUrl = "" + Vars.host + Vars.api;
     console.log('methodUrl', methodUrl);
-    HttpClient.post$(methodUrl, payload).pipe(operators.first()).subscribe(function (response) {
+    rxcompHttp.HttpService.post$(methodUrl, payload, {
+      hydrate: true
+    }).pipe(operators.first()).subscribe(function (response) {
       _this2.items = response.data.getTodos;
 
       _this2.pushChanges(); // console.log('AppComponent.getTodos', this.items);
@@ -6377,7 +6344,7 @@ var AppComponent = /*#__PURE__*/function (_Component) {
     });
   };
 
-  _proto2.onClick = function onClick(item) {
+  _proto.onClick = function onClick(item) {
     item.completed = !item.completed;
     this.pushChanges();
   };
@@ -6386,7 +6353,22 @@ var AppComponent = /*#__PURE__*/function (_Component) {
 }(rxcomp.Component);
 AppComponent.meta = {
   selector: '[app-component]'
-};var AppModule = /*#__PURE__*/function (_Module) {
+};var CustomInterceptor = /*#__PURE__*/function () {
+  function CustomInterceptor() {}
+
+  var _proto = CustomInterceptor.prototype;
+
+  _proto.intercept = function intercept(request, next) {
+
+    var clonedRequest = request.clone({
+      url: request.url
+    }); // console.log('CustomInterceptor.clonedRequest', clonedRequest);
+
+    return next.handle(clonedRequest);
+  };
+
+  return CustomInterceptor;
+}();var AppModule = /*#__PURE__*/function (_Module) {
   _inheritsLoose(AppModule, _Module);
 
   function AppModule() {
@@ -6396,7 +6378,7 @@ AppComponent.meta = {
   return AppModule;
 }(rxcomp.Module);
 AppModule.meta = {
-  imports: [rxcomp.CoreModule],
+  imports: [rxcomp.CoreModule, rxcompHttp.HttpModule.useInterceptors([CustomInterceptor])],
   declarations: [],
   bootstrap: AppComponent
 };// import fetch from 'cross-fetch';
@@ -6404,7 +6386,7 @@ function renderRequest$(request) {
   Vars.host = request.vars.host; // console.log('renderRequest$', request, Vars);
 
   return Server.bootstrap$(AppModule, request).pipe(operators.switchMap(function (response) {
-    return HttpClient.pendingRequests$.pipe(operators.filter(function (count) {
+    return rxcompHttp.HttpService.pendingRequests$.pipe(operators.filter(function (count) {
       return count === 0;
     }), operators.map(function () {
       response.body = response.serialize();

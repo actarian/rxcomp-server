@@ -118,7 +118,7 @@ var Server = /** @class */ (function (_super) {
         return module;
     };
     Server.serialize = function () {
-        console.log('Server.serialize');
+        // console.log('Server.serialize');
         if (this.document instanceof nodes_1.RxDocument) {
             var serialized = this.document.serialize();
             // console.log('serialized', serialized);
@@ -159,7 +159,7 @@ function render$(iRequest, renderRequest$) {
             cache_service_1.default.folder = request.vars.cache;
         }
         var cached = cache_service_1.default.get('cached', request.url);
-        console.log('cached', !!cached);
+        console.log('Server.render$.fromCache', !!cached, request.url);
         if (cached) {
             observer.next(cached);
             return observer.complete();
@@ -183,7 +183,7 @@ function template$(request) {
         var src = request.vars.template;
         if (src) {
             var template = cache_service_1.default.get('template', src);
-            console.log('template', !!template);
+            console.log('Server.template$.fromCache', !!template, src);
             if (template) {
                 observer.next(template);
                 observer.complete();
@@ -206,7 +206,7 @@ function template$(request) {
 }
 exports.template$ = template$;
 function bootstrap$(moduleFactory, request) {
-    console.log('bootstrap$', request);
+    // console.log('Server.bootstrap$', request);
     return rxjs_1.Observable.create(function (observer) {
         if (!request.template) {
             return observer.error(new Error('ServerError: missing template'));

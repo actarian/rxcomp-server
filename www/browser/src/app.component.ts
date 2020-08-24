@@ -1,38 +1,7 @@
 import { Component, errors$, IFactoryMeta } from 'rxcomp';
-import { EMPTY, Observable } from 'rxjs';
-import { first, takeUntil, tap } from 'rxjs/operators';
-import HttpClient from './http/http-client';
-import { HttpHandler } from './http/http-handler';
-import { HttpInterceptor, HttpInterceptors } from './http/http-interceptor';
-import { HttpRequest } from './http/http-request';
-import { HttpEvent, HttpResponse } from './http/http-response';
+import { first, takeUntil } from 'rxjs/operators';
+import { HttpService } from '../../../../rxcomp-http/dist/cjs/rxcomp-http';
 import { Vars } from './vars';
-
-const cancelRequest: boolean = false;
-
-export class CustomInterceptor implements HttpInterceptor {
-	intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-		if (cancelRequest) {
-			return EMPTY;
-		}
-		const clonedRequest = request.clone({
-			url: request.url,
-		});
-		// console.log('CustomInterceptor.clonedRequest', clonedRequest);
-		return next.handle(clonedRequest);
-		return next.handle(request).pipe(
-			tap(event => {
-				if (event instanceof HttpResponse) {
-					console.log('CustomInterceptor.status', event.status);
-					console.log('CustomInterceptor.filter', request.params.get('filter'));
-				}
-			})
-		);
-	}
-}
-
-const interceptor = new CustomInterceptor();
-HttpInterceptors.push(interceptor);
 
 interface ITodoItem {
 	id: number;
@@ -51,7 +20,6 @@ interface IResponseData {
 export default class AppComponent extends Component {
 	items: ITodoItem[] = [];
 	error: any = null;
-
 	onInit() {
 		// console.log('AppComponent.onInit', this);
 		/*
@@ -69,24 +37,21 @@ export default class AppComponent extends Component {
 		*/
 		const payload = { query: `{ getTodos { id, title, completed } }` };
 		/*
-		HttpClient.post$<IResponseData>(`${Vars.host}${Vars.api}`, payload, {
+		HttpService.post$<IResponseData>(`${Vars.host}${Vars.api}`, payload, {
 			params: { query: `{ getTodos { id, title, completed } }` },
 			reportProgress: true
 		}).pipe(
 		*/
-
 		const methodUrl: string = `${Vars.host}${Vars.api}`;
 		console.log('methodUrl', methodUrl);
-		HttpClient.post$<IResponseData>(methodUrl, payload).pipe(
+		HttpService.post$<IResponseData>(methodUrl, payload, { hydrate: true }).pipe(
 			first(),
 		).subscribe((response: IResponseData) => {
 			this.items = response.data.getTodos;
 			this.pushChanges();
 			// console.log('AppComponent.getTodos', this.items);
 		}, error => console.log);
-
 		// HttpService.get$(`https://jsonplaceholder.typicode.com/users/1/todos`).pipe(
-
 		/*
 		HttpService.get$(`${Vars.host}/data/todos.json`).pipe(
 			first(),
@@ -96,14 +61,12 @@ export default class AppComponent extends Component {
 			this.pushChanges();
 		});
 		*/
-
 		errors$.pipe(
 			takeUntil(this.unsubscribe$),
 		).subscribe(error => {
 			this.error = error;
 			this.pushChanges();
 		});
-
 	}
 
 	onClick(item: { title: string, completed: boolean }) {
@@ -114,5 +77,4 @@ export default class AppComponent extends Component {
 	static meta: IFactoryMeta = {
 		selector: '[app-component]',
 	};
-
 }

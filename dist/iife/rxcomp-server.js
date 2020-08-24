@@ -328,7 +328,9 @@ var CacheService = function () {
       type = 'cache';
     }
 
-    var path = ("_" + type + "_" + name).replace(/(\/|\?|\#|\&)+/g, function (substring, group) {
+    var regExp = /(\/|\\|\:|\?|\#|\&)+/g;
+    var path = "_" + type + "_" + name;
+    path = path.replace(regExp, function (substring, group) {
       return encodeURIComponent(group);
     });
     return "" + this.folder + path;
@@ -2042,8 +2044,6 @@ var Server = function (_Platform) {
   };
 
   Server.serialize = function serialize() {
-    console.log('Server.serialize');
-
     if (this.document instanceof RxDocument) {
       var serialized = this.document.serialize();
       return serialized;
@@ -2086,7 +2086,7 @@ function render$(iRequest, renderRequest$) {
     }
 
     var cached = CacheService.get('cached', request.url);
-    console.log('cached', !!cached);
+    console.log('Server.render$.fromCache', !!cached, request.url);
 
     if (cached) {
       observer.next(cached);
@@ -2111,7 +2111,7 @@ function template$(request) {
 
     if (src) {
       var template = CacheService.get('template', src);
-      console.log('template', !!template);
+      console.log('Server.template$.fromCache', !!template, src);
 
       if (template) {
         observer.next(template);
@@ -2133,7 +2133,6 @@ function template$(request) {
   });
 }
 function bootstrap$(moduleFactory, request) {
-  console.log('bootstrap$', request);
   return rxjs.Observable.create(function (observer) {
     if (!request.template) {
       return observer.error(new Error('ServerError: missing template'));

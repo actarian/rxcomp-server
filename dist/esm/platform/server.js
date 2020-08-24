@@ -104,7 +104,7 @@ export default class Server extends Platform {
         return module;
     }
     static serialize() {
-        console.log('Server.serialize');
+        // console.log('Server.serialize');
         if (this.document instanceof RxDocument) {
             const serialized = this.document.serialize();
             // console.log('serialized', serialized);
@@ -143,7 +143,7 @@ export function render$(iRequest, renderRequest$) {
             CacheService.folder = request.vars.cache;
         }
         const cached = CacheService.get('cached', request.url);
-        console.log('cached', !!cached);
+        console.log('Server.render$.fromCache', !!cached, request.url);
         if (cached) {
             observer.next(cached);
             return observer.complete();
@@ -166,7 +166,7 @@ export function template$(request) {
         const src = request.vars.template;
         if (src) {
             const template = CacheService.get('template', src);
-            console.log('template', !!template);
+            console.log('Server.template$.fromCache', !!template, src);
             if (template) {
                 observer.next(template);
                 observer.complete();
@@ -188,7 +188,7 @@ export function template$(request) {
     });
 }
 export function bootstrap$(moduleFactory, request) {
-    console.log('bootstrap$', request);
+    // console.log('Server.bootstrap$', request);
     return Observable.create(function (observer) {
         if (!request.template) {
             return observer.error(new Error('ServerError: missing template'));

@@ -109,7 +109,10 @@ export default class CacheService {
         }
     }
     static getPath(type = 'cache', name) {
-        const path = `_${type}_${name}`.replace(/(\/|\?|\#|\&)+/g, function (substring, group) {
+        const regExp = /(\/|\\|\:|\?|\#|\&)+/g;
+        let path = `_${type}_${name}`;
+        // console.log('path', path);
+        path = path.replace(regExp, function (substring, group) {
             return encodeURIComponent(group);
         });
         return `${this.folder}${path}`;

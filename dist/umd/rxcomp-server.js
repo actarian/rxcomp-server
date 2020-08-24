@@ -328,7 +328,10 @@ var CacheService = /*#__PURE__*/function () {
       type = 'cache';
     }
 
-    var path = ("_" + type + "_" + name).replace(/(\/|\?|\#|\&)+/g, function (substring, group) {
+    var regExp = /(\/|\\|\:|\?|\#|\&)+/g;
+    var path = "_" + type + "_" + name; // console.log('path', path);
+
+    path = path.replace(regExp, function (substring, group) {
       return encodeURIComponent(group);
     });
     return "" + this.folder + path;
@@ -512,22 +515,22 @@ var RxLocation = /*#__PURE__*/function () {
     private hash_: string = '';
     get hash(): string { return this.hash_; }
     set hash(hash: string) { this.hash_ = hash; updateLocation_(this); }
-         private host_: string = '';
+          private host_: string = '';
     get host(): string { return this.host_; }
     set host(host: string) { this.host_ = host; updateLocation_(this); }
-         private hostname_: string = '';
+          private hostname_: string = '';
     get hostname(): string { return this.hostname_; }
     set hostname(hostname: string) { this.hostname_ = hostname; updateLocation_(this); }
-         private pathname_: string = '';
+          private pathname_: string = '';
     get pathname(): string { return this.pathname_; }
     set pathname(pathname: string) { this.pathname_ = pathname; updateLocation_(this); }
-         private port_: string = '';
+          private port_: string = '';
     get port(): string { return this.port_; }
     set port(port: string) { this.port_ = port; updateLocation_(this); }
-         private protocol_: string = '';
+          private protocol_: string = '';
     get protocol(): string { return this.protocol_; }
     set protocol(protocol: string) { this.protocol_ = protocol; updateLocation_(this); }
-         private search_: string = '';
+          private search_: string = '';
     get search(): string { return this.search_; }
     set search(search: string) { this.search_ = search; updateLocation_(this); }
     */
@@ -2222,8 +2225,7 @@ var Server = /*#__PURE__*/function (_Platform) {
   };
 
   Server.serialize = function serialize() {
-    console.log('Server.serialize');
-
+    // console.log('Server.serialize');
     if (this.document instanceof RxDocument) {
       var serialized = this.document.serialize(); // console.log('serialized', serialized);
 
@@ -2268,7 +2270,7 @@ function render$(iRequest, renderRequest$) {
     }
 
     var cached = CacheService.get('cached', request.url);
-    console.log('cached', !!cached);
+    console.log('Server.render$.fromCache', !!cached, request.url);
 
     if (cached) {
       observer.next(cached);
@@ -2294,7 +2296,7 @@ function template$(request) {
 
     if (src) {
       var template = CacheService.get('template', src);
-      console.log('template', !!template);
+      console.log('Server.template$.fromCache', !!template, src);
 
       if (template) {
         observer.next(template);
@@ -2316,7 +2318,7 @@ function template$(request) {
   });
 }
 function bootstrap$(moduleFactory, request) {
-  console.log('bootstrap$', request);
+  // console.log('Server.bootstrap$', request);
   return rxjs.Observable.create(function (observer) {
     if (!request.template) {
       return observer.error(new Error('ServerError: missing template'));

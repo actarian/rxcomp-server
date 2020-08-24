@@ -126,7 +126,10 @@ var CacheService = /** @class */ (function () {
     };
     CacheService.getPath = function (type, name) {
         if (type === void 0) { type = 'cache'; }
-        var path = ("_" + type + "_" + name).replace(/(\/|\?|\#|\&)+/g, function (substring, group) {
+        var regExp = /(\/|\\|\:|\?|\#|\&)+/g;
+        var path = "_" + type + "_" + name;
+        // console.log('path', path);
+        path = path.replace(regExp, function (substring, group) {
             return encodeURIComponent(group);
         });
         return "" + this.folder + path;
