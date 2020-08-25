@@ -865,23 +865,34 @@ var RxDocument = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(RxDocument.prototype, "body", {
+    Object.defineProperty(RxDocument.prototype, "head", {
         get: function () {
-            return this.childNodes.find(function (x) { return isRxElement(x) && x.nodeName === 'body'; });
+            console.log('childNodes', this.childNodes);
+            var head = this.documentElement.childNodes.find(function (x) { return isRxElement(x) && x.nodeName === 'head'; });
+            if (!head) {
+                head = new RxElement(this.documentElement, 'head');
+                this.documentElement.append(head);
+            }
+            return head;
         },
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(RxDocument.prototype, "head", {
+    Object.defineProperty(RxDocument.prototype, "body", {
         get: function () {
-            return this.childNodes.find(function (x) { return isRxElement(x) && x.nodeName === 'head'; });
+            var body = this.childNodes.find(function (x) { return isRxElement(x) && x.nodeName === 'body'; });
+            if (!body) {
+                body = new RxElement(this.documentElement, 'body');
+                this.documentElement.append(body);
+            }
+            return body;
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(RxDocument.prototype, "title", {
         get: function () {
-            var title = this.childNodes.find(function (x) { return isRxElement(x) && x.nodeName === 'title'; });
+            var title = this.head.childNodes.find(function (x) { return isRxElement(x) && x.nodeName === 'title'; });
             if (title) {
                 return title.innerText;
             }
@@ -890,17 +901,22 @@ var RxDocument = /** @class */ (function (_super) {
             }
         },
         set: function (nodeValue) {
-            var title = this.childNodes.find(function (x) { return isRxElement(x) && x.nodeName === 'title'; });
-            if (title) {
-                title.innerText = nodeValue;
+            var title = this.head.childNodes.find(function (x) { return isRxElement(x) && x.nodeName === 'title'; });
+            if (!title) {
+                title = new RxElement(this.head, 'title');
             }
+            title.innerText = nodeValue;
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(RxDocument.prototype, "documentElement", {
         get: function () {
-            return this.firstElementChild;
+            var element = this.firstElementChild;
+            if (!element) {
+                element = new RxElement(this, 'html');
+            }
+            return element;
         },
         enumerable: false,
         configurable: true

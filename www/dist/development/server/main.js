@@ -2243,6 +2243,14 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       return headers;
     };
 
+    HttpHeaders.prototype.toObject = function () {
+      var headers = {};
+      this.forEach(function (value, key) {
+        headers[key] = value;
+      });
+      return headers;
+    };
+
     HttpHeaders.prototype.clone_ = function () {
       var clone = new HttpHeaders();
       this.headers_.forEach(function (value, key) {
@@ -2386,6 +2394,18 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       return clone;
     };
 
+    HttpResponse.prototype.toObject = function () {
+      var response = {};
+      response.url = this.url;
+      response.headers = this.headers.toObject();
+      response.status = this.status;
+      response.statusText = this.statusText;
+      response.ok = this.ok;
+      response.type = this.type;
+      response.body = this.body;
+      return response;
+    };
+
     return HttpResponse;
   }();
 
@@ -2468,13 +2488,12 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       // console.log('HttpFetchHandler.handle', 'requestInfo', requestInfo, 'requestInit', requestInit);
       // hydrate
 
-      var stateKey = rxcomp__default.TransferService.makeKey(request.transferKey);
-      console.log('HttpFetchHandler.get', 'stateKey', stateKey, 'isPlatformBrowser', rxcomp__default.isPlatformBrowser, 'hydrate', request.hydrate);
+      var stateKey = rxcomp__default.TransferService.makeKey(request.transferKey); // console.log('HttpFetchHandler.get', 'stateKey', stateKey, 'isPlatformBrowser', isPlatformBrowser, 'hydrate', request.hydrate);
 
       if (rxcomp__default.isPlatformBrowser && request.hydrate && rxcomp__default.TransferService.has(stateKey)) {
         var cached = rxcomp__default.TransferService.get(stateKey); // !!! <T>			
+        // console.log('HttpFetchHandler', cached);
 
-        console.log('HttpFetchHandler', cached);
         rxcomp__default.TransferService.remove(stateKey);
         return rxjs__default.of(cached); // hydrate
       } else {
@@ -2485,10 +2504,9 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
           return _this.getResponse(response, request);
         })).pipe( // hydrate
         operators__default.tap(function (response) {
-          console.log('HttpFetchHandler.set', 'isPlatformServer', rxcomp__default.isPlatformServer, 'hydrate', request.hydrate, response);
-
+          // console.log('HttpFetchHandler.set', 'isPlatformServer', isPlatformServer, 'hydrate', request.hydrate, response);
           if (rxcomp__default.isPlatformServer && request.hydrate) {
-            rxcomp__default.TransferService.set(stateKey, response);
+            rxcomp__default.TransferService.set(stateKey, response.toObject());
           }
         }), // hydrate
         operators__default.catchError(function (error) {
@@ -2527,7 +2545,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         }
         return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
     };
-      getProgress_(request) {
+     getProgress_(request) {
         const uploadProgress = new ReadableStream({
             start(controller) {
                 console.log("starting upload, request.bodyUsed:", request.bodyUsed);
@@ -2544,7 +2562,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
                 console.log(reason);
             }
         });
-          const [fileUpload, reader] = [
+         const [fileUpload, reader] = [
             upload(request).catch(e => {
                 reader.cancel();
                 console.log(e);
@@ -3287,6 +3305,21 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       }).join('&');
     };
 
+    HttpParams.prototype.toObject = function () {
+      var _this = this;
+
+      var params = {};
+      this.keys().map(function (key) {
+        var values = _this.params_.get(key);
+
+        if (values) {
+          params[key] = values;
+        } // return this.encoder.encodeKey(key) + (values ? '=' + values.map(x => this.encoder.encodeValue(x)).join('&') : '');
+
+      });
+      return params;
+    };
+
     HttpParams.prototype.clone_ = function () {
       var clone = new HttpParams(undefined, this.encoder);
       this.params_.forEach(function (value, key) {
@@ -3386,9 +3419,10 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     Object.defineProperty(HttpRequest.prototype, "transferKey", {
       get: function get() {
         var pathname = getPath_(this.url).pathname;
-        var key = flatMap_(pathname, this.params);
-        key = key.replace(/(\W)/gm, '_');
-        console.log('transferKey', key, pathname, this.params, this.url);
+        var params = flatMap_(this.params.toObject());
+        var body = flatMap_(this.body);
+        var key = (pathname + "_" + params + "_" + body).replace(/(\W)/gm, '_');
+        console.log('transferKey', key, this.url);
         return key;
       },
       enumerable: false,
@@ -3510,6 +3544,20 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       return clone;
     };
 
+    HttpRequest.prototype.toObject = function () {
+      var request = {};
+      request.url = this.url;
+      request.method = this.method;
+      request.headers = this.headers.toObject();
+      request.params = this.params.toObject();
+      request.body = this.body;
+      request.reportProgress = this.reportProgress;
+      request.responseType = this.responseType;
+      request.withCredentials = this.withCredentials;
+      request.observe = this.observe;
+      return request;
+    };
+
     return HttpRequest;
   }();
 
@@ -3541,18 +3589,26 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     return typeof FormData !== 'undefined' && value instanceof FormData;
   }
 
-  function flatMap_(s, x) {
-    if (typeof x === 'number') {
-      s += x.toString();
-    } else if (typeof x === 'string') {
-      s += x.substr(0, 10);
-    } else if (x && typeof x === 'object') {
-      s += '_' + Object.keys(x).map(function (k) {
-        return k + '_' + flatMap_('', x[k]);
+  function flatMap_(v, s) {
+    if (s === void 0) {
+      s = '';
+    }
+
+    if (typeof v === 'number') {
+      s += v.toString();
+    } else if (typeof v === 'string') {
+      s += v.substr(0, 10);
+    } else if (v && Array.isArray(v)) {
+      s += v.map(function (v) {
+        return flatMap_(v);
+      }).join('');
+    } else if (v && typeof v === 'object') {
+      s += Object.keys(v).map(function (k) {
+        return k + flatMap_(v[k]);
       }).join('_');
     }
 
-    return s;
+    return "_" + s;
   }
 
   function getPath_(href) {
@@ -3565,7 +3621,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     var pathname = '';
     var search = '';
     var hash = '';
-    var regExp = /^((http\:|https\:)?\/\/|\/)?([^\/\:]+)?(\:([^\/]+))?(\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
+    var regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
     var matches = href.matchAll(regExp);
 
     try {
@@ -3573,10 +3629,10 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         var match = matches_1_1.value;
         protocol = match[2] || '';
         host = hostname = match[3] || '';
-        port = match[5] || '';
-        pathname = match[6] || '';
-        search = match[7] || '';
-        hash = match[8] || '';
+        port = match[11] || '';
+        pathname = match[12] || '';
+        search = match[13] || '';
+        hash = match[14] || '';
       }
     } catch (e_1_1) {
       e_1 = {
@@ -4509,22 +4565,22 @@ var RxLocation = /*#__PURE__*/function () {
     private hash_: string = '';
     get hash(): string { return this.hash_; }
     set hash(hash: string) { this.hash_ = hash; updateLocation_(this); }
-          private host_: string = '';
+         private host_: string = '';
     get host(): string { return this.host_; }
     set host(host: string) { this.host_ = host; updateLocation_(this); }
-          private hostname_: string = '';
+         private hostname_: string = '';
     get hostname(): string { return this.hostname_; }
     set hostname(hostname: string) { this.hostname_ = hostname; updateLocation_(this); }
-          private pathname_: string = '';
+         private pathname_: string = '';
     get pathname(): string { return this.pathname_; }
     set pathname(pathname: string) { this.pathname_ = pathname; updateLocation_(this); }
-          private port_: string = '';
+         private port_: string = '';
     get port(): string { return this.port_; }
     set port(port: string) { this.port_ = port; updateLocation_(this); }
-          private protocol_: string = '';
+         private protocol_: string = '';
     get protocol(): string { return this.protocol_; }
     set protocol(protocol: string) { this.protocol_ = protocol; updateLocation_(this); }
-          private search_: string = '';
+         private search_: string = '';
     get search(): string { return this.search_; }
     set search(search: string) { this.search_ = search; updateLocation_(this); }
     */
@@ -4565,38 +4621,30 @@ var RxLocation = /*#__PURE__*/function () {
     set: function set(href) {
       if (this.href_ !== href) {
         this.href_ = href;
-        var regExp = /^((http\:|https\:)?\/\/|\/)?([^\/\:]+)?(\:([^\/]+))?(\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
+        var regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
         var matches = href.matchAll(regExp);
 
         for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
           var match = _step.value;
 
           /*
-          0 Match	0.	https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins?pippo=shuter&a=dsok#asoka
-          1 Group 1.	https://
-          2 Group 2.	https:
-          3 Group 3.	developer.mozilla.org
-          4 Group 4.	:8080
-          5 Group 5.	8080
-          6 Group 5.	/en-US/docs/Web/API/Location/ancestorOrigins
-          7 Group 6.	?pippo=shuter&a=dsok
-          8 Group 7.	#asoka
-          */
-
-          /*
-          this.protocol_ = match[2] || '';
-          this.host_ = this.hostname_ = match[3] || '';
-          this.port_ = match[5] || '';
-          this.pathname_ = match[6] || '';
-          this.search_ = match[7] || '';
-          this.hash_ = match[8] || '';
+          Group 0.  https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins?pippo=shuter&a=dsok#asoka
+          Group 1.  https://
+          Group 2.  https:
+          Group 3.  developer.mozilla.org
+          Group 7.  mozilla.
+          Group 8.  mozilla
+          Group 9.  org
+          Group 12. /en-US/docs/Web/API/Location/ancestorOrigins
+          Group 13. ?pippo=shuter&a=dsok
+          Group 14. #asoka
           */
           this.protocol = match[2] || '';
           this.host = this.hostname = match[3] || '';
-          this.port = match[5] || '';
-          this.pathname = match[6] || '';
-          this.search = match[7] || '';
-          this.hash = match[8] || '';
+          this.port = match[11] || '';
+          this.pathname = match[12] || '';
+          this.search = match[13] || '';
+          this.hash = match[14] || '';
         }
       }
     }
@@ -5683,23 +5731,38 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
       });
     }
   }, {
-    key: "body",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'body';
-      });
-    }
-  }, {
     key: "head",
     get: function get() {
-      return this.childNodes.find(function (x) {
+      console.log('childNodes', this.childNodes);
+      var head = this.documentElement.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'head';
       });
+
+      if (!head) {
+        head = new RxElement(this.documentElement, 'head');
+        this.documentElement.append(head);
+      }
+
+      return head;
+    }
+  }, {
+    key: "body",
+    get: function get() {
+      var body = this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'body';
+      });
+
+      if (!body) {
+        body = new RxElement(this.documentElement, 'body');
+        this.documentElement.append(body);
+      }
+
+      return body;
     }
   }, {
     key: "title",
     get: function get() {
-      var title = this.childNodes.find(function (x) {
+      var title = this.head.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'title';
       });
 
@@ -5710,18 +5773,26 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
       }
     },
     set: function set(nodeValue) {
-      var title = this.childNodes.find(function (x) {
+      var title = this.head.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'title';
       });
 
-      if (title) {
-        title.innerText = nodeValue;
+      if (!title) {
+        title = new RxElement(this.head, 'title');
       }
+
+      title.innerText = nodeValue;
     }
   }, {
     key: "documentElement",
     get: function get() {
-      return this.firstElementChild;
+      var element = this.firstElementChild;
+
+      if (!element) {
+        element = new RxElement(this, 'html');
+      }
+
+      return element;
     }
   }]);
 
@@ -6151,11 +6222,11 @@ function render$(iRequest, renderRequest$) {
       CacheService.folder = request.vars.cache;
     }
 
-    var cached = CacheService.get('cached', request.url);
-    console.log('Server.render$.fromCache', !!cached, request.url);
+    var render = CacheService.get('render', request.url);
+    console.log('Server.render$.fromCache', !!render, request.url);
 
-    if (cached) {
-      observer.next(cached);
+    if (render) {
+      observer.next(render);
       return observer.complete();
     }
 
@@ -6164,7 +6235,7 @@ function render$(iRequest, renderRequest$) {
       request.template = template;
       return renderRequest$(request);
     })).subscribe(function (success) {
-      CacheService.set('cached', request.url, success, 3600);
+      CacheService.set('render', request.url, success, 3600);
       observer.next(success);
       observer.complete();
     }, function (error) {

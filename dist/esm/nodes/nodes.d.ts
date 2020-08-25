@@ -157,11 +157,11 @@ export declare class RxDocument extends RxElement {
     get hidden(): true;
     get visibilityState(): 'prerender';
     get doctype(): RxDocumentType | null;
+    get head(): RxElement;
     get body(): RxElement | null;
-    get head(): RxElement | null;
     get title(): string | null;
     set title(nodeValue: string | null);
-    get documentElement(): RxElement | null;
+    get documentElement(): RxElement;
     constructor();
     createAttribute(): void;
     createAttributeNS(): void;

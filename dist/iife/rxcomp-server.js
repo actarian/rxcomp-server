@@ -528,17 +528,17 @@ var RxLocation = function () {
     set: function set(href) {
       if (this.href_ !== href) {
         this.href_ = href;
-        var regExp = /^((http\:|https\:)?\/\/|\/)?([^\/\:]+)?(\:([^\/]+))?(\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
+        var regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
         var matches = href.matchAll(regExp);
 
         for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
           var match = _step.value;
           this.protocol = match[2] || '';
           this.host = this.hostname = match[3] || '';
-          this.port = match[5] || '';
-          this.pathname = match[6] || '';
-          this.search = match[7] || '';
-          this.hash = match[8] || '';
+          this.port = match[11] || '';
+          this.pathname = match[12] || '';
+          this.search = match[13] || '';
+          this.hash = match[14] || '';
         }
       }
     }
@@ -1613,23 +1613,38 @@ var RxDocument = function (_RxElement2) {
       });
     }
   }, {
-    key: "body",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'body';
-      });
-    }
-  }, {
     key: "head",
     get: function get() {
-      return this.childNodes.find(function (x) {
+      console.log('childNodes', this.childNodes);
+      var head = this.documentElement.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'head';
       });
+
+      if (!head) {
+        head = new RxElement(this.documentElement, 'head');
+        this.documentElement.append(head);
+      }
+
+      return head;
+    }
+  }, {
+    key: "body",
+    get: function get() {
+      var body = this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'body';
+      });
+
+      if (!body) {
+        body = new RxElement(this.documentElement, 'body');
+        this.documentElement.append(body);
+      }
+
+      return body;
     }
   }, {
     key: "title",
     get: function get() {
-      var title = this.childNodes.find(function (x) {
+      var title = this.head.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'title';
       });
 
@@ -1640,18 +1655,26 @@ var RxDocument = function (_RxElement2) {
       }
     },
     set: function set(nodeValue) {
-      var title = this.childNodes.find(function (x) {
+      var title = this.head.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'title';
       });
 
-      if (title) {
-        title.innerText = nodeValue;
+      if (!title) {
+        title = new RxElement(this.head, 'title');
       }
+
+      title.innerText = nodeValue;
     }
   }, {
     key: "documentElement",
     get: function get() {
-      return this.firstElementChild;
+      var element = this.firstElementChild;
+
+      if (!element) {
+        element = new RxElement(this, 'html');
+      }
+
+      return element;
     }
   }]);
 
@@ -2085,11 +2108,11 @@ function render$(iRequest, renderRequest$) {
       CacheService.folder = request.vars.cache;
     }
 
-    var cached = CacheService.get('cached', request.url);
-    console.log('Server.render$.fromCache', !!cached, request.url);
+    var render = CacheService.get('render', request.url);
+    console.log('Server.render$.fromCache', !!render, request.url);
 
-    if (cached) {
-      observer.next(cached);
+    if (render) {
+      observer.next(render);
       return observer.complete();
     }
 
@@ -2097,7 +2120,7 @@ function render$(iRequest, renderRequest$) {
       request.template = template;
       return renderRequest$(request);
     })).subscribe(function (success) {
-      CacheService.set('cached', request.url, success, 3600);
+      CacheService.set('render', request.url, success, 3600);
       observer.next(success);
       observer.complete();
     }, function (error) {

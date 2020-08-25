@@ -889,14 +889,25 @@ export class RxDocument extends RxElement {
 	get doctype(): RxDocumentType | null {
 		return this.childNodes.find(x => isRxDocumentType(x)) as RxDocumentType;
 	}
-	get body(): RxElement | null {
-		return this.childNodes.find(x => isRxElement(x) && x.nodeName === 'body') as RxElement;
+	get head(): RxElement {
+		console.log('childNodes', this.childNodes);
+		let head: RxElement | null = this.documentElement.childNodes.find(x => isRxElement(x) && x.nodeName === 'head') as RxElement;
+		if (!head) {
+			head = new RxElement(this.documentElement, 'head');
+			this.documentElement.append(head);
+		}
+		return head;
 	}
-	get head(): RxElement | null {
-		return this.childNodes.find(x => isRxElement(x) && x.nodeName === 'head') as RxElement;
+	get body(): RxElement | null {
+		let body: RxElement | null = this.childNodes.find(x => isRxElement(x) && x.nodeName === 'body') as RxElement;
+		if (!body) {
+			body = new RxElement(this.documentElement, 'body');
+			this.documentElement.append(body);
+		}
+		return body;
 	}
 	get title(): string | null {
-		const title = this.childNodes.find(x => isRxElement(x) && x.nodeName === 'title') as RxElement;
+		const title = this.head.childNodes.find(x => isRxElement(x) && x.nodeName === 'title') as RxElement;
 		if (title) {
 			return title.innerText;
 		} else {
@@ -904,13 +915,18 @@ export class RxDocument extends RxElement {
 		}
 	}
 	set title(nodeValue: string | null) {
-		const title = this.childNodes.find(x => isRxElement(x) && x.nodeName === 'title') as RxElement;
-		if (title) {
-			title.innerText = nodeValue;
+		let title: RxElement | null = this.head.childNodes.find(x => isRxElement(x) && x.nodeName === 'title') as RxElement | null;
+		if (!title) {
+			title = new RxElement(this.head, 'title');
 		}
+		title.innerText = nodeValue;
 	}
-	get documentElement(): RxElement | null {
-		return this.firstElementChild;
+	get documentElement(): RxElement {
+		let element: RxElement | null = this.firstElementChild;
+		if (!element) {
+			element = new RxElement(this, 'html');
+		}
+		return element;
 	}
 
 	/*

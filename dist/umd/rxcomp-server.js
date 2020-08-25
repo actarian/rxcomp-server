@@ -515,22 +515,22 @@ var RxLocation = /*#__PURE__*/function () {
     private hash_: string = '';
     get hash(): string { return this.hash_; }
     set hash(hash: string) { this.hash_ = hash; updateLocation_(this); }
-          private host_: string = '';
+         private host_: string = '';
     get host(): string { return this.host_; }
     set host(host: string) { this.host_ = host; updateLocation_(this); }
-          private hostname_: string = '';
+         private hostname_: string = '';
     get hostname(): string { return this.hostname_; }
     set hostname(hostname: string) { this.hostname_ = hostname; updateLocation_(this); }
-          private pathname_: string = '';
+         private pathname_: string = '';
     get pathname(): string { return this.pathname_; }
     set pathname(pathname: string) { this.pathname_ = pathname; updateLocation_(this); }
-          private port_: string = '';
+         private port_: string = '';
     get port(): string { return this.port_; }
     set port(port: string) { this.port_ = port; updateLocation_(this); }
-          private protocol_: string = '';
+         private protocol_: string = '';
     get protocol(): string { return this.protocol_; }
     set protocol(protocol: string) { this.protocol_ = protocol; updateLocation_(this); }
-          private search_: string = '';
+         private search_: string = '';
     get search(): string { return this.search_; }
     set search(search: string) { this.search_ = search; updateLocation_(this); }
     */
@@ -571,38 +571,30 @@ var RxLocation = /*#__PURE__*/function () {
     set: function set(href) {
       if (this.href_ !== href) {
         this.href_ = href;
-        var regExp = /^((http\:|https\:)?\/\/|\/)?([^\/\:]+)?(\:([^\/]+))?(\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
+        var regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
         var matches = href.matchAll(regExp);
 
         for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
           var match = _step.value;
 
           /*
-          0 Match	0.	https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins?pippo=shuter&a=dsok#asoka
-          1 Group 1.	https://
-          2 Group 2.	https:
-          3 Group 3.	developer.mozilla.org
-          4 Group 4.	:8080
-          5 Group 5.	8080
-          6 Group 5.	/en-US/docs/Web/API/Location/ancestorOrigins
-          7 Group 6.	?pippo=shuter&a=dsok
-          8 Group 7.	#asoka
-          */
-
-          /*
-          this.protocol_ = match[2] || '';
-          this.host_ = this.hostname_ = match[3] || '';
-          this.port_ = match[5] || '';
-          this.pathname_ = match[6] || '';
-          this.search_ = match[7] || '';
-          this.hash_ = match[8] || '';
+          Group 0.  https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins?pippo=shuter&a=dsok#asoka
+          Group 1.  https://
+          Group 2.  https:
+          Group 3.  developer.mozilla.org
+          Group 7.  mozilla.
+          Group 8.  mozilla
+          Group 9.  org
+          Group 12. /en-US/docs/Web/API/Location/ancestorOrigins
+          Group 13. ?pippo=shuter&a=dsok
+          Group 14. #asoka
           */
           this.protocol = match[2] || '';
           this.host = this.hostname = match[3] || '';
-          this.port = match[5] || '';
-          this.pathname = match[6] || '';
-          this.search = match[7] || '';
-          this.hash = match[8] || '';
+          this.port = match[11] || '';
+          this.pathname = match[12] || '';
+          this.search = match[13] || '';
+          this.hash = match[14] || '';
         }
       }
     }
@@ -1758,23 +1750,38 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
       });
     }
   }, {
-    key: "body",
-    get: function get() {
-      return this.childNodes.find(function (x) {
-        return isRxElement(x) && x.nodeName === 'body';
-      });
-    }
-  }, {
     key: "head",
     get: function get() {
-      return this.childNodes.find(function (x) {
+      console.log('childNodes', this.childNodes);
+      var head = this.documentElement.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'head';
       });
+
+      if (!head) {
+        head = new RxElement(this.documentElement, 'head');
+        this.documentElement.append(head);
+      }
+
+      return head;
+    }
+  }, {
+    key: "body",
+    get: function get() {
+      var body = this.childNodes.find(function (x) {
+        return isRxElement(x) && x.nodeName === 'body';
+      });
+
+      if (!body) {
+        body = new RxElement(this.documentElement, 'body');
+        this.documentElement.append(body);
+      }
+
+      return body;
     }
   }, {
     key: "title",
     get: function get() {
-      var title = this.childNodes.find(function (x) {
+      var title = this.head.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'title';
       });
 
@@ -1785,18 +1792,26 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
       }
     },
     set: function set(nodeValue) {
-      var title = this.childNodes.find(function (x) {
+      var title = this.head.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'title';
       });
 
-      if (title) {
-        title.innerText = nodeValue;
+      if (!title) {
+        title = new RxElement(this.head, 'title');
       }
+
+      title.innerText = nodeValue;
     }
   }, {
     key: "documentElement",
     get: function get() {
-      return this.firstElementChild;
+      var element = this.firstElementChild;
+
+      if (!element) {
+        element = new RxElement(this, 'html');
+      }
+
+      return element;
     }
   }]);
 
@@ -2269,11 +2284,11 @@ function render$(iRequest, renderRequest$) {
       CacheService.folder = request.vars.cache;
     }
 
-    var cached = CacheService.get('cached', request.url);
-    console.log('Server.render$.fromCache', !!cached, request.url);
+    var render = CacheService.get('render', request.url);
+    console.log('Server.render$.fromCache', !!render, request.url);
 
-    if (cached) {
-      observer.next(cached);
+    if (render) {
+      observer.next(render);
       return observer.complete();
     }
 
@@ -2282,7 +2297,7 @@ function render$(iRequest, renderRequest$) {
       request.template = template;
       return renderRequest$(request);
     })).subscribe(function (success) {
-      CacheService.set('cached', request.url, success, 3600);
+      CacheService.set('render', request.url, success, 3600);
       observer.next(success);
       observer.complete();
     }, function (error) {

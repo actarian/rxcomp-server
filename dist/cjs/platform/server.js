@@ -158,10 +158,10 @@ function render$(iRequest, renderRequest$) {
         if (request.vars.cache) {
             cache_service_1.default.folder = request.vars.cache;
         }
-        var cached = cache_service_1.default.get('cached', request.url);
-        console.log('Server.render$.fromCache', !!cached, request.url);
-        if (cached) {
-            observer.next(cached);
+        var render = cache_service_1.default.get('render', request.url);
+        console.log('Server.render$.fromCache', !!render, request.url);
+        if (render) {
+            observer.next(render);
             return observer.complete();
         }
         template$(request).pipe(operators_1.switchMap(function (template) {
@@ -169,7 +169,7 @@ function render$(iRequest, renderRequest$) {
             request.template = template;
             return renderRequest$(request);
         })).subscribe(function (success) {
-            cache_service_1.default.set('cached', request.url, success, 3600);
+            cache_service_1.default.set('render', request.url, success, 3600);
             observer.next(success);
             observer.complete();
         }, function (error) {

@@ -577,6 +577,14 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       return headers;
     };
 
+    HttpHeaders.prototype.toObject = function () {
+      var headers = {};
+      this.forEach(function (value, key) {
+        headers[key] = value;
+      });
+      return headers;
+    };
+
     HttpHeaders.prototype.clone_ = function () {
       var clone = new HttpHeaders();
       this.headers_.forEach(function (value, key) {
@@ -714,6 +722,18 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       return clone;
     };
 
+    HttpResponse.prototype.toObject = function () {
+      var response = {};
+      response.url = this.url;
+      response.headers = this.headers.toObject();
+      response.status = this.status;
+      response.statusText = this.statusText;
+      response.ok = this.ok;
+      response.type = this.type;
+      response.body = this.body;
+      return response;
+    };
+
     return HttpResponse;
   }();
 
@@ -764,11 +784,9 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       var requestInfo = request.urlWithParams;
       var requestInit = request.toInitRequest();
       var stateKey = rxcomp__default.TransferService.makeKey(request.transferKey);
-      console.log('HttpFetchHandler.get', 'stateKey', stateKey, 'isPlatformBrowser', rxcomp__default.isPlatformBrowser, 'hydrate', request.hydrate);
 
       if (rxcomp__default.isPlatformBrowser && request.hydrate && rxcomp__default.TransferService.has(stateKey)) {
         var cached = rxcomp__default.TransferService.get(stateKey);
-        console.log('HttpFetchHandler', cached);
         rxcomp__default.TransferService.remove(stateKey);
         return rxjs__default.of(cached);
       } else {
@@ -777,10 +795,8 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         }).then(function (response) {
           return _this.getResponse(response, request);
         })).pipe(operators__default.tap(function (response) {
-          console.log('HttpFetchHandler.set', 'isPlatformServer', rxcomp__default.isPlatformServer, 'hydrate', request.hydrate, response);
-
           if (rxcomp__default.isPlatformServer && request.hydrate) {
-            rxcomp__default.TransferService.set(stateKey, response);
+            rxcomp__default.TransferService.set(stateKey, response.toObject());
           }
         }), operators__default.catchError(function (error) {
           var errorResponse = {
@@ -1448,6 +1464,20 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       }).join('&');
     };
 
+    HttpParams.prototype.toObject = function () {
+      var _this = this;
+
+      var params = {};
+      this.keys().map(function (key) {
+        var values = _this.params_.get(key);
+
+        if (values) {
+          params[key] = values;
+        }
+      });
+      return params;
+    };
+
     HttpParams.prototype.clone_ = function () {
       var clone = new HttpParams(undefined, this.encoder);
       this.params_.forEach(function (value, key) {
@@ -1544,9 +1574,10 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     Object.defineProperty(HttpRequest.prototype, "transferKey", {
       get: function get() {
         var pathname = getPath_(this.url).pathname;
-        var key = flatMap_(pathname, this.params);
-        key = key.replace(/(\W)/gm, '_');
-        console.log('transferKey', key, pathname, this.params, this.url);
+        var params = flatMap_(this.params.toObject());
+        var body = flatMap_(this.body);
+        var key = (pathname + "_" + params + "_" + body).replace(/(\W)/gm, '_');
+        console.log('transferKey', key, this.url);
         return key;
       },
       enumerable: false,
@@ -1637,6 +1668,20 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       return clone;
     };
 
+    HttpRequest.prototype.toObject = function () {
+      var request = {};
+      request.url = this.url;
+      request.method = this.method;
+      request.headers = this.headers.toObject();
+      request.params = this.params.toObject();
+      request.body = this.body;
+      request.reportProgress = this.reportProgress;
+      request.responseType = this.responseType;
+      request.withCredentials = this.withCredentials;
+      request.observe = this.observe;
+      return request;
+    };
+
     return HttpRequest;
   }();
 
@@ -1668,18 +1713,26 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     return typeof FormData !== 'undefined' && value instanceof FormData;
   }
 
-  function flatMap_(s, x) {
-    if (typeof x === 'number') {
-      s += x.toString();
-    } else if (typeof x === 'string') {
-      s += x.substr(0, 10);
-    } else if (x && typeof x === 'object') {
-      s += '_' + Object.keys(x).map(function (k) {
-        return k + '_' + flatMap_('', x[k]);
+  function flatMap_(v, s) {
+    if (s === void 0) {
+      s = '';
+    }
+
+    if (typeof v === 'number') {
+      s += v.toString();
+    } else if (typeof v === 'string') {
+      s += v.substr(0, 10);
+    } else if (v && Array.isArray(v)) {
+      s += v.map(function (v) {
+        return flatMap_(v);
+      }).join('');
+    } else if (v && typeof v === 'object') {
+      s += Object.keys(v).map(function (k) {
+        return k + flatMap_(v[k]);
       }).join('_');
     }
 
-    return s;
+    return "_" + s;
   }
 
   function getPath_(href) {
@@ -1692,7 +1745,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     var pathname = '';
     var search = '';
     var hash = '';
-    var regExp = /^((http\:|https\:)?\/\/|\/)?([^\/\:]+)?(\:([^\/]+))?(\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
+    var regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
     var matches = href.matchAll(regExp);
 
     try {
@@ -1700,10 +1753,10 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         var match = matches_1_1.value;
         protocol = match[2] || '';
         host = hostname = match[3] || '';
-        port = match[5] || '';
-        pathname = match[6] || '';
-        search = match[7] || '';
-        hash = match[8] || '';
+        port = match[11] || '';
+        pathname = match[12] || '';
+        search = match[13] || '';
+        hash = match[14] || '';
       }
     } catch (e_1_1) {
       e_1 = {

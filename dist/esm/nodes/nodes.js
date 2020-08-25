@@ -648,14 +648,25 @@ export class RxDocument extends RxElement {
     get doctype() {
         return this.childNodes.find(x => isRxDocumentType(x));
     }
-    get body() {
-        return this.childNodes.find(x => isRxElement(x) && x.nodeName === 'body');
-    }
     get head() {
-        return this.childNodes.find(x => isRxElement(x) && x.nodeName === 'head');
+        console.log('childNodes', this.childNodes);
+        let head = this.documentElement.childNodes.find(x => isRxElement(x) && x.nodeName === 'head');
+        if (!head) {
+            head = new RxElement(this.documentElement, 'head');
+            this.documentElement.append(head);
+        }
+        return head;
+    }
+    get body() {
+        let body = this.childNodes.find(x => isRxElement(x) && x.nodeName === 'body');
+        if (!body) {
+            body = new RxElement(this.documentElement, 'body');
+            this.documentElement.append(body);
+        }
+        return body;
     }
     get title() {
-        const title = this.childNodes.find(x => isRxElement(x) && x.nodeName === 'title');
+        const title = this.head.childNodes.find(x => isRxElement(x) && x.nodeName === 'title');
         if (title) {
             return title.innerText;
         }
@@ -664,13 +675,18 @@ export class RxDocument extends RxElement {
         }
     }
     set title(nodeValue) {
-        const title = this.childNodes.find(x => isRxElement(x) && x.nodeName === 'title');
-        if (title) {
-            title.innerText = nodeValue;
+        let title = this.head.childNodes.find(x => isRxElement(x) && x.nodeName === 'title');
+        if (!title) {
+            title = new RxElement(this.head, 'title');
         }
+        title.innerText = nodeValue;
     }
     get documentElement() {
-        return this.firstElementChild;
+        let element = this.firstElementChild;
+        if (!element) {
+            element = new RxElement(this, 'html');
+        }
+        return element;
     }
     createAttribute() { }
     // Creates a new Attr object and returns it.
