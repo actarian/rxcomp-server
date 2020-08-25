@@ -43,14 +43,14 @@ export default class AppComponent extends Component {
 		}).pipe(
 		*/
 		const methodUrl: string = `${Vars.host}${Vars.api}`;
-		console.log('methodUrl', methodUrl);
+		// console.log('methodUrl', methodUrl);
 		HttpService.post$<IResponseData>(methodUrl, payload, { hydrate: true }).pipe(
 			first(),
 		).subscribe((response: IResponseData) => {
 			this.items = response.data.getTodos;
 			this.pushChanges();
 			// console.log('AppComponent.getTodos', this.items);
-		}, error => console.log);
+		}, error => console.warn);
 		// HttpService.get$(`https://jsonplaceholder.typicode.com/users/1/todos`).pipe(
 		/*
 		HttpService.get$(`${Vars.host}/data/todos.json`).pipe(

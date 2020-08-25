@@ -381,11 +381,8 @@ export class RxElement extends RxNode {
     }
     querySelectorAll(selector) {
         const queries = getQueries(selector);
-        const nodes = this.childNodes.filter(x => {
-            return true;
-        });
-        console.log(queries);
-        return nodes.length ? nodes : null;
+        const nodes = querySelectorAll(queries, this.childNodes);
+        return (nodes && nodes.length) ? nodes : null;
     }
     querySelector(selector) {
         const queries = getQueries(selector);
@@ -649,7 +646,7 @@ export class RxDocument extends RxElement {
         return this.childNodes.find(x => isRxDocumentType(x));
     }
     get head() {
-        console.log('childNodes', this.childNodes);
+        // console.log('childNodes', this.childNodes);
         let head = this.documentElement.childNodes.find(x => isRxElement(x) && x.nodeName === 'head');
         if (!head) {
             head = new RxElement(this.documentElement, 'head');
@@ -798,15 +795,6 @@ export function parse(html) {
         oncommentend: () => {
             // console.log('oncommentend');
             // parentNode = parentNode.parentNode;
-        },
-        oncdatastart: () => {
-            console.log('oncdatastart');
-        },
-        oncdataend: () => {
-            console.log('oncdataend');
-        },
-        onerror: error => {
-            console.log('error', error);
         },
     }, {
         decodeEntities: false,

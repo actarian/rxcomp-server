@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-this.rxcomp=this.rxcomp||{};this.rxcomp.server=(function(exports,rxjs,htmlparser2,rxcomp,operators){'use strict';function _defineProperties(target, props) {
+this.rxcomp=this.rxcomp||{};this.rxcomp.server=(function(exports,rxjs,rxcomp,htmlparser2,operators){'use strict';function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
     descriptor.enumerable = descriptor.enumerable || false;
@@ -447,19 +447,19 @@ var CacheService = function () {
   };
 
   CacheService.serialize = function serialize(item) {
-    var cache = new Map();
+    var pool = new Map();
     var serialized = JSON.stringify(item, function (key, value) {
       if (value && typeof value === 'object') {
-        if (cache.has(value)) {
+        if (pool.has(value)) {
           return;
         }
 
-        cache.set(value, true);
+        pool.set(value, true);
       }
 
       return value;
     }, 0);
-    cache.clear();
+    pool.clear();
     return serialized;
   };
 
@@ -528,18 +528,14 @@ var RxLocation = function () {
     set: function set(href) {
       if (this.href_ !== href) {
         this.href_ = href;
-        var regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
-        var matches = href.matchAll(regExp);
-
-        for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
-          var match = _step.value;
-          this.protocol = match[2] || '';
-          this.host = this.hostname = match[3] || '';
-          this.port = match[11] || '';
-          this.pathname = match[12] || '';
-          this.search = match[13] || '';
-          this.hash = match[14] || '';
-        }
+        var location = rxcomp.getLocationComponents(href);
+        this.protocol = location.protocol;
+        this.host = location.host;
+        this.hostname = location.hostname;
+        this.port = location.port;
+        this.pathname = location.pathname;
+        this.search = location.search;
+        this.hash = location.hash;
       }
     }
   }, {
@@ -990,11 +986,10 @@ var RxElement = function (_RxNode) {
 
   _proto4.querySelectorAll = function querySelectorAll(selector) {
     var queries = getQueries(selector);
-    var nodes = this.childNodes.filter(function (x) {
-      return true;
-    });
-    console.log(queries);
-    return nodes.length ? nodes : null;
+
+    var nodes = _querySelectorAll(queries, this.childNodes);
+
+    return nodes && nodes.length ? nodes : null;
   };
 
   _proto4.querySelector = function querySelector(selector) {
@@ -1615,7 +1610,6 @@ var RxDocument = function (_RxElement2) {
   }, {
     key: "head",
     get: function get() {
-      console.log('childNodes', this.childNodes);
       var head = this.documentElement.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'head';
       });
@@ -1733,16 +1727,7 @@ function parse(html) {
       node = new RxComment(parentNode, nodeValue);
       parentNode.childNodes.push(node);
     },
-    oncommentend: function oncommentend() {},
-    oncdatastart: function oncdatastart() {
-      console.log('oncdatastart');
-    },
-    oncdataend: function oncdataend() {
-      console.log('oncdataend');
-    },
-    onerror: function onerror(error) {
-      console.log('error', error);
-    }
+    oncommentend: function oncommentend() {}
   }, {
     decodeEntities: false,
     lowerCaseTags: true
@@ -1850,7 +1835,8 @@ function matchSelectors(child, selectors) {
     return p && matchSelector(child, selector);
   }, true);
 }
-function querySelectorAll(queries, childNodes, query, nodes) {
+
+function _querySelectorAll(queries, childNodes, query, nodes) {
   if (query === void 0) {
     query = null;
   }
@@ -1868,7 +1854,7 @@ function querySelectorAll(queries, childNodes, query, nodes) {
       if (child instanceof RxElement) {
         if (matchSelectors(child, query.selectors)) {
           if (queries.length) {
-            var results = querySelectorAll(queries, child.childNodes);
+            var results = _querySelectorAll(queries, child.childNodes);
 
             if (results) {
               Array.prototype.push.apply(nodes, results);
@@ -1877,7 +1863,7 @@ function querySelectorAll(queries, childNodes, query, nodes) {
             nodes.push(child);
           }
         } else if (!query.inner) {
-          var _results = querySelectorAll(queries, child.childNodes, query);
+          var _results = _querySelectorAll(queries, child.childNodes, query);
 
           if (_results) {
             Array.prototype.push.apply(nodes, _results);
@@ -2193,4 +2179,4 @@ var ServerModule = function (_Module) {
 ServerModule.meta = {
   declarations: [].concat(factories, pipes),
   exports: [].concat(factories, pipes)
-};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDOMStringList=RxDOMStringList;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxHistory=RxHistory;exports.RxLocation=RxLocation;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerRequest=ServerRequest;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=querySelectorAll;exports.render$=render$;exports.template$=template$;return exports;}({},rxjs,htmlparser2,rxcomp,rxjs.operators));
+};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDOMStringList=RxDOMStringList;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxHistory=RxHistory;exports.RxLocation=RxLocation;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerRequest=ServerRequest;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=_querySelectorAll;exports.render$=render$;exports.template$=template$;return exports;}({},rxjs,rxcomp,htmlparser2,rxjs.operators));

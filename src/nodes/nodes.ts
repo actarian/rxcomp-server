@@ -393,11 +393,8 @@ export class RxElement extends RxNode {
 	}
 	querySelectorAll(selector: string): RxNode[] | null {
 		const queries = getQueries(selector);
-		const nodes = this.childNodes.filter(x => {
-			return true;
-		});
-		console.log(queries);
-		return nodes.length ? nodes : null;
+		const nodes = querySelectorAll(queries, this.childNodes);
+		return (nodes && nodes.length) ? nodes : null;
 	}
 	querySelector(selector: string): RxNode | null {
 		const queries = getQueries(selector);
@@ -890,7 +887,7 @@ export class RxDocument extends RxElement {
 		return this.childNodes.find(x => isRxDocumentType(x)) as RxDocumentType;
 	}
 	get head(): RxElement {
-		console.log('childNodes', this.childNodes);
+		// console.log('childNodes', this.childNodes);
 		let head: RxElement | null = this.documentElement.childNodes.find(x => isRxElement(x) && x.nodeName === 'head') as RxElement;
 		if (!head) {
 			head = new RxElement(this.documentElement, 'head');
@@ -1084,6 +1081,7 @@ export function parse(html: string) {
 				// console.log('oncommentend');
 				// parentNode = parentNode.parentNode;
 			},
+			/*
 			oncdatastart: () => {
 				console.log('oncdatastart');
 			},
@@ -1093,7 +1091,6 @@ export function parse(html: string) {
 			onerror: error => {
 				console.log('error', error);
 			},
-			/*
 			onopentagname: (name) => {
 				console.log('onopentagname', name);
 			},

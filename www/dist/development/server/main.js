@@ -2490,12 +2490,22 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
       var stateKey = rxcomp__default.TransferService.makeKey(request.transferKey); // console.log('HttpFetchHandler.get', 'stateKey', stateKey, 'isPlatformBrowser', isPlatformBrowser, 'hydrate', request.hydrate);
 
+      var response;
+
       if (rxcomp__default.isPlatformBrowser && request.hydrate && rxcomp__default.TransferService.has(stateKey)) {
-        var cached = rxcomp__default.TransferService.get(stateKey); // !!! <T>			
-        // console.log('HttpFetchHandler', cached);
+        var transfer = rxcomp__default.TransferService.get(stateKey);
+
+        if (transfer) {
+          response = new httpResponse.HttpResponse(transfer);
+        } // console.log('HttpFetchHandler', cached);
+
 
         rxcomp__default.TransferService.remove(stateKey);
-        return rxjs__default.of(cached); // hydrate
+      } // hydrate
+
+
+      if (response) {
+        return rxjs__default.of(response);
       } else {
         return rxjs__default.from(fetch(requestInfo, requestInit) // fetch(fetchRequest)
         .then(function (response) {
@@ -2545,7 +2555,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         }
         return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
     };
-     getProgress_(request) {
+      getProgress_(request) {
         const uploadProgress = new ReadableStream({
             start(controller) {
                 console.log("starting upload, request.bodyUsed:", request.bodyUsed);
@@ -2562,7 +2572,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
                 console.log(reason);
             }
         });
-         const [fileUpload, reader] = [
+          const [fileUpload, reader] = [
             upload(request).catch(e => {
                 reader.cancel();
                 console.log(e);
@@ -3418,11 +3428,20 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
     Object.defineProperty(HttpRequest.prototype, "transferKey", {
       get: function get() {
-        var pathname = getPath_(this.url).pathname;
-        var params = flatMap_(this.params.toObject());
-        var body = flatMap_(this.body);
-        var key = (pathname + "_" + params + "_" + body).replace(/(\W)/gm, '_');
-        console.log('transferKey', key, this.url);
+        var pathname = rxcomp__default.getLocationComponents(this.url).pathname;
+        var paramsKey = rxcomp__default.optionsToKey(this.params.toObject());
+        var bodyKey = rxcomp__default.optionsToKey(this.body);
+        var key = this.method + "-" + pathname + "-" + paramsKey + "-" + bodyKey;
+        key = key.replace(/(\s+)|(\W+)/g, function () {
+          var matches = [];
+
+          for (var _i = 0; _i < arguments.length; _i++) {
+            matches[_i] = arguments[_i];
+          }
+
+          return matches[1] ? '' : '_';
+        });
+        console.log('transferKey', key);
         return key;
       },
       enumerable: false,
@@ -3587,75 +3606,6 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
   function isFormData_(value) {
     return typeof FormData !== 'undefined' && value instanceof FormData;
-  }
-
-  function flatMap_(v, s) {
-    if (s === void 0) {
-      s = '';
-    }
-
-    if (typeof v === 'number') {
-      s += v.toString();
-    } else if (typeof v === 'string') {
-      s += v.substr(0, 10);
-    } else if (v && Array.isArray(v)) {
-      s += v.map(function (v) {
-        return flatMap_(v);
-      }).join('');
-    } else if (v && typeof v === 'object') {
-      s += Object.keys(v).map(function (k) {
-        return k + flatMap_(v[k]);
-      }).join('_');
-    }
-
-    return "_" + s;
-  }
-
-  function getPath_(href) {
-    var e_1, _a;
-
-    var protocol = '';
-    var host = '';
-    var hostname = '';
-    var port = '';
-    var pathname = '';
-    var search = '';
-    var hash = '';
-    var regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
-    var matches = href.matchAll(regExp);
-
-    try {
-      for (var matches_1 = tslib_es6.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
-        var match = matches_1_1.value;
-        protocol = match[2] || '';
-        host = hostname = match[3] || '';
-        port = match[11] || '';
-        pathname = match[12] || '';
-        search = match[13] || '';
-        hash = match[14] || '';
-      }
-    } catch (e_1_1) {
-      e_1 = {
-        error: e_1_1
-      };
-    } finally {
-      try {
-        if (matches_1_1 && !matches_1_1.done && (_a = matches_1.return)) _a.call(matches_1);
-      } finally {
-        if (e_1) throw e_1.error;
-      }
-    }
-
-    return {
-      href: href,
-      protocol: protocol,
-      host: host,
-      hostname: hostname,
-      port: port,
-      pathname: pathname,
-      search: search,
-      hash: hash
-    };
   }
 });var http_service = createCommonjsModule(function (module, exports) {
 
@@ -4498,19 +4448,19 @@ var CacheService = /*#__PURE__*/function () {
   };
 
   CacheService.serialize = function serialize(item) {
-    var cache = new Map();
+    var pool = new Map();
     var serialized = JSON.stringify(item, function (key, value) {
       if (value && typeof value === 'object') {
-        if (cache.has(value)) {
+        if (pool.has(value)) {
           return;
         }
 
-        cache.set(value, true);
+        pool.set(value, true);
       }
 
       return value;
     }, 0);
-    cache.clear();
+    pool.clear();
     return serialized;
   };
 
@@ -4565,22 +4515,22 @@ var RxLocation = /*#__PURE__*/function () {
     private hash_: string = '';
     get hash(): string { return this.hash_; }
     set hash(hash: string) { this.hash_ = hash; updateLocation_(this); }
-         private host_: string = '';
+          private host_: string = '';
     get host(): string { return this.host_; }
     set host(host: string) { this.host_ = host; updateLocation_(this); }
-         private hostname_: string = '';
+          private hostname_: string = '';
     get hostname(): string { return this.hostname_; }
     set hostname(hostname: string) { this.hostname_ = hostname; updateLocation_(this); }
-         private pathname_: string = '';
+          private pathname_: string = '';
     get pathname(): string { return this.pathname_; }
     set pathname(pathname: string) { this.pathname_ = pathname; updateLocation_(this); }
-         private port_: string = '';
+          private port_: string = '';
     get port(): string { return this.port_; }
     set port(port: string) { this.port_ = port; updateLocation_(this); }
-         private protocol_: string = '';
+          private protocol_: string = '';
     get protocol(): string { return this.protocol_; }
     set protocol(protocol: string) { this.protocol_ = protocol; updateLocation_(this); }
-         private search_: string = '';
+          private search_: string = '';
     get search(): string { return this.search_; }
     set search(search: string) { this.search_ = search; updateLocation_(this); }
     */
@@ -4621,31 +4571,14 @@ var RxLocation = /*#__PURE__*/function () {
     set: function set(href) {
       if (this.href_ !== href) {
         this.href_ = href;
-        var regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
-        var matches = href.matchAll(regExp);
-
-        for (var _iterator = _createForOfIteratorHelperLoose(matches), _step; !(_step = _iterator()).done;) {
-          var match = _step.value;
-
-          /*
-          Group 0.  https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins?pippo=shuter&a=dsok#asoka
-          Group 1.  https://
-          Group 2.  https:
-          Group 3.  developer.mozilla.org
-          Group 7.  mozilla.
-          Group 8.  mozilla
-          Group 9.  org
-          Group 12. /en-US/docs/Web/API/Location/ancestorOrigins
-          Group 13. ?pippo=shuter&a=dsok
-          Group 14. #asoka
-          */
-          this.protocol = match[2] || '';
-          this.host = this.hostname = match[3] || '';
-          this.port = match[11] || '';
-          this.pathname = match[12] || '';
-          this.search = match[13] || '';
-          this.hash = match[14] || '';
-        }
+        var location = rxcomp.getLocationComponents(href);
+        this.protocol = location.protocol;
+        this.host = location.host;
+        this.hostname = location.hostname;
+        this.port = location.port;
+        this.pathname = location.pathname;
+        this.search = location.search;
+        this.hash = location.hash;
       }
     }
   }, {
@@ -4670,12 +4603,7 @@ var RxLocation = /*#__PURE__*/function () {
   }]);
 
   return RxLocation;
-}();
-/*
-function updateLocation_(location: ILocation): void {
-    location.href = location.href;
-}
-*/var RxHistory = /*#__PURE__*/function () {
+}();var RxHistory = /*#__PURE__*/function () {
   function RxHistory() {
     this.currentIndex_ = 0;
     this.history_ = [];
@@ -5118,11 +5046,10 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
 
   _proto4.querySelectorAll = function querySelectorAll(selector) {
     var queries = getQueries(selector);
-    var nodes = this.childNodes.filter(function (x) {
-      return true;
-    });
-    console.log(queries);
-    return nodes.length ? nodes : null;
+
+    var nodes = _querySelectorAll(queries, this.childNodes);
+
+    return nodes && nodes.length ? nodes : null;
   };
 
   _proto4.querySelector = function querySelector(selector) {
@@ -5733,7 +5660,7 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
   }, {
     key: "head",
     get: function get() {
-      console.log('childNodes', this.childNodes);
+      // console.log('childNodes', this.childNodes);
       var head = this.documentElement.childNodes.find(function (x) {
         return isRxElement(x) && x.nodeName === 'head';
       });
@@ -5858,15 +5785,6 @@ function parse(html) {
     },
     oncommentend: function oncommentend() {// console.log('oncommentend');
       // parentNode = parentNode.parentNode;
-    },
-    oncdatastart: function oncdatastart() {
-      console.log('oncdatastart');
-    },
-    oncdataend: function oncdataend() {
-      console.log('oncdataend');
-    },
-    onerror: function onerror(error) {
-      console.log('error', error);
     }
   }, {
     decodeEntities: false,
@@ -5979,6 +5897,47 @@ function matchSelectors(child, selectors) {
   return selectors.reduce(function (p, selector) {
     return p && matchSelector(child, selector);
   }, true);
+}
+
+function _querySelectorAll(queries, childNodes, query, nodes) {
+  if (query === void 0) {
+    query = null;
+  }
+
+  if (nodes === void 0) {
+    nodes = [];
+  }
+
+  if (query || queries.length) {
+    query = query || queries.shift();
+
+    for (var _iterator3 = _createForOfIteratorHelperLoose(childNodes), _step3; !(_step3 = _iterator3()).done;) {
+      var child = _step3.value;
+
+      if (child instanceof RxElement) {
+        if (matchSelectors(child, query.selectors)) {
+          // console.log(query);
+          if (queries.length) {
+            var results = _querySelectorAll(queries, child.childNodes);
+
+            if (results) {
+              Array.prototype.push.apply(nodes, results);
+            }
+          } else {
+            nodes.push(child);
+          }
+        } else if (!query.inner) {
+          var _results = _querySelectorAll(queries, child.childNodes, query);
+
+          if (_results) {
+            Array.prototype.push.apply(nodes, _results);
+          }
+        }
+      }
+    }
+  }
+
+  return nodes.length ? nodes : null;
 }
 
 function _querySelector(queries, childNodes, query) {
@@ -6385,8 +6344,8 @@ export function getSlug(url) {
     }).pipe(
     */
 
-    var methodUrl = "" + Vars.host + Vars.api;
-    console.log('methodUrl', methodUrl);
+    var methodUrl = "" + Vars.host + Vars.api; // console.log('methodUrl', methodUrl);
+
     rxcompHttp.HttpService.post$(methodUrl, payload, {
       hydrate: true
     }).pipe(operators.first()).subscribe(function (response) {
@@ -6395,7 +6354,7 @@ export function getSlug(url) {
       _this2.pushChanges(); // console.log('AppComponent.getTodos', this.items);
 
     }, function (error) {
-      return console.log;
+      return console.warn;
     }); // HttpService.get$(`https://jsonplaceholder.typicode.com/users/1/todos`).pipe(
 
     /*

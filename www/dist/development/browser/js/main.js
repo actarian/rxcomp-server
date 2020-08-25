@@ -784,11 +784,20 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       var requestInfo = request.urlWithParams;
       var requestInit = request.toInitRequest();
       var stateKey = rxcomp__default.TransferService.makeKey(request.transferKey);
+      var response;
 
       if (rxcomp__default.isPlatformBrowser && request.hydrate && rxcomp__default.TransferService.has(stateKey)) {
-        var cached = rxcomp__default.TransferService.get(stateKey);
+        var transfer = rxcomp__default.TransferService.get(stateKey);
+
+        if (transfer) {
+          response = new httpResponse.HttpResponse(transfer);
+        }
+
         rxcomp__default.TransferService.remove(stateKey);
-        return rxjs__default.of(cached);
+      }
+
+      if (response) {
+        return rxjs__default.of(response);
       } else {
         return rxjs__default.from(fetch(requestInfo, requestInit).then(function (response) {
           return _this.getProgress(response, request);
@@ -1573,11 +1582,20 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
     Object.defineProperty(HttpRequest.prototype, "transferKey", {
       get: function get() {
-        var pathname = getPath_(this.url).pathname;
-        var params = flatMap_(this.params.toObject());
-        var body = flatMap_(this.body);
-        var key = (pathname + "_" + params + "_" + body).replace(/(\W)/gm, '_');
-        console.log('transferKey', key, this.url);
+        var pathname = rxcomp__default.getLocationComponents(this.url).pathname;
+        var paramsKey = rxcomp__default.optionsToKey(this.params.toObject());
+        var bodyKey = rxcomp__default.optionsToKey(this.body);
+        var key = this.method + "-" + pathname + "-" + paramsKey + "-" + bodyKey;
+        key = key.replace(/(\s+)|(\W+)/g, function () {
+          var matches = [];
+
+          for (var _i = 0; _i < arguments.length; _i++) {
+            matches[_i] = arguments[_i];
+          }
+
+          return matches[1] ? '' : '_';
+        });
+        console.log('transferKey', key);
         return key;
       },
       enumerable: false,
@@ -1711,75 +1729,6 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
   function isFormData_(value) {
     return typeof FormData !== 'undefined' && value instanceof FormData;
-  }
-
-  function flatMap_(v, s) {
-    if (s === void 0) {
-      s = '';
-    }
-
-    if (typeof v === 'number') {
-      s += v.toString();
-    } else if (typeof v === 'string') {
-      s += v.substr(0, 10);
-    } else if (v && Array.isArray(v)) {
-      s += v.map(function (v) {
-        return flatMap_(v);
-      }).join('');
-    } else if (v && typeof v === 'object') {
-      s += Object.keys(v).map(function (k) {
-        return k + flatMap_(v[k]);
-      }).join('_');
-    }
-
-    return "_" + s;
-  }
-
-  function getPath_(href) {
-    var e_1, _a;
-
-    var protocol = '';
-    var host = '';
-    var hostname = '';
-    var port = '';
-    var pathname = '';
-    var search = '';
-    var hash = '';
-    var regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
-    var matches = href.matchAll(regExp);
-
-    try {
-      for (var matches_1 = tslib_1.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
-        var match = matches_1_1.value;
-        protocol = match[2] || '';
-        host = hostname = match[3] || '';
-        port = match[11] || '';
-        pathname = match[12] || '';
-        search = match[13] || '';
-        hash = match[14] || '';
-      }
-    } catch (e_1_1) {
-      e_1 = {
-        error: e_1_1
-      };
-    } finally {
-      try {
-        if (matches_1_1 && !matches_1_1.done && (_a = matches_1.return)) _a.call(matches_1);
-      } finally {
-        if (e_1) throw e_1.error;
-      }
-    }
-
-    return {
-      href: href,
-      protocol: protocol,
-      host: host,
-      hostname: hostname,
-      port: port,
-      pathname: pathname,
-      search: search,
-      hash: hash
-    };
   }
 });var http_service = createCommonjsModule(function (module, exports) {
 
@@ -2165,7 +2114,6 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       query: "{ getTodos { id, title, completed } }"
     };
     var methodUrl = "" + Vars.host + Vars.api;
-    console.log('methodUrl', methodUrl);
     rxcompHttp.HttpService.post$(methodUrl, payload, {
       hydrate: true
     }).pipe(operators.first()).subscribe(function (response) {
@@ -2173,7 +2121,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
       _this2.pushChanges();
     }, function (error) {
-      return console.log;
+      return console.warn;
     });
     rxcomp.errors$.pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (error) {
       _this2.error = error;

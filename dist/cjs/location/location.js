@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RxLocation = exports.RxDOMStringList = void 0;
 var tslib_1 = require("tslib");
+var rxcomp_1 = require("rxcomp");
 var RxDOMStringList = /** @class */ (function (_super) {
     tslib_1.__extends(RxDOMStringList, _super);
     function RxDOMStringList() {
@@ -79,41 +80,16 @@ var RxLocation = /** @class */ (function () {
             return href;
         },
         set: function (href) {
-            var e_1, _a;
             if (this.href_ !== href) {
                 this.href_ = href;
-                var regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
-                var matches = href.matchAll(regExp);
-                try {
-                    for (var matches_1 = tslib_1.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
-                        var match = matches_1_1.value;
-                        /*
-                        Group 0.  https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins?pippo=shuter&a=dsok#asoka
-                        Group 1.  https://
-                        Group 2.  https:
-                        Group 3.  developer.mozilla.org
-                        Group 7.  mozilla.
-                        Group 8.  mozilla
-                        Group 9.  org
-                        Group 12. /en-US/docs/Web/API/Location/ancestorOrigins
-                        Group 13. ?pippo=shuter&a=dsok
-                        Group 14. #asoka
-                        */
-                        this.protocol = match[2] || '';
-                        this.host = this.hostname = match[3] || '';
-                        this.port = match[11] || '';
-                        this.pathname = match[12] || '';
-                        this.search = match[13] || '';
-                        this.hash = match[14] || '';
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (matches_1_1 && !matches_1_1.done && (_a = matches_1.return)) _a.call(matches_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
-                }
+                var location_1 = rxcomp_1.getLocationComponents(href);
+                this.protocol = location_1.protocol;
+                this.host = location_1.host;
+                this.hostname = location_1.hostname;
+                this.port = location_1.port;
+                this.pathname = location_1.pathname;
+                this.search = location_1.search;
+                this.hash = location_1.hash;
             }
         },
         enumerable: false,
@@ -158,8 +134,3 @@ var RxLocation = /** @class */ (function () {
     return RxLocation;
 }());
 exports.RxLocation = RxLocation;
-/*
-function updateLocation_(location: ILocation): void {
-    location.href = location.href;
-}
-*/

@@ -216,17 +216,17 @@ export default class CacheService {
 	}
 
 	protected static serialize(item: any): string {
-		const cache: Map<any, boolean> = new Map<any, boolean>();
+		const pool: Map<any, boolean> = new Map<any, boolean>();
 		const serialized: string = JSON.stringify(item, (key: string, value: any) => {
 			if (value && typeof value === 'object') {
-				if (cache.has(value)) {
+				if (pool.has(value)) {
 					return;
 				}
-				cache.set(value, true);
+				pool.set(value, true);
 			}
 			return value;
 		}, 0);
-		cache.clear();
+		pool.clear();
 		return serialized;
 	}
 

@@ -197,17 +197,17 @@ export default class CacheService {
         });
     }
     static serialize(item) {
-        const cache = new Map();
+        const pool = new Map();
         const serialized = JSON.stringify(item, (key, value) => {
             if (value && typeof value === 'object') {
-                if (cache.has(value)) {
+                if (pool.has(value)) {
                     return;
                 }
-                cache.set(value, true);
+                pool.set(value, true);
             }
             return value;
         }, 0);
-        cache.clear();
+        pool.clear();
         return serialized;
     }
 }

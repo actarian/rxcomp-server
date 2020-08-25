@@ -494,11 +494,8 @@ var RxElement = /** @class */ (function (_super) {
     };
     RxElement.prototype.querySelectorAll = function (selector) {
         var queries = getQueries(selector);
-        var nodes = this.childNodes.filter(function (x) {
-            return true;
-        });
-        console.log(queries);
-        return nodes.length ? nodes : null;
+        var nodes = querySelectorAll(queries, this.childNodes);
+        return (nodes && nodes.length) ? nodes : null;
     };
     RxElement.prototype.querySelector = function (selector) {
         var queries = getQueries(selector);
@@ -867,7 +864,7 @@ var RxDocument = /** @class */ (function (_super) {
     });
     Object.defineProperty(RxDocument.prototype, "head", {
         get: function () {
-            console.log('childNodes', this.childNodes);
+            // console.log('childNodes', this.childNodes);
             var head = this.documentElement.childNodes.find(function (x) { return isRxElement(x) && x.nodeName === 'head'; });
             if (!head) {
                 head = new RxElement(this.documentElement, 'head');
@@ -1040,15 +1037,6 @@ function parse(html) {
         oncommentend: function () {
             // console.log('oncommentend');
             // parentNode = parentNode.parentNode;
-        },
-        oncdatastart: function () {
-            console.log('oncdatastart');
-        },
-        oncdataend: function () {
-            console.log('oncdataend');
-        },
-        onerror: function (error) {
-            console.log('error', error);
         },
     }, {
         decodeEntities: false,

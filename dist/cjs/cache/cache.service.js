@@ -220,17 +220,17 @@ var CacheService = /** @class */ (function () {
         });
     };
     CacheService.serialize = function (item) {
-        var cache = new Map();
+        var pool = new Map();
         var serialized = JSON.stringify(item, function (key, value) {
             if (value && typeof value === 'object') {
-                if (cache.has(value)) {
+                if (pool.has(value)) {
                     return;
                 }
-                cache.set(value, true);
+                pool.set(value, true);
             }
             return value;
         }, 0);
-        cache.clear();
+        pool.clear();
         return serialized;
     };
     CacheService.cache_ = new Map();

@@ -1,3 +1,4 @@
+import { getLocationComponents } from "rxcomp";
 export class RxDOMStringList extends Array {
     /*
     private list_: string[] = [];
@@ -70,28 +71,14 @@ export class RxLocation {
     set href(href) {
         if (this.href_ !== href) {
             this.href_ = href;
-            const regExp = /^((http\:|https\:)?\/\/)?((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])|locahost)?(\:([^\/]+))?(\.?\/[^\?]+)?(\?[^\#]+)?(\#.+)?$/g;
-            const matches = href.matchAll(regExp);
-            for (let match of matches) {
-                /*
-                Group 0.  https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins?pippo=shuter&a=dsok#asoka
-                Group 1.  https://
-                Group 2.  https:
-                Group 3.  developer.mozilla.org
-                Group 7.  mozilla.
-                Group 8.  mozilla
-                Group 9.  org
-                Group 12. /en-US/docs/Web/API/Location/ancestorOrigins
-                Group 13. ?pippo=shuter&a=dsok
-                Group 14. #asoka
-                */
-                this.protocol = match[2] || '';
-                this.host = this.hostname = match[3] || '';
-                this.port = match[11] || '';
-                this.pathname = match[12] || '';
-                this.search = match[13] || '';
-                this.hash = match[14] || '';
-            }
+            const location = getLocationComponents(href);
+            this.protocol = location.protocol;
+            this.host = location.host;
+            this.hostname = location.hostname;
+            this.port = location.port;
+            this.pathname = location.pathname;
+            this.search = location.search;
+            this.hash = location.hash;
         }
     }
     get origin() {
@@ -119,8 +106,3 @@ export class RxLocation {
         }
     }
 }
-/*
-function updateLocation_(location: ILocation): void {
-    location.href = location.href;
-}
-*/
