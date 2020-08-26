@@ -27,16 +27,17 @@ export default class CacheService {
     private static cache_;
     static mode: CacheMode;
     static folder: string;
-    static has(type: string | undefined, name: string): boolean;
-    static get(type: string | undefined, name: string): any;
-    static set(type: string | undefined, name: string, value: any, maxAge?: number): any;
-    static delete(type: string | undefined, name: string): void;
-    protected static getPath(type: string | undefined, name: string): string;
-    protected static hasFile(type: string | undefined, name: string): boolean;
-    protected static readFile(type: string | undefined, name: string): CacheItem | null;
-    protected static writeFile(type: string | undefined, name: string, cacheItem: CacheItem): CacheItem;
-    protected static unlinkFile(type: string | undefined, name: string): void;
-    protected static readFile$(type: string | undefined, name: string): Observable<CacheItem>;
-    protected static writeFile$(type: string | undefined, name: string, cacheItem: CacheItem): Observable<CacheItem>;
+    static has(type: string | undefined, path: string): boolean;
+    static get(type: string | undefined, path: string): any;
+    static set(type: string | undefined, path: string, value: any, maxAge?: number, cacheControl?: CacheControlType): any;
+    static delete(type: string | undefined, path: string): void;
+    protected static hasFile(type: string | undefined, path: string): boolean;
+    protected static readFile(type: string | undefined, path: string): CacheItem | null;
+    protected static writeFile(type: string | undefined, path: string, cacheItem: CacheItem): CacheItem;
+    protected static unlinkFile(type: string | undefined, path: string): void;
+    protected static readFile$(type: string | undefined, path: string): Observable<CacheItem>;
+    protected static writeFile$(type: string | undefined, path: string, cacheItem: CacheItem): Observable<CacheItem>;
     protected static serialize(item: any): string;
+    protected static getPath(type: string | undefined, path: string): string;
+    protected static getKey(type: string | undefined, path: string): string;
 }

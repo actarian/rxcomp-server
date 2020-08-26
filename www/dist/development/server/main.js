@@ -2555,7 +2555,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         }
         return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
     };
-      getProgress_(request) {
+     getProgress_(request) {
         const uploadProgress = new ReadableStream({
             start(controller) {
                 console.log("starting upload, request.bodyUsed:", request.bodyUsed);
@@ -2572,7 +2572,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
                 console.log(reason);
             }
         });
-          const [fileUpload, reader] = [
+         const [fileUpload, reader] = [
             upload(request).catch(e => {
                 reader.cancel();
                 console.log(e);
@@ -4201,7 +4201,7 @@ var CacheItem = /*#__PURE__*/function () {
 var CacheService = /*#__PURE__*/function () {
   function CacheService() {}
 
-  CacheService.has = function has(type, name) {
+  CacheService.has = function has(type, path) {
     if (type === void 0) {
       type = 'cache';
     }
@@ -4210,35 +4210,35 @@ var CacheService = /*#__PURE__*/function () {
 
     switch (this.mode) {
       case CacheMode.File:
-        has = this.hasFile(type, name);
+        has = this.hasFile(type, path);
         break;
 
       case CacheMode.Memory:
       default:
-        var key = type + "_" + name;
+        var key = this.getPath(type, path);
         has = this.cache_.has(key);
     }
 
     return has;
   };
 
-  CacheService.get = function get(type, name) {
+  CacheService.get = function get(type, path) {
     if (type === void 0) {
       type = 'cache';
     }
 
     var value = null,
         cacheItem;
-    var key = type + "_" + name;
+    var key = this.getPath(type, path);
 
     switch (this.mode) {
       case CacheMode.File:
-        if (this.hasFile(type, name)) {
-          cacheItem = this.readFile(type, name);
+        if (this.hasFile(type, path)) {
+          cacheItem = this.readFile(type, path);
 
           if (cacheItem) {
             if (cacheItem.expired) {
-              this.unlinkFile(type, name);
+              this.unlinkFile(type, path);
             } else {
               var _cacheItem;
 
@@ -4272,7 +4272,7 @@ var CacheService = /*#__PURE__*/function () {
     return value;
   };
 
-  CacheService.set = function set(type, name, value, maxAge) {
+  CacheService.set = function set(type, path, value, maxAge, cacheControl) {
     if (type === void 0) {
       type = 'cache';
     }
@@ -4281,40 +4281,44 @@ var CacheService = /*#__PURE__*/function () {
       maxAge = 0;
     }
 
-    var key = type + "_" + name;
+    if (cacheControl === void 0) {
+      cacheControl = CacheControlType.Public;
+    }
+
+    var key = this.getPath(type, path);
     var cacheItem = new CacheItem({
       value: value,
-      maxAge: maxAge
+      maxAge: maxAge,
+      cacheControl: cacheControl
     });
 
     switch (this.mode) {
       case CacheMode.File:
-        this.writeFile(type, name, cacheItem);
+        this.writeFile(type, path, cacheItem);
         break;
 
       case CacheMode.Memory:
       default:
         var serialized = this.serialize(cacheItem);
-        console.log(serialized);
         this.cache_.set(key, serialized);
     }
 
     return value;
   };
 
-  CacheService.delete = function _delete(type, name) {
+  CacheService.delete = function _delete(type, path) {
     if (type === void 0) {
       type = 'cache';
     }
 
     switch (this.mode) {
       case CacheMode.File:
-        this.unlinkFile(type, name);
+        this.unlinkFile(type, path);
         break;
 
       case CacheMode.Memory:
       default:
-        var key = type + "_" + name;
+        var key = this.getPath(type, path);
 
         if (this.cache_.has(key)) {
           this.cache_.delete(key);
@@ -4323,27 +4327,13 @@ var CacheService = /*#__PURE__*/function () {
     }
   };
 
-  CacheService.getPath = function getPath(type, name) {
-    if (type === void 0) {
-      type = 'cache';
-    }
-
-    var regExp = /(\/|\\|\:|\?|\#|\&)+/g;
-    var path = "_" + type + "_" + name; // console.log('path', path);
-
-    path = path.replace(regExp, function (substring, group) {
-      return encodeURIComponent(group);
-    });
-    return "" + this.folder + path;
-  };
-
-  CacheService.hasFile = function hasFile(type, name) {
+  CacheService.hasFile = function hasFile(type, path) {
     if (type === void 0) {
       type = 'cache';
     }
 
     var has = false;
-    var key = this.getPath(type, name);
+    var key = this.getPath(type, path);
 
     try {
       if (fs.existsSync(key)) {
@@ -4356,13 +4346,13 @@ var CacheService = /*#__PURE__*/function () {
     return has;
   };
 
-  CacheService.readFile = function readFile(type, name) {
+  CacheService.readFile = function readFile(type, path) {
     if (type === void 0) {
       type = 'cache';
     }
 
     var cacheItem = null;
-    var key = this.getPath(type, name);
+    var key = this.getPath(type, path);
 
     try {
       var json = fs.readFileSync(key, 'utf8');
@@ -4374,12 +4364,12 @@ var CacheService = /*#__PURE__*/function () {
     return cacheItem;
   };
 
-  CacheService.writeFile = function writeFile(type, name, cacheItem) {
+  CacheService.writeFile = function writeFile(type, path, cacheItem) {
     if (type === void 0) {
       type = 'cache';
     }
 
-    var key = this.getPath(type, name);
+    var key = this.getPath(type, path);
 
     try {
       var json = this.serialize(cacheItem);
@@ -4391,12 +4381,12 @@ var CacheService = /*#__PURE__*/function () {
     return cacheItem;
   };
 
-  CacheService.unlinkFile = function unlinkFile(type, name) {
+  CacheService.unlinkFile = function unlinkFile(type, path) {
     if (type === void 0) {
       type = 'cache';
     }
 
-    var key = this.getPath(type, name);
+    var key = this.getPath(type, path);
 
     try {
       if (fs.existsSync(key)) {
@@ -4407,14 +4397,14 @@ var CacheService = /*#__PURE__*/function () {
     }
   };
 
-  CacheService.readFile$ = function readFile$(type, name) {
+  CacheService.readFile$ = function readFile$(type, path) {
     if (type === void 0) {
       type = 'cache';
     }
 
     var service = this;
     return rxjs.Observable.create(function (observer) {
-      var key = service.folder + "_" + type + "_" + name;
+      var key = service.getPath(type, path);
       fs.readFile(key, 'utf8', function (error, json) {
         if (error) {
           observer.error(error);
@@ -4427,14 +4417,14 @@ var CacheService = /*#__PURE__*/function () {
     });
   };
 
-  CacheService.writeFile$ = function writeFile$(type, name, cacheItem) {
+  CacheService.writeFile$ = function writeFile$(type, path, cacheItem) {
     if (type === void 0) {
       type = 'cache';
     }
 
     var service = this;
     return rxjs.Observable.create(function (observer) {
-      var key = service.folder + "_" + type + "_" + name;
+      var key = service.getPath(type, path);
       var json = service.serialize(cacheItem);
       fs.writeFile(key, json, 'utf8', function (error) {
         if (error) {
@@ -4462,6 +4452,28 @@ var CacheService = /*#__PURE__*/function () {
     }, 0);
     pool.clear();
     return serialized;
+  };
+
+  CacheService.getPath = function getPath(type, path) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var key = this.getKey(type, path);
+    return "" + this.folder + key;
+  };
+
+  CacheService.getKey = function getKey(type, path) {
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var key = (type + "-" + path).toLowerCase();
+    key = key.replace(/(\s+)|(\W+)/g, function () {
+      return (arguments.length <= 1 ? undefined : arguments[1]) ? '' : '_';
+    }); // console.log('key', key);
+
+    return key;
   };
 
   return CacheService;
@@ -4512,35 +4524,21 @@ Pragma: no-cache
 var RxLocation = /*#__PURE__*/function () {
   function RxLocation() {
     /*
-    private hash_: string = '';
-    get hash(): string { return this.hash_; }
-    set hash(hash: string) { this.hash_ = hash; updateLocation_(this); }
-          private host_: string = '';
-    get host(): string { return this.host_; }
-    set host(host: string) { this.host_ = host; updateLocation_(this); }
-          private hostname_: string = '';
-    get hostname(): string { return this.hostname_; }
-    set hostname(hostname: string) { this.hostname_ = hostname; updateLocation_(this); }
-          private pathname_: string = '';
-    get pathname(): string { return this.pathname_; }
-    set pathname(pathname: string) { this.pathname_ = pathname; updateLocation_(this); }
-          private port_: string = '';
-    get port(): string { return this.port_; }
-    set port(port: string) { this.port_ = port; updateLocation_(this); }
-          private protocol_: string = '';
-    get protocol(): string { return this.protocol_; }
-    set protocol(protocol: string) { this.protocol_ = protocol; updateLocation_(this); }
-          private search_: string = '';
-    get search(): string { return this.search_; }
-    set search(search: string) { this.search_ = search; updateLocation_(this); }
+    hash: string = '';
+    host: string = '';
+    hostname: string = '';
+    pathname: string = '';
+    port: string = '';
+    protocol: string = '';
+    search: string = '';
     */
-    this.hash = '';
-    this.host = '';
-    this.hostname = '';
-    this.pathname = '';
-    this.port = '';
-    this.protocol = '';
-    this.search = '';
+    this.hash_ = '';
+    this.host_ = '';
+    this.hostname_ = '';
+    this.pathname_ = '';
+    this.port_ = '';
+    this.protocol_ = '';
+    this.search_ = '';
     this.href_ = '';
     this.ancestorOrigins_ = new RxDOMStringList();
   }
@@ -4562,6 +4560,69 @@ var RxLocation = /*#__PURE__*/function () {
   };
 
   _createClass(RxLocation, [{
+    key: "hash",
+    get: function get() {
+      return this.hash_;
+    },
+    set: function set(hash) {
+      this.hash_ = hash;
+      this.href = this.href;
+    }
+  }, {
+    key: "host",
+    get: function get() {
+      return this.host_;
+    },
+    set: function set(host) {
+      this.host_ = host;
+      this.href = this.href;
+    }
+  }, {
+    key: "hostname",
+    get: function get() {
+      return this.hostname_;
+    },
+    set: function set(hostname) {
+      this.hostname_ = hostname;
+      this.href = this.href;
+    }
+  }, {
+    key: "pathname",
+    get: function get() {
+      return this.pathname_;
+    },
+    set: function set(pathname) {
+      this.pathname_ = pathname;
+      this.href = this.href;
+    }
+  }, {
+    key: "port",
+    get: function get() {
+      return this.port_;
+    },
+    set: function set(port) {
+      this.port_ = port;
+      this.href = this.href;
+    }
+  }, {
+    key: "protocol",
+    get: function get() {
+      return this.protocol_;
+    },
+    set: function set(protocol) {
+      this.protocol_ = protocol;
+      this.href = this.href;
+    }
+  }, {
+    key: "search",
+    get: function get() {
+      return this.search_;
+    },
+    set: function set(search) {
+      this.search_ = search;
+      this.href = this.href;
+    }
+  }, {
     key: "href",
     get: function get() {
       var href = this.protocol + "//" + this.host + (this.port.length ? ":" + this.port : "") + this.pathname + this.search + this.hash;
@@ -4572,13 +4633,13 @@ var RxLocation = /*#__PURE__*/function () {
       if (this.href_ !== href) {
         this.href_ = href;
         var location = rxcomp.getLocationComponents(href);
-        this.protocol = location.protocol;
-        this.host = location.host;
-        this.hostname = location.hostname;
-        this.port = location.port;
-        this.pathname = location.pathname;
-        this.search = location.search;
-        this.hash = location.hash;
+        this.protocol_ = location.protocol;
+        this.host_ = location.host;
+        this.hostname_ = location.hostname;
+        this.port_ = location.port;
+        this.pathname_ = location.pathname;
+        this.search_ = location.search;
+        this.hash_ = location.hash;
       }
     }
   }, {
@@ -6039,6 +6100,9 @@ var ServerRequest = function ServerRequest(options) {
   }, this.vars || {});
 };
 var ServerResponse = function ServerResponse(options) {
+  this.maxAge = 3600;
+  this.cacheControl = CacheControlType.Public;
+
   if (options) {
     Object.assign(this, options);
   }
@@ -6182,7 +6246,7 @@ function render$(iRequest, renderRequest$) {
     }
 
     var render = CacheService.get('render', request.url);
-    console.log('Server.render$.fromCache', !!render, request.url);
+    console.log('Server.render$.fromCache', 'route', request.url, !!render);
 
     if (render) {
       observer.next(render);
@@ -6193,9 +6257,9 @@ function render$(iRequest, renderRequest$) {
       // console.log('template!', template);
       request.template = template;
       return renderRequest$(request);
-    })).subscribe(function (success) {
-      CacheService.set('render', request.url, success, 3600);
-      observer.next(success);
+    })).subscribe(function (response) {
+      CacheService.set('render', request.url, response, response.maxAge, response.cacheControl);
+      observer.next(response);
       observer.complete();
     }, function (error) {
       observer.error(error);
@@ -6208,7 +6272,7 @@ function template$(request) {
 
     if (src) {
       var template = CacheService.get('template', src);
-      console.log('Server.template$.fromCache', !!template, src);
+      console.log('Server.template$.fromCache', 'path', src, !!template);
 
       if (template) {
         observer.next(template);
@@ -6219,7 +6283,7 @@ function template$(request) {
         if (error) {
           observer.error(error);
         } else {
-          CacheService.set('template', src, template);
+          CacheService.set('template', src, template, 3600);
           observer.next(template);
           observer.complete();
         }

@@ -11,13 +11,27 @@ export declare class RxDOMStringList extends Array<string> implements IDOMString
 export interface ILocation extends Location {
 }
 export declare class RxLocation implements ILocation {
-    hash: string;
-    host: string;
-    hostname: string;
-    pathname: string;
-    port: string;
-    protocol: string;
-    search: string;
+    private hash_;
+    get hash(): string;
+    set hash(hash: string);
+    private host_;
+    get host(): string;
+    set host(host: string);
+    private hostname_;
+    get hostname(): string;
+    set hostname(hostname: string);
+    private pathname_;
+    get pathname(): string;
+    set pathname(pathname: string);
+    private port_;
+    get port(): string;
+    set port(port: string);
+    private protocol_;
+    get protocol(): string;
+    set protocol(protocol: string);
+    private search_;
+    get search(): string;
+    set search(search: string);
     private href_;
     get href(): string;
     set href(href: string);

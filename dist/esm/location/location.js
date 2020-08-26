@@ -25,44 +25,38 @@ export class RxDOMStringList extends Array {
 export class RxLocation {
     constructor() {
         /*
-        private hash_: string = '';
-        get hash(): string { return this.hash_; }
-        set hash(hash: string) { this.hash_ = hash; updateLocation_(this); }
-    
-        private host_: string = '';
-        get host(): string { return this.host_; }
-        set host(host: string) { this.host_ = host; updateLocation_(this); }
-    
-        private hostname_: string = '';
-        get hostname(): string { return this.hostname_; }
-        set hostname(hostname: string) { this.hostname_ = hostname; updateLocation_(this); }
-    
-        private pathname_: string = '';
-        get pathname(): string { return this.pathname_; }
-        set pathname(pathname: string) { this.pathname_ = pathname; updateLocation_(this); }
-    
-        private port_: string = '';
-        get port(): string { return this.port_; }
-        set port(port: string) { this.port_ = port; updateLocation_(this); }
-    
-        private protocol_: string = '';
-        get protocol(): string { return this.protocol_; }
-        set protocol(protocol: string) { this.protocol_ = protocol; updateLocation_(this); }
-    
-        private search_: string = '';
-        get search(): string { return this.search_; }
-        set search(search: string) { this.search_ = search; updateLocation_(this); }
+        hash: string = '';
+        host: string = '';
+        hostname: string = '';
+        pathname: string = '';
+        port: string = '';
+        protocol: string = '';
+        search: string = '';
         */
-        this.hash = '';
-        this.host = '';
-        this.hostname = '';
-        this.pathname = '';
-        this.port = '';
-        this.protocol = '';
-        this.search = '';
+        this.hash_ = '';
+        this.host_ = '';
+        this.hostname_ = '';
+        this.pathname_ = '';
+        this.port_ = '';
+        this.protocol_ = '';
+        this.search_ = '';
         this.href_ = '';
         this.ancestorOrigins_ = new RxDOMStringList();
     }
+    get hash() { return this.hash_; }
+    set hash(hash) { this.hash_ = hash; this.href = this.href; }
+    get host() { return this.host_; }
+    set host(host) { this.host_ = host; this.href = this.href; }
+    get hostname() { return this.hostname_; }
+    set hostname(hostname) { this.hostname_ = hostname; this.href = this.href; }
+    get pathname() { return this.pathname_; }
+    set pathname(pathname) { this.pathname_ = pathname; this.href = this.href; }
+    get port() { return this.port_; }
+    set port(port) { this.port_ = port; this.href = this.href; }
+    get protocol() { return this.protocol_; }
+    set protocol(protocol) { this.protocol_ = protocol; this.href = this.href; }
+    get search() { return this.search_; }
+    set search(search) { this.search_ = search; this.href = this.href; }
     get href() {
         const href = `${this.protocol}//${this.host}${this.port.length ? `:${this.port}` : ``}${this.pathname}${this.search}${this.hash}`;
         this.href_ = href;
@@ -72,13 +66,13 @@ export class RxLocation {
         if (this.href_ !== href) {
             this.href_ = href;
             const location = getLocationComponents(href);
-            this.protocol = location.protocol;
-            this.host = location.host;
-            this.hostname = location.hostname;
-            this.port = location.port;
-            this.pathname = location.pathname;
-            this.search = location.search;
-            this.hash = location.hash;
+            this.protocol_ = location.protocol;
+            this.host_ = location.host;
+            this.hostname_ = location.hostname;
+            this.port_ = location.port;
+            this.pathname_ = location.pathname;
+            this.search_ = location.search;
+            this.hash_ = location.hash;
         }
     }
     get origin() {

@@ -28,6 +28,8 @@ export interface IServerResponse extends IServerRequest {
     body?: string;
     statusCode?: number;
     statusMessage?: string;
+    maxAge?: number;
+    cacheControl?: CacheControlType;
 }
 export interface IServerErrorResponse extends IServerRequest {
     error: Error;
@@ -48,8 +50,8 @@ export declare class ServerResponse implements IServerResponse {
     body: string;
     statusCode?: number;
     statusMessage?: string;
-    maxAge?: number;
-    cacheControl?: CacheControlType;
+    maxAge: number;
+    cacheControl: CacheControlType;
     constructor(options?: IServerResponse);
 }
 export declare class ServerErrorResponse implements IServerErrorResponse {

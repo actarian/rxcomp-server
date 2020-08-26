@@ -30,6 +30,8 @@ var ServerRequest = /** @class */ (function () {
 exports.ServerRequest = ServerRequest;
 var ServerResponse = /** @class */ (function () {
     function ServerResponse(options) {
+        this.maxAge = 3600;
+        this.cacheControl = cache_service_1.CacheControlType.Public;
         if (options) {
             Object.assign(this, options);
         }
@@ -159,7 +161,7 @@ function render$(iRequest, renderRequest$) {
             cache_service_1.default.folder = request.vars.cache;
         }
         var render = cache_service_1.default.get('render', request.url);
-        console.log('Server.render$.fromCache', !!render, request.url);
+        console.log('Server.render$.fromCache', 'route', request.url, !!render);
         if (render) {
             observer.next(render);
             return observer.complete();
@@ -168,9 +170,9 @@ function render$(iRequest, renderRequest$) {
             // console.log('template!', template);
             request.template = template;
             return renderRequest$(request);
-        })).subscribe(function (success) {
-            cache_service_1.default.set('render', request.url, success, 3600);
-            observer.next(success);
+        })).subscribe(function (response) {
+            cache_service_1.default.set('render', request.url, response, response.maxAge, response.cacheControl);
+            observer.next(response);
             observer.complete();
         }, function (error) {
             observer.error(error);
@@ -183,7 +185,7 @@ function template$(request) {
         var src = request.vars.template;
         if (src) {
             var template = cache_service_1.default.get('template', src);
-            console.log('Server.template$.fromCache', !!template, src);
+            console.log('Server.template$.fromCache', 'path', src, !!template);
             if (template) {
                 observer.next(template);
                 observer.complete();
@@ -193,7 +195,7 @@ function template$(request) {
                     observer.error(error);
                 }
                 else {
-                    cache_service_1.default.set('template', src, template);
+                    cache_service_1.default.set('template', src, template, 3600);
                     observer.next(template);
                     observer.complete();
                 }

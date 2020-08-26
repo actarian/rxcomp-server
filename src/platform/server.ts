@@ -35,6 +35,8 @@ export interface IServerResponse extends IServerRequest {
 	body?: string;
 	statusCode?: number;
 	statusMessage?: string;
+	maxAge?: number;
+	cacheControl?: CacheControlType;
 }
 
 export interface IServerErrorResponse extends IServerRequest {
@@ -71,8 +73,8 @@ export class ServerResponse implements IServerResponse {
 	body!: string;
 	statusCode?: number;
 	statusMessage?: string;
-	maxAge?: number;
-	cacheControl?: CacheControlType;
+	maxAge: number = 3600;
+	cacheControl: CacheControlType = CacheControlType.Public;
 	constructor(options?: IServerResponse) {
 		if (options) {
 			Object.assign(this, options);
@@ -205,7 +207,7 @@ export function render$(iRequest: IServerRequest, renderRequest$: (request: Serv
 			CacheService.folder = request.vars.cache;
 		}
 		const render = CacheService.get('render', request.url);
-		console.log('Server.render$.fromCache', !!render, request.url);
+		console.log('Server.render$.fromCache', 'route', request.url, !!render);
 		if (render) {
 			observer.next(render);
 			return observer.complete();
@@ -217,9 +219,9 @@ export function render$(iRequest: IServerRequest, renderRequest$: (request: Serv
 				return renderRequest$(request);
 			})
 		).subscribe(
-			(success) => {
-				CacheService.set('render', request.url, success, 3600);
-				observer.next(success);
+			(response: ServerResponse) => {
+				CacheService.set('render', request.url, response, response.maxAge, response.cacheControl);
+				observer.next(response);
 				observer.complete();
 			},
 			(error) => {
@@ -234,7 +236,7 @@ export function template$(request: ServerRequest): Observable<string> {
 		const src = request.vars.template;
 		if (src) {
 			const template = CacheService.get('template', src);
-			console.log('Server.template$.fromCache', !!template, src);
+			console.log('Server.template$.fromCache', 'path', src, !!template);
 			if (template) {
 				observer.next(template);
 				observer.complete();
@@ -243,7 +245,7 @@ export function template$(request: ServerRequest): Observable<string> {
 				if (error) {
 					observer.error(error);
 				} else {
-					CacheService.set('template', src, template);
+					CacheService.set('template', src, template, 3600);
 					observer.next(template);
 					observer.complete();
 				}

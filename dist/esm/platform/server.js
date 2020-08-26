@@ -1,7 +1,7 @@
 import { isPlatformServer, ModuleError, Platform } from 'rxcomp';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import CacheService, { CacheMode } from '../cache/cache.service';
+import CacheService, { CacheControlType, CacheMode } from '../cache/cache.service';
 import { RxHistory } from '../history/history';
 import { RxLocation } from '../location/location';
 import { parse, RxDocument, RxElement, RxText } from '../nodes/nodes';
@@ -24,6 +24,8 @@ export class ServerRequest {
 }
 export class ServerResponse {
     constructor(options) {
+        this.maxAge = 3600;
+        this.cacheControl = CacheControlType.Public;
         if (options) {
             Object.assign(this, options);
         }
@@ -143,7 +145,7 @@ export function render$(iRequest, renderRequest$) {
             CacheService.folder = request.vars.cache;
         }
         const render = CacheService.get('render', request.url);
-        console.log('Server.render$.fromCache', !!render, request.url);
+        console.log('Server.render$.fromCache', 'route', request.url, !!render);
         if (render) {
             observer.next(render);
             return observer.complete();
@@ -152,9 +154,9 @@ export function render$(iRequest, renderRequest$) {
             // console.log('template!', template);
             request.template = template;
             return renderRequest$(request);
-        })).subscribe((success) => {
-            CacheService.set('render', request.url, success, 3600);
-            observer.next(success);
+        })).subscribe((response) => {
+            CacheService.set('render', request.url, response, response.maxAge, response.cacheControl);
+            observer.next(response);
             observer.complete();
         }, (error) => {
             observer.error(error);
@@ -166,7 +168,7 @@ export function template$(request) {
         const src = request.vars.template;
         if (src) {
             const template = CacheService.get('template', src);
-            console.log('Server.template$.fromCache', !!template, src);
+            console.log('Server.template$.fromCache', 'path', src, !!template);
             if (template) {
                 observer.next(template);
                 observer.complete();
@@ -176,7 +178,7 @@ export function template$(request) {
                     observer.error(error);
                 }
                 else {
-                    CacheService.set('template', src, template);
+                    CacheService.set('template', src, template, 3600);
                     observer.next(template);
                     observer.complete();
                 }

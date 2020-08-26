@@ -42,35 +42,34 @@ export class CacheItem {
 }
 
 export default class CacheService {
-
 	private static cache_: Map<string, string> = new Map<string, string>();
 	static mode: CacheMode = CacheMode.Memory;
 	static folder: string;
 
-	static has(type: string = 'cache', name: string): boolean {
+	static has(type: string = 'cache', path: string): boolean {
 		let has: boolean = false;
 		switch (this.mode) {
 			case CacheMode.File:
-				has = this.hasFile(type, name);
+				has = this.hasFile(type, path);
 				break;
 			case CacheMode.Memory:
 			default:
-				const key: string = `${type}_${name}`;
+				const key: string = this.getPath(type, path);
 				has = this.cache_.has(key);
 		}
 		return has;
 	}
 
-	static get(type: string = 'cache', name: string): any {
+	static get(type: string = 'cache', path: string): any {
 		let value = null, cacheItem: CacheItem | null;
-		const key: string = `${type}_${name}`;
+		const key: string = this.getPath(type, path);
 		switch (this.mode) {
 			case CacheMode.File:
-				if (this.hasFile(type, name)) {
-					cacheItem = this.readFile(type, name);
+				if (this.hasFile(type, path)) {
+					cacheItem = this.readFile(type, path);
 					if (cacheItem) {
 						if (cacheItem.expired) {
-							this.unlinkFile(type, name);
+							this.unlinkFile(type, path);
 						} else {
 							value = cacheItem?.value;
 						}
@@ -96,49 +95,38 @@ export default class CacheService {
 		return value;
 	}
 
-	static set(type: string = 'cache', name: string, value: any, maxAge: number = 0): any {
-		const key: string = `${type}_${name}`;
-		const cacheItem: CacheItem = new CacheItem({ value, maxAge });
+	static set(type: string = 'cache', path: string, value: any, maxAge: number = 0, cacheControl: CacheControlType = CacheControlType.Public): any {
+		const key: string = this.getPath(type, path);
+		const cacheItem: CacheItem = new CacheItem({ value, maxAge, cacheControl });
 		switch (this.mode) {
 			case CacheMode.File:
-				this.writeFile(type, name, cacheItem);
+				this.writeFile(type, path, cacheItem);
 				break;
 			case CacheMode.Memory:
 			default:
 				const serialized: string = this.serialize(cacheItem);
-				console.log(serialized);
 				this.cache_.set(key, serialized);
 		}
 		return value;
 	}
 
-	static delete(type: string = 'cache', name: string): void {
+	static delete(type: string = 'cache', path: string): void {
 		switch (this.mode) {
 			case CacheMode.File:
-				this.unlinkFile(type, name);
+				this.unlinkFile(type, path);
 				break;
 			case CacheMode.Memory:
 			default:
-				const key: string = `${type}_${name}`;
+				const key: string = this.getPath(type, path);
 				if (this.cache_.has(key)) {
 					this.cache_.delete(key);
 				}
 		}
 	}
 
-	protected static getPath(type: string = 'cache', name: string): string {
-		const regExp: RegExp = /(\/|\\|\:|\?|\#|\&)+/g;
-		let path: string = `_${type}_${name}`;
-		// console.log('path', path);
-		path = path.replace(regExp, function (substring: string, group: string) {
-			return encodeURIComponent(group);
-		});
-		return `${this.folder}${path}`;
-	}
-
-	protected static hasFile(type: string = 'cache', name: string): boolean {
+	protected static hasFile(type: string = 'cache', path: string): boolean {
 		let has: boolean = false;
-		const key: string = this.getPath(type, name);
+		const key: string = this.getPath(type, path);
 		try {
 			if (fs.existsSync(key)) {
 				has = true;
@@ -149,9 +137,9 @@ export default class CacheService {
 		return has;
 	}
 
-	protected static readFile(type: string = 'cache', name: string): CacheItem | null {
+	protected static readFile(type: string = 'cache', path: string): CacheItem | null {
 		let cacheItem: CacheItem | null = null;
-		const key: string = this.getPath(type, name);
+		const key: string = this.getPath(type, path);
 		try {
 			const json: string = fs.readFileSync(key, 'utf8');
 			cacheItem = new CacheItem(JSON.parse(json));
@@ -161,8 +149,8 @@ export default class CacheService {
 		return cacheItem;
 	}
 
-	protected static writeFile(type: string = 'cache', name: string, cacheItem: CacheItem): CacheItem {
-		const key: string = this.getPath(type, name);
+	protected static writeFile(type: string = 'cache', path: string, cacheItem: CacheItem): CacheItem {
+		const key: string = this.getPath(type, path);
 		try {
 			const json: string = this.serialize(cacheItem);
 			fs.writeFileSync(key, json, 'utf8');
@@ -172,8 +160,8 @@ export default class CacheService {
 		return cacheItem;
 	}
 
-	protected static unlinkFile(type: string = 'cache', name: string): void {
-		const key: string = this.getPath(type, name);
+	protected static unlinkFile(type: string = 'cache', path: string): void {
+		const key: string = this.getPath(type, path);
 		try {
 			if (fs.existsSync(key)) {
 				fs.unlinkSync(key);
@@ -183,10 +171,10 @@ export default class CacheService {
 		}
 	}
 
-	protected static readFile$(type: string = 'cache', name: string): Observable<CacheItem> {
+	protected static readFile$(type: string = 'cache', path: string): Observable<CacheItem> {
 		const service = this;
 		return Observable.create(function (observer: Observer<CacheItem>) {
-			const key: string = `${service.folder}_${type}_${name}`;
+			const key: string = service.getPath(type, path);
 			fs.readFile(key, 'utf8', function (error: NodeJS.ErrnoException, json: string) {
 				if (error) {
 					observer.error(error);
@@ -199,10 +187,10 @@ export default class CacheService {
 		});
 	}
 
-	protected static writeFile$(type: string = 'cache', name: string, cacheItem: CacheItem): Observable<CacheItem> {
+	protected static writeFile$(type: string = 'cache', path: string, cacheItem: CacheItem): Observable<CacheItem> {
 		const service = this;
 		return Observable.create(function (observer: Observer<CacheItem>) {
-			const key: string = `${service.folder}_${type}_${name}`;
+			const key: string = service.getPath(type, path);
 			const json: string = service.serialize(cacheItem);
 			fs.writeFile(key, json, 'utf8', function (error: NodeJS.ErrnoException) {
 				if (error) {
@@ -230,6 +218,17 @@ export default class CacheService {
 		return serialized;
 	}
 
+	protected static getPath(type: string = 'cache', path: string): string {
+		const key: string = this.getKey(type, path);
+		return `${this.folder}${key}`;
+	}
+
+	protected static getKey(type: string = 'cache', path: string): string {
+		let key: string = `${type}-${path}`.toLowerCase();
+		key = key.replace(/(\s+)|(\W+)/g, function (...matches) { return matches[1] ? '' : '_' });
+		// console.log('key', key);
+		return key;
+	}
 }
 
 /*
