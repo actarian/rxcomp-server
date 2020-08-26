@@ -22,45 +22,39 @@ export default class AppComponent extends Component {
 	error: any = null;
 	onInit() {
 		// console.log('AppComponent.onInit', this);
-		/*
-		const payload = { query: `{ hello }` };
-		*/
-		/*
-		const payload = { query: `{ roll(dices: ${3}, sides: ${6}) }` };
-		*/
-		/*
-		const payload = {
-			query: `query ($dices: Int!, $sides: Int) {
-			roll(dices: $dices, sides: $sides)
-		}`, variables: { dices: 3, sides: 6 }
-		};
-		*/
+		const mode: number = 1;
 		const payload = { query: `{ getTodos { id, title, completed } }` };
-		/*
-		HttpService.post$<IResponseData>(`${Vars.host}${Vars.api}`, payload, {
-			params: { query: `{ getTodos { id, title, completed } }` },
-			reportProgress: true
-		}).pipe(
-		*/
 		const methodUrl: string = `${Vars.host}${Vars.api}`;
-		// console.log('methodUrl', methodUrl);
-		HttpService.post$<IResponseData>(methodUrl, payload, { hydrate: true }).pipe(
-			first(),
-		).subscribe((response: IResponseData) => {
-			this.items = response.data.getTodos;
-			this.pushChanges();
-			// console.log('AppComponent.getTodos', this.items);
-		}, error => console.warn);
-		// HttpService.get$(`https://jsonplaceholder.typicode.com/users/1/todos`).pipe(
-		/*
-		HttpService.get$(`${Vars.host}/data/todos.json`).pipe(
-			first(),
-		).subscribe(response => {
-			// console.log('AppComponent.items', response);
-			this.items = response.data;
-			this.pushChanges();
-		});
-		*/
+		if (mode === 1) {
+			HttpService.post$<IResponseData>(methodUrl, payload, {
+				params: { query: `{ getTodos { id, title, completed } }` },
+				reportProgress: false
+			}).pipe(
+				first(),
+			).subscribe((response: IResponseData) => {
+				this.items = response.data.getTodos;
+				this.pushChanges();
+				// console.log('AppComponent.getTodos', this.items);
+			}, error => console.warn);
+		} else if (mode === 2) {
+			// console.log('methodUrl', methodUrl);
+			HttpService.post$<IResponseData>(methodUrl, payload).pipe(
+				first(),
+			).subscribe((response: IResponseData) => {
+				this.items = response.data.getTodos;
+				this.pushChanges();
+				// console.log('AppComponent.getTodos', this.items);
+			}, error => console.warn);
+		} else {
+			HttpService.get$<IResponseData>(`${Vars.host}/data/todos.json`).pipe(
+				first(),
+			).subscribe((response: IResponseData) => {
+				this.items = response.data.getTodos;
+				this.pushChanges();
+				// console.log('AppComponent.getTodos', this.items);
+			}, error => console.warn);
+		}
+		// generic errors
 		errors$.pipe(
 			takeUntil(this.unsubscribe$),
 		).subscribe(error => {

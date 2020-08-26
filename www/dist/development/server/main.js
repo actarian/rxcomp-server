@@ -2472,6 +2472,49 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   function () {
     function HttpFetchHandler() {
       this.response_ = null;
+      /*
+      onProgress(value: Uint8Array, done: boolean, request, reader, progress) {
+          console.log("value:", value);
+          if (value || done) {
+              console.log("upload complete, request.bodyUsed:", request.bodyUsed);
+              progress.value = progress.max;
+              return reader.closed.then(() => fileUpload);
+          };
+          console.log("upload progress:", value);
+          if (progress.value < file.size) {
+              progress.value += 1;
+          }
+          return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
+      }
+      */
+
+      /*
+      getProgress_(request) {
+          const uploadProgress = new ReadableStream({
+              start(controller) {
+                  console.log("starting upload, request.bodyUsed:", request.bodyUsed);
+                  controller.enqueue(request.bodyUsed);
+              },
+              pull(controller) {
+                  if (request.bodyUsed) {
+                      controller.close();
+                  }
+                  controller.enqueue(request.bodyUsed);
+                  console.log("pull, request.bodyUsed:", request.bodyUsed);
+              },
+              cancel(reason) {
+                  console.log(reason);
+              }
+          });
+          const [fileUpload, reader] = [
+              upload(request).catch(e => {
+                  reader.cancel();
+                  console.log(e);
+                  throw e
+              }), uploadProgress.getReader()
+          ];
+      }
+      */
     }
 
     HttpFetchHandler.prototype.handle = function (request) {
@@ -2541,47 +2584,6 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         }));
       }
     };
-    /*
-    onProgress(value: Uint8Array, done: boolean, request, reader, progress) {
-        console.log("value:", value);
-        if (value || done) {
-            console.log("upload complete, request.bodyUsed:", request.bodyUsed);
-            progress.value = progress.max;
-            return reader.closed.then(() => fileUpload);
-        };
-        console.log("upload progress:", value);
-        if (progress.value < file.size) {
-            progress.value += 1;
-        }
-        return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
-    };
-     getProgress_(request) {
-        const uploadProgress = new ReadableStream({
-            start(controller) {
-                console.log("starting upload, request.bodyUsed:", request.bodyUsed);
-                controller.enqueue(request.bodyUsed);
-            },
-            pull(controller) {
-                if (request.bodyUsed) {
-                    controller.close();
-                }
-                controller.enqueue(request.bodyUsed);
-                console.log("pull, request.bodyUsed:", request.bodyUsed);
-            },
-            cancel(reason) {
-                console.log(reason);
-            }
-        });
-         const [fileUpload, reader] = [
-            upload(request).catch(e => {
-                reader.cancel();
-                console.log(e);
-                throw e
-            }), uploadProgress.getReader()
-        ];
-    }
-    */
-
 
     HttpFetchHandler.prototype.getProgress = function (response, request) {
       var _this = this; // console.log('HttpFetchHandler.setProgress', request.reportProgress, response.body);
@@ -6380,47 +6382,26 @@ export function getSlug(url) {
 
   _proto.onInit = function onInit() {
     var _this2 = this;
-
-    // console.log('AppComponent.onInit', this);
-
-    /*
-    const payload = { query: `{ hello }` };
-    */
-
-    /*
-    const payload = { query: `{ roll(dices: ${3}, sides: ${6}) }` };
-    */
-
-    /*
-    const payload = {
-        query: `query ($dices: Int!, $sides: Int) {
-        roll(dices: $dices, sides: $sides)
-    }`, variables: { dices: 3, sides: 6 }
-    };
-    */
     var payload = {
       query: "{ getTodos { id, title, completed } }"
     };
-    /*
-    HttpService.post$<IResponseData>(`${Vars.host}${Vars.api}`, payload, {
-        params: { query: `{ getTodos { id, title, completed } }` },
-        reportProgress: true
-    }).pipe(
-    */
+    var methodUrl = "" + Vars.host + Vars.api;
 
-    var methodUrl = "" + Vars.host + Vars.api; // console.log('methodUrl', methodUrl);
+    {
+      rxcompHttp.HttpService.post$(methodUrl, payload, {
+        params: {
+          query: "{ getTodos { id, title, completed } }"
+        },
+        reportProgress: false
+      }).pipe(operators.first()).subscribe(function (response) {
+        _this2.items = response.data.getTodos;
 
-    rxcompHttp.HttpService.post$(methodUrl, payload, {
-      hydrate: true
-    }).pipe(operators.first()).subscribe(function (response) {
-      _this2.items = response.data.getTodos;
+        _this2.pushChanges(); // console.log('AppComponent.getTodos', this.items);
 
-      _this2.pushChanges(); // console.log('AppComponent.getTodos', this.items);
-
-    }, function (error) {
-      return console.warn;
-    }); // HttpService.get$(`https://jsonplaceholder.typicode.com/users/1/todos`).pipe(
-
+      }, function (error) {
+        return console.warn;
+      });
+    }
     /*
     HttpService.get$(`${Vars.host}/data/todos.json`).pipe(
         first(),
@@ -6430,6 +6411,7 @@ export function getSlug(url) {
         this.pushChanges();
     });
     */
+
 
     rxcomp.errors$.pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (error) {
       _this2.error = error;

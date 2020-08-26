@@ -2109,20 +2109,26 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
   _proto.onInit = function onInit() {
     var _this2 = this;
-
     var payload = {
       query: "{ getTodos { id, title, completed } }"
     };
     var methodUrl = "" + Vars.host + Vars.api;
-    rxcompHttp.HttpService.post$(methodUrl, payload, {
-      hydrate: true
-    }).pipe(operators.first()).subscribe(function (response) {
-      _this2.items = response.data.getTodos;
 
-      _this2.pushChanges();
-    }, function (error) {
-      return console.warn;
-    });
+    {
+      rxcompHttp.HttpService.post$(methodUrl, payload, {
+        params: {
+          query: "{ getTodos { id, title, completed } }"
+        },
+        reportProgress: false
+      }).pipe(operators.first()).subscribe(function (response) {
+        _this2.items = response.data.getTodos;
+
+        _this2.pushChanges();
+      }, function (error) {
+        return console.warn;
+      });
+    }
+
     rxcomp.errors$.pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (error) {
       _this2.error = error;
 
