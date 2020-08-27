@@ -4158,7 +4158,9 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
 
   it = o[Symbol.iterator]();
   return it.next.bind(it);
-}var fs = require('fs');
+}var path = require('path');
+
+var fs = require('fs');
 
 var CacheMode;
 
@@ -4203,7 +4205,7 @@ var CacheItem = /*#__PURE__*/function () {
 var CacheService = /*#__PURE__*/function () {
   function CacheService() {}
 
-  CacheService.has = function has(type, path) {
+  CacheService.has = function has(type, filename) {
     if (type === void 0) {
       type = 'cache';
     }
@@ -4212,35 +4214,35 @@ var CacheService = /*#__PURE__*/function () {
 
     switch (this.mode) {
       case CacheMode.File:
-        has = this.hasFile(type, path);
+        has = this.hasFile(type, filename);
         break;
 
       case CacheMode.Memory:
       default:
-        var key = this.getPath(type, path);
-        has = this.cache_.has(key);
+        var key = this.getPath(type, filename);
+        has = Object.keys(this.cache_).indexOf(key) !== -1;
     }
 
     return has;
   };
 
-  CacheService.get = function get(type, path) {
+  CacheService.get = function get(type, filename) {
     if (type === void 0) {
       type = 'cache';
     }
 
     var value = null,
         cacheItem;
-    var key = this.getPath(type, path);
+    var key = this.getPath(type, filename);
 
     switch (this.mode) {
       case CacheMode.File:
-        if (this.hasFile(type, path)) {
-          cacheItem = this.readFile(type, path);
+        if (this.hasFile(type, filename)) {
+          cacheItem = this.readFile(type, filename);
 
           if (cacheItem) {
             if (cacheItem.expired) {
-              this.unlinkFile(type, path);
+              this.unlinkFile(type, filename);
             } else {
               var _cacheItem;
 
@@ -4253,15 +4255,15 @@ var CacheService = /*#__PURE__*/function () {
 
       case CacheMode.Memory:
       default:
-        if (this.cache_.has(key)) {
-          var data = this.cache_.get(key);
+        if (Object.keys(this.cache_).indexOf(key) !== -1) {
+          var data = this.cache_[key];
 
           if (data) {
             cacheItem = new CacheItem(JSON.parse(data));
 
             if (cacheItem) {
               if (cacheItem.expired) {
-                this.cache_.delete(key);
+                delete this.cache_[key];
               } else {
                 value = cacheItem.value;
               }
@@ -4274,7 +4276,7 @@ var CacheService = /*#__PURE__*/function () {
     return value;
   };
 
-  CacheService.set = function set(type, path, value, maxAge, cacheControl) {
+  CacheService.set = function set(type, filename, value, maxAge, cacheControl) {
     if (type === void 0) {
       type = 'cache';
     }
@@ -4287,7 +4289,7 @@ var CacheService = /*#__PURE__*/function () {
       cacheControl = CacheControlType.Public;
     }
 
-    var key = this.getPath(type, path);
+    var key = this.getPath(type, filename);
     var cacheItem = new CacheItem({
       value: value,
       maxAge: maxAge,
@@ -4296,46 +4298,46 @@ var CacheService = /*#__PURE__*/function () {
 
     switch (this.mode) {
       case CacheMode.File:
-        this.writeFile(type, path, cacheItem);
+        this.writeFile(type, filename, cacheItem);
         break;
 
       case CacheMode.Memory:
       default:
         var serialized = this.serialize(cacheItem);
-        this.cache_.set(key, serialized);
+        this.cache_[key] = serialized;
     }
 
     return value;
   };
 
-  CacheService.delete = function _delete(type, path) {
+  CacheService.delete = function _delete(type, filename) {
     if (type === void 0) {
       type = 'cache';
     }
 
     switch (this.mode) {
       case CacheMode.File:
-        this.unlinkFile(type, path);
+        this.unlinkFile(type, filename);
         break;
 
       case CacheMode.Memory:
       default:
-        var key = this.getPath(type, path);
+        var key = this.getPath(type, filename);
 
-        if (this.cache_.has(key)) {
-          this.cache_.delete(key);
+        if (Object.keys(this.cache_).indexOf(key) !== -1) {
+          delete this.cache_[key];
         }
 
     }
   };
 
-  CacheService.hasFile = function hasFile(type, path) {
+  CacheService.hasFile = function hasFile(type, filename) {
     if (type === void 0) {
       type = 'cache';
     }
 
     var has = false;
-    var key = this.getPath(type, path);
+    var key = this.getPath(type, filename);
 
     try {
       if (fs.existsSync(key)) {
@@ -4348,15 +4350,22 @@ var CacheService = /*#__PURE__*/function () {
     return has;
   };
 
-  CacheService.readFile = function readFile(type, path) {
+  CacheService.readFile = function readFile(type, filename) {
     if (type === void 0) {
       type = 'cache';
     }
 
     var cacheItem = null;
-    var key = this.getPath(type, path);
+    var key = this.getPath(type, filename);
 
     try {
+      var dirname = path.dirname(key);
+      console.log('existsSync', dirname);
+
+      if (!fs.existsSync(dirname)) {
+        return cacheItem;
+      }
+
       var json = fs.readFileSync(key, 'utf8');
       cacheItem = new CacheItem(JSON.parse(json));
     } catch (error) {
@@ -4366,15 +4375,23 @@ var CacheService = /*#__PURE__*/function () {
     return cacheItem;
   };
 
-  CacheService.writeFile = function writeFile(type, path, cacheItem) {
+  CacheService.writeFile = function writeFile(type, filename, cacheItem) {
     if (type === void 0) {
       type = 'cache';
     }
 
-    var key = this.getPath(type, path);
+    var key = this.getPath(type, filename);
 
     try {
       var json = this.serialize(cacheItem);
+      var dirname = path.dirname(key);
+      console.log('existsSync', dirname);
+
+      if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname);
+      }
+
+      console.log('writeFile', key);
       fs.writeFileSync(key, json, 'utf8');
     } catch (error) {
       throw error;
@@ -4383,12 +4400,12 @@ var CacheService = /*#__PURE__*/function () {
     return cacheItem;
   };
 
-  CacheService.unlinkFile = function unlinkFile(type, path) {
+  CacheService.unlinkFile = function unlinkFile(type, filename) {
     if (type === void 0) {
       type = 'cache';
     }
 
-    var key = this.getPath(type, path);
+    var key = this.getPath(type, filename);
 
     try {
       if (fs.existsSync(key)) {
@@ -4399,14 +4416,21 @@ var CacheService = /*#__PURE__*/function () {
     }
   };
 
-  CacheService.readFile$ = function readFile$(type, path) {
+  CacheService.readFile$ = function readFile$(type, filename) {
     if (type === void 0) {
       type = 'cache';
     }
 
     var service = this;
     return rxjs.Observable.create(function (observer) {
-      var key = service.getPath(type, path);
+      var key = service.getPath(type, filename);
+      var dirname = path.dirname(key);
+      console.log('existsSync', dirname);
+
+      if (!fs.existsSync(dirname)) {
+        observer.error("ENOENT: no such file or directory");
+      }
+
       fs.readFile(key, 'utf8', function (error, json) {
         if (error) {
           observer.error(error);
@@ -4419,15 +4443,23 @@ var CacheService = /*#__PURE__*/function () {
     });
   };
 
-  CacheService.writeFile$ = function writeFile$(type, path, cacheItem) {
+  CacheService.writeFile$ = function writeFile$(type, filename, cacheItem) {
     if (type === void 0) {
       type = 'cache';
     }
 
     var service = this;
     return rxjs.Observable.create(function (observer) {
-      var key = service.getPath(type, path);
+      var key = service.getPath(type, filename);
       var json = service.serialize(cacheItem);
+      var dirname = path.dirname(key);
+      console.log('existsSync', dirname);
+
+      if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname);
+      }
+
+      console.log('writeFile', key);
       fs.writeFile(key, json, 'utf8', function (error) {
         if (error) {
           observer.error(error);
@@ -4456,21 +4488,21 @@ var CacheService = /*#__PURE__*/function () {
     return serialized;
   };
 
-  CacheService.getPath = function getPath(type, path) {
+  CacheService.getPath = function getPath(type, filename) {
     if (type === void 0) {
       type = 'cache';
     }
 
-    var key = this.getKey(type, path);
+    var key = this.getKey(type, filename);
     return "" + this.folder + key;
   };
 
-  CacheService.getKey = function getKey(type, path) {
+  CacheService.getKey = function getKey(type, filename) {
     if (type === void 0) {
       type = 'cache';
     }
 
-    var key = (type + "-" + path).toLowerCase();
+    var key = (type + "-" + filename).toLowerCase();
     key = key.replace(/(\s+)|(\W+)/g, function () {
       return (arguments.length <= 1 ? undefined : arguments[1]) ? '' : '_';
     }); // console.log('key', key);
@@ -4480,7 +4512,7 @@ var CacheService = /*#__PURE__*/function () {
 
   return CacheService;
 }();
-CacheService.cache_ = new Map();
+CacheService.cache_ = {};
 CacheService.mode = CacheMode.Memory;
 /*
 Cache-Control: max-age=0, private, must-revalidate
@@ -6401,16 +6433,7 @@ export function getSlug(url) {
       }, function (error) {
         return console.warn;
       });
-    }
-    /*
-    HttpService.get$(`${Vars.host}/data/todos.json`).pipe(
-        first(),
-    ).subscribe(response => {
-        // console.log('AppComponent.items', response);
-        this.items = response.data;
-        this.pushChanges();
-    });
-    */
+    } // generic errors
 
 
     rxcomp.errors$.pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (error) {
