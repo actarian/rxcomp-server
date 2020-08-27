@@ -4,6 +4,8 @@ var cache_service_1 = require("./cache/cache.service");
 Object.defineProperty(exports, "CacheControlType", { enumerable: true, get: function () { return cache_service_1.CacheControlType; } });
 Object.defineProperty(exports, "CacheItem", { enumerable: true, get: function () { return cache_service_1.CacheItem; } });
 Object.defineProperty(exports, "CacheService", { enumerable: true, get: function () { return cache_service_1.default; } });
+var file_service_1 = require("./file/file.service");
+Object.defineProperty(exports, "FileService", { enumerable: true, get: function () { return file_service_1.default; } });
 var history_1 = require("./history/history");
 Object.defineProperty(exports, "RxHistory", { enumerable: true, get: function () { return history_1.RxHistory; } });
 var location_1 = require("./location/location");

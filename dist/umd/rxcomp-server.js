@@ -358,7 +358,6 @@ var CacheService = /*#__PURE__*/function () {
 
     try {
       var dirname = path.dirname(key);
-      console.log('existsSync', dirname);
 
       if (!fs.existsSync(dirname)) {
         return cacheItem;
@@ -383,13 +382,11 @@ var CacheService = /*#__PURE__*/function () {
     try {
       var json = this.serialize(cacheItem);
       var dirname = path.dirname(key);
-      console.log('existsSync', dirname);
 
       if (!fs.existsSync(dirname)) {
         fs.mkdirSync(dirname);
       }
 
-      console.log('writeFile', key);
       fs.writeFileSync(key, json, 'utf8');
     } catch (error) {
       throw error;
@@ -423,7 +420,6 @@ var CacheService = /*#__PURE__*/function () {
     return rxjs.Observable.create(function (observer) {
       var key = service.getPath(type, filename);
       var dirname = path.dirname(key);
-      console.log('existsSync', dirname);
 
       if (!fs.existsSync(dirname)) {
         observer.error("ENOENT: no such file or directory");
@@ -451,13 +447,11 @@ var CacheService = /*#__PURE__*/function () {
       var key = service.getPath(type, filename);
       var json = service.serialize(cacheItem);
       var dirname = path.dirname(key);
-      console.log('existsSync', dirname);
 
       if (!fs.existsSync(dirname)) {
         fs.mkdirSync(dirname);
       }
 
-      console.log('writeFile', key);
       fs.writeFile(key, json, 'utf8', function (error) {
         if (error) {
           observer.error(error);
@@ -503,8 +497,7 @@ var CacheService = /*#__PURE__*/function () {
     var key = (type + "-" + filename).toLowerCase();
     key = key.replace(/(\s+)|(\W+)/g, function () {
       return (arguments.length <= 1 ? undefined : arguments[1]) ? '' : '_';
-    }); // console.log('key', key);
-
+    });
     return key;
   };
 
@@ -521,7 +514,139 @@ Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
 Cache-Control: no-cache
 Connection: keep-alive
 Pragma: no-cache
-*/var RxDOMStringList = /*#__PURE__*/function (_Array) {
+*/var path$1 = require('path');
+
+var fs$1 = require('fs');
+
+var FileService = /*#__PURE__*/function () {
+  function FileService() {}
+
+  FileService.exists = function exists(pathname) {
+    return fs$1.existsSync(pathname);
+  };
+
+  FileService.exists$ = function exists$(pathname) {
+    return rxjs.Observable.create(function (observer) {
+      try {
+        fs$1.access(pathname, fs$1.constants.F_OK, function (error) {
+          var exists = !error;
+          observer.next(exists);
+          observer.complete();
+        });
+      } catch (error) {
+        console.log('FileService.exists$.error', error);
+        observer.next(false);
+        observer.complete(); // observer.error(error);
+      }
+    });
+  };
+
+  FileService.readFile = function readFile(pathname) {
+    var dirname = path$1.dirname(pathname);
+
+    if (!fs$1.existsSync(dirname)) {
+      return null;
+    }
+
+    return fs$1.readFileSync(pathname, 'utf8');
+  };
+
+  FileService.readFile$ = function readFile$(pathname) {
+    return rxjs.Observable.create(function (observer) {
+      try {
+        fs$1.readFile(pathname, 'utf8', function (error, data) {
+          // return observer.error(error);
+          observer.next(error ? null : data);
+          observer.complete();
+        }); // sync
+        // observer.next(this.readFile(pathname));
+        // observer.complete();
+      } catch (error) {
+        console.log('FileService.readFile$.error', error);
+        observer.next(null);
+        observer.complete(); // observer.error(error);
+      }
+    });
+  };
+
+  FileService.writeFile = function writeFile(pathname, content) {
+    try {
+      var dirname = path$1.dirname(pathname);
+
+      if (!fs$1.existsSync(dirname)) {
+        fs$1.mkdirSync(dirname);
+      }
+
+      fs$1.writeFileSync(pathname, content, 'utf8');
+      return true;
+    } catch (error) {
+      console.log('FileService.writeFile.error', error);
+      return false;
+    }
+  };
+
+  FileService.writeFile$ = function writeFile$(pathname, content) {
+    return rxjs.Observable.create(function (observer) {
+      try {
+        var dirname = path$1.dirname(pathname);
+        fs$1.mkdir(dirname, {
+          recursive: true
+        }, function (error) {
+          if (error) {
+            observer.next(false);
+            observer.complete();
+            return; // return observer.error(error);
+          }
+
+          fs$1.writeFile(pathname, content, 'utf8', function (error) {
+            observer.next(!error);
+            observer.complete();
+          });
+        }); // sync
+        // this.writeFile(pathname, content);
+        // observer.next(true);
+        // observer.complete();
+      } catch (error) {
+        console.log('FileService.writeFile$.error', error);
+        observer.next(false);
+        observer.complete(); // observer.error(error);
+      }
+    });
+  };
+
+  FileService.unlinkFile = function unlinkFile(pathname) {
+    try {
+      if (fs$1.existsSync(pathname)) {
+        fs$1.unlinkSync(pathname);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.log('FileService.unlinkFile.error', error);
+      return false;
+    }
+  };
+
+  FileService.unlinkFile$ = function unlinkFile$(pathname) {
+    return rxjs.Observable.create(function (observer) {
+      try {
+        fs$1.unlink(pathname, function (error) {
+          observer.next(!error);
+          observer.complete(); // return observer.error(error);
+        }); // sync
+        // this.unlinkFile(pathname);
+        // observer.next(true);
+        // observer.complete();
+      } catch (error) {
+        console.log('FileService.unlinkFile$.error', error);
+        observer.next(false); // observer.error(error);
+      }
+    });
+  };
+
+  return FileService;
+}();var RxDOMStringList = /*#__PURE__*/function (_Array) {
   _inheritsLoose(RxDOMStringList, _Array);
 
   function RxDOMStringList() {
@@ -2186,7 +2311,7 @@ function _cloneNode(source, deep, parentNode) {
   }
 
   return node;
-}var fs$1 = require('fs');
+}var fs$2 = require('fs');
 
 var ServerRequest = function ServerRequest(options) {
   if (options) {
@@ -2383,7 +2508,7 @@ function template$(request) {
         observer.complete();
       }
 
-      fs$1.readFile(src, request.vars.charset, function (error, template) {
+      fs$2.readFile(src, request.vars.charset, function (error, template) {
         if (error) {
           observer.error(error);
         } else {
@@ -2454,4 +2579,4 @@ var ServerModule = /*#__PURE__*/function (_Module) {
 ServerModule.meta = {
   declarations: [].concat(factories, pipes),
   exports: [].concat(factories, pipes)
-};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDOMStringList=RxDOMStringList;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxHistory=RxHistory;exports.RxLocation=RxLocation;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerRequest=ServerRequest;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=_querySelectorAll;exports.render$=render$;exports.template$=template$;Object.defineProperty(exports,'__esModule',{value:true});})));
+};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.FileService=FileService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDOMStringList=RxDOMStringList;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxHistory=RxHistory;exports.RxLocation=RxLocation;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerRequest=ServerRequest;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=_querySelectorAll;exports.render$=render$;exports.template$=template$;Object.defineProperty(exports,'__esModule',{value:true});})));

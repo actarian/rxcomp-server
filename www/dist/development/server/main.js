@@ -4360,7 +4360,6 @@ var CacheService = /*#__PURE__*/function () {
 
     try {
       var dirname = path.dirname(key);
-      console.log('existsSync', dirname);
 
       if (!fs.existsSync(dirname)) {
         return cacheItem;
@@ -4385,13 +4384,11 @@ var CacheService = /*#__PURE__*/function () {
     try {
       var json = this.serialize(cacheItem);
       var dirname = path.dirname(key);
-      console.log('existsSync', dirname);
 
       if (!fs.existsSync(dirname)) {
         fs.mkdirSync(dirname);
       }
 
-      console.log('writeFile', key);
       fs.writeFileSync(key, json, 'utf8');
     } catch (error) {
       throw error;
@@ -4425,7 +4422,6 @@ var CacheService = /*#__PURE__*/function () {
     return rxjs.Observable.create(function (observer) {
       var key = service.getPath(type, filename);
       var dirname = path.dirname(key);
-      console.log('existsSync', dirname);
 
       if (!fs.existsSync(dirname)) {
         observer.error("ENOENT: no such file or directory");
@@ -4453,13 +4449,11 @@ var CacheService = /*#__PURE__*/function () {
       var key = service.getPath(type, filename);
       var json = service.serialize(cacheItem);
       var dirname = path.dirname(key);
-      console.log('existsSync', dirname);
 
       if (!fs.existsSync(dirname)) {
         fs.mkdirSync(dirname);
       }
 
-      console.log('writeFile', key);
       fs.writeFile(key, json, 'utf8', function (error) {
         if (error) {
           observer.error(error);
@@ -4505,8 +4499,7 @@ var CacheService = /*#__PURE__*/function () {
     var key = (type + "-" + filename).toLowerCase();
     key = key.replace(/(\s+)|(\W+)/g, function () {
       return (arguments.length <= 1 ? undefined : arguments[1]) ? '' : '_';
-    }); // console.log('key', key);
-
+    });
     return key;
   };
 
@@ -4523,7 +4516,9 @@ Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
 Cache-Control: no-cache
 Connection: keep-alive
 Pragma: no-cache
-*/var RxDOMStringList = /*#__PURE__*/function (_Array) {
+*/var path$1 = require('path');
+
+var fs$1 = require('fs');var RxDOMStringList = /*#__PURE__*/function (_Array) {
   _inheritsLoose(RxDOMStringList, _Array);
 
   function RxDOMStringList() {
@@ -6116,7 +6111,7 @@ function _cloneNode(source, deep, parentNode) {
   }
 
   return node;
-}var fs$1 = require('fs');
+}var fs$2 = require('fs');
 
 var ServerRequest = function ServerRequest(options) {
   if (options) {
@@ -6313,7 +6308,7 @@ function template$(request) {
         observer.complete();
       }
 
-      fs$1.readFile(src, request.vars.charset, function (error, template) {
+      fs$2.readFile(src, request.vars.charset, function (error, template) {
         if (error) {
           observer.error(error);
         } else {

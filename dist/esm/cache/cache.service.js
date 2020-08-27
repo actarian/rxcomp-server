@@ -126,7 +126,6 @@ export default class CacheService {
         const key = this.getPath(type, filename);
         try {
             const dirname = path.dirname(key);
-            console.log('existsSync', dirname);
             if (!fs.existsSync(dirname)) {
                 return cacheItem;
             }
@@ -143,11 +142,9 @@ export default class CacheService {
         try {
             const json = this.serialize(cacheItem);
             const dirname = path.dirname(key);
-            console.log('existsSync', dirname);
             if (!fs.existsSync(dirname)) {
                 fs.mkdirSync(dirname);
             }
-            console.log('writeFile', key);
             fs.writeFileSync(key, json, 'utf8');
         }
         catch (error) {
@@ -171,7 +168,6 @@ export default class CacheService {
         return Observable.create(function (observer) {
             const key = service.getPath(type, filename);
             const dirname = path.dirname(key);
-            console.log('existsSync', dirname);
             if (!fs.existsSync(dirname)) {
                 observer.error(`ENOENT: no such file or directory`);
             }
@@ -193,11 +189,9 @@ export default class CacheService {
             const key = service.getPath(type, filename);
             const json = service.serialize(cacheItem);
             const dirname = path.dirname(key);
-            console.log('existsSync', dirname);
             if (!fs.existsSync(dirname)) {
                 fs.mkdirSync(dirname);
             }
-            console.log('writeFile', key);
             fs.writeFile(key, json, 'utf8', function (error) {
                 if (error) {
                     observer.error(error);
@@ -230,7 +224,6 @@ export default class CacheService {
     static getKey(type = 'cache', filename) {
         let key = `${type}-${filename}`.toLowerCase();
         key = key.replace(/(\s+)|(\W+)/g, function (...matches) { return matches[1] ? '' : '_'; });
-        // console.log('key', key);
         return key;
     }
 }

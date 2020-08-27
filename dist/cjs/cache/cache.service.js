@@ -145,7 +145,6 @@ var CacheService = /** @class */ (function () {
         var key = this.getPath(type, filename);
         try {
             var dirname = path.dirname(key);
-            console.log('existsSync', dirname);
             if (!fs.existsSync(dirname)) {
                 return cacheItem;
             }
@@ -163,11 +162,9 @@ var CacheService = /** @class */ (function () {
         try {
             var json = this.serialize(cacheItem);
             var dirname = path.dirname(key);
-            console.log('existsSync', dirname);
             if (!fs.existsSync(dirname)) {
                 fs.mkdirSync(dirname);
             }
-            console.log('writeFile', key);
             fs.writeFileSync(key, json, 'utf8');
         }
         catch (error) {
@@ -193,7 +190,6 @@ var CacheService = /** @class */ (function () {
         return rxjs_1.Observable.create(function (observer) {
             var key = service.getPath(type, filename);
             var dirname = path.dirname(key);
-            console.log('existsSync', dirname);
             if (!fs.existsSync(dirname)) {
                 observer.error("ENOENT: no such file or directory");
             }
@@ -216,11 +212,9 @@ var CacheService = /** @class */ (function () {
             var key = service.getPath(type, filename);
             var json = service.serialize(cacheItem);
             var dirname = path.dirname(key);
-            console.log('existsSync', dirname);
             if (!fs.existsSync(dirname)) {
                 fs.mkdirSync(dirname);
             }
-            console.log('writeFile', key);
             fs.writeFile(key, json, 'utf8', function (error) {
                 if (error) {
                     observer.error(error);
@@ -261,7 +255,6 @@ var CacheService = /** @class */ (function () {
             }
             return matches[1] ? '' : '_';
         });
-        // console.log('key', key);
         return key;
     };
     CacheService.cache_ = {};

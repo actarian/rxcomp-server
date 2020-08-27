@@ -36,22 +36,22 @@
     "serve": "node www/server/index.js"
   },
   "dependencies": {
-    "htmlparser2": "~4.1.0",
-    "rxjs": "~6.6.2",
-    "rxcomp": "~1.0.0-beta.12",
-    "tslib": "~2.0.0"
+    "htmlparser2": "4.1.0",
+    "rxjs": "6.6.2",
+    "rxcomp": "1.0.0-beta.13",
+    "tslib": "2.0.0"
   },
   "devDependencies": {
-    "@types/node": "~14.0.27",
-    "body-parser": "~1.19.0",
+    "@types/node": "14.0.27",
+    "body-parser": "1.19.0",
     "cross-fetch": "^3.0.5",
-    "events": "~3.2.0",
-    "express": "~4.17.1",
-    "express-graphql": "~0.11.0",
-    "graphql": "~15.3.0",
-    "gulpfile-config": "~1.0.0-alpha.13",
-    "https": "~1.0.0",
-    "typedoc": "~0.17.8",
-    "typescript": "~3.9.7"
+    "events": "3.2.0",
+    "express": "4.17.1",
+    "express-graphql": "0.11.0",
+    "graphql": "15.3.0",
+    "gulpfile-config": "1.0.0-alpha.13",
+    "https": "1.0.0",
+    "typedoc": "0.17.8",
+    "typescript": "3.9.7"
   }
 }
