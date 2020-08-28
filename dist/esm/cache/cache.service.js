@@ -1,6 +1,7 @@
-import { Observable } from "rxjs";
-const path = require('path');
-const fs = require('fs');
+import { decodeJson, encodeJson, Serializer } from "rxcomp";
+import { Observable, of } from "rxjs";
+import { map, switchMap } from "rxjs/operators";
+import FileService from "../file/file.service";
 export var CacheMode;
 (function (CacheMode) {
     CacheMode["Memory"] = "memory";
@@ -30,192 +31,198 @@ export class CacheItem {
             || this.maxAge === 0
             || (this.date.getTime() + (this.maxAge * 1000) < Date.now());
     }
+    static toData(cacheItem) {
+        return Serializer.encode(cacheItem, [encodeJson]);
+    }
+    static fromData(data) {
+        return new CacheItem(Serializer.decode(data, [decodeJson]));
+    }
 }
 export default class CacheService {
     static has(type = 'cache', filename) {
         let has = false;
-        switch (this.mode) {
-            case CacheMode.File:
-                has = this.hasFile(type, filename);
-                break;
-            case CacheMode.Memory:
-            default:
-                const key = this.getPath(type, filename);
-                has = Object.keys(this.cache_).indexOf(key) !== -1;
+        try {
+            const key = this.getPath(type, filename);
+            switch (this.mode) {
+                case CacheMode.File:
+                    has = FileService.exists(key);
+                    // has = this.hasFile(type, filename);
+                    break;
+                case CacheMode.Memory:
+                default:
+                    has = Object.keys(this.cache_).indexOf(key) !== -1;
+            }
+        }
+        catch (error) {
+            console.log('CacheService.has.error', error);
         }
         return has;
     }
     static get(type = 'cache', filename) {
         let value = null, cacheItem;
-        const key = this.getPath(type, filename);
-        switch (this.mode) {
-            case CacheMode.File:
-                if (this.hasFile(type, filename)) {
-                    cacheItem = this.readFile(type, filename);
-                    if (cacheItem) {
-                        if (cacheItem.expired) {
-                            this.unlinkFile(type, filename);
-                        }
-                        else {
-                            value = cacheItem === null || cacheItem === void 0 ? void 0 : cacheItem.value;
-                        }
-                    }
-                }
-                break;
-            case CacheMode.Memory:
-            default:
-                if (Object.keys(this.cache_).indexOf(key) !== -1) {
-                    const data = this.cache_[key];
-                    if (data) {
-                        cacheItem = new CacheItem(JSON.parse(data));
-                        if (cacheItem) {
+        try {
+            const key = this.getPath(type, filename);
+            switch (this.mode) {
+                case CacheMode.File:
+                    if (FileService.exists(key)) {
+                        const data = FileService.readFile(key);
+                        if (data) {
+                            cacheItem = CacheItem.fromData(data);
                             if (cacheItem.expired) {
-                                delete this.cache_[key];
+                                FileService.unlinkFile(key);
                             }
                             else {
-                                value = cacheItem.value;
+                                value = cacheItem === null || cacheItem === void 0 ? void 0 : cacheItem.value;
                             }
                         }
                     }
-                }
+                    break;
+                case CacheMode.Memory:
+                default:
+                    if (Object.keys(this.cache_).indexOf(key) !== -1) {
+                        const data = this.cache_[key];
+                        if (data) {
+                            cacheItem = CacheItem.fromData(data);
+                            if (cacheItem) {
+                                if (cacheItem.expired) {
+                                    delete this.cache_[key];
+                                }
+                                else {
+                                    value = cacheItem.value;
+                                }
+                            }
+                        }
+                    }
+            }
+        }
+        catch (error) {
+            console.log('CacheService.get.error', error);
         }
         return value;
     }
     static set(type = 'cache', filename, value, maxAge = 0, cacheControl = CacheControlType.Public) {
-        const key = this.getPath(type, filename);
-        const cacheItem = new CacheItem({ value, maxAge, cacheControl });
-        switch (this.mode) {
-            case CacheMode.File:
-                this.writeFile(type, filename, cacheItem);
-                break;
-            case CacheMode.Memory:
-            default:
-                const serialized = this.serialize(cacheItem);
-                this.cache_[key] = serialized;
+        try {
+            const key = this.getPath(type, filename);
+            const cacheItem = new CacheItem({ value, maxAge, cacheControl });
+            let data;
+            switch (this.mode) {
+                case CacheMode.File:
+                    data = CacheItem.toData(cacheItem);
+                    if (data) {
+                        FileService.writeFile(key, data);
+                    }
+                    break;
+                case CacheMode.Memory:
+                default:
+                    data = CacheItem.toData(cacheItem);
+                    if (data) {
+                        this.cache_[key] = data;
+                    }
+            }
+        }
+        catch (error) {
+            console.log('CacheService.set.error', error);
         }
         return value;
     }
     static delete(type = 'cache', filename) {
-        switch (this.mode) {
-            case CacheMode.File:
-                this.unlinkFile(type, filename);
-                break;
-            case CacheMode.Memory:
-            default:
-                const key = this.getPath(type, filename);
-                if (Object.keys(this.cache_).indexOf(key) !== -1) {
-                    delete this.cache_[key];
-                }
-        }
-    }
-    static hasFile(type = 'cache', filename) {
-        let has = false;
-        const key = this.getPath(type, filename);
         try {
-            if (fs.existsSync(key)) {
-                has = true;
+            const key = this.getPath(type, filename);
+            switch (this.mode) {
+                case CacheMode.File:
+                    FileService.unlinkFile(key);
+                    break;
+                case CacheMode.Memory:
+                default:
+                    if (Object.keys(this.cache_).indexOf(key) !== -1) {
+                        delete this.cache_[key];
+                    }
             }
         }
         catch (error) {
-            throw error;
-        }
-        return has;
-    }
-    static readFile(type = 'cache', filename) {
-        let cacheItem = null;
-        const key = this.getPath(type, filename);
-        try {
-            const dirname = path.dirname(key);
-            if (!fs.existsSync(dirname)) {
-                return cacheItem;
-            }
-            const json = fs.readFileSync(key, 'utf8');
-            cacheItem = new CacheItem(JSON.parse(json));
-        }
-        catch (error) {
-            throw error;
-        }
-        return cacheItem;
-    }
-    static writeFile(type = 'cache', filename, cacheItem) {
-        const key = this.getPath(type, filename);
-        try {
-            const json = this.serialize(cacheItem);
-            const dirname = path.dirname(key);
-            if (!fs.existsSync(dirname)) {
-                fs.mkdirSync(dirname);
-            }
-            fs.writeFileSync(key, json, 'utf8');
-        }
-        catch (error) {
-            throw error;
-        }
-        return cacheItem;
-    }
-    static unlinkFile(type = 'cache', filename) {
-        const key = this.getPath(type, filename);
-        try {
-            if (fs.existsSync(key)) {
-                fs.unlinkSync(key);
-            }
-        }
-        catch (error) {
-            throw error;
+            console.log('CacheService.delete.error', error);
         }
     }
-    static readFile$(type = 'cache', filename) {
-        const service = this;
-        return Observable.create(function (observer) {
-            const key = service.getPath(type, filename);
-            const dirname = path.dirname(key);
-            if (!fs.existsSync(dirname)) {
-                observer.error(`ENOENT: no such file or directory`);
+    static has$(type = 'cache', filename) {
+        const key$ = Observable.create((observer) => {
+            const key = this.getPath(type, filename);
+            observer.next(key);
+            observer.complete();
+        });
+        return key$.pipe(switchMap((key) => {
+            if (this.mode === CacheMode.File) {
+                return FileService.exists$(key);
             }
-            fs.readFile(key, 'utf8', function (error, json) {
-                if (error) {
-                    observer.error(error);
+            else {
+                return of(Object.keys(this.cache_).indexOf(key) !== -1);
+            }
+        }));
+    }
+    static get$(type = 'cache', filename) {
+        let key;
+        const key$ = Observable.create((observer) => {
+            key = this.getPath(type, filename);
+            observer.next(key);
+            observer.complete();
+        });
+        return key$.pipe(switchMap((key) => {
+            if (this.mode === CacheMode.File) {
+                return FileService.readFile$(key);
+            }
+            else {
+                return of(this.cache_[key]);
+            }
+        }), switchMap((data) => {
+            const cacheItem = data ? CacheItem.fromData(data) : null;
+            if (cacheItem && cacheItem.expired) {
+                return FileService.unlinkFile$(key).pipe(map(() => null));
+            }
+            return of(cacheItem ? cacheItem.value : null);
+        }));
+    }
+    static set$(type = 'cache', filename, value, maxAge = 0, cacheControl = CacheControlType.Public) {
+        let key, cacheItem, data;
+        const data$ = Observable.create((observer) => {
+            key = this.getPath(type, filename);
+            cacheItem = new CacheItem({ value, maxAge, cacheControl });
+            data = CacheItem.toData(cacheItem);
+            observer.next(data);
+            observer.complete();
+        });
+        return data$.pipe(switchMap((data) => {
+            if (data) {
+                if (this.mode === CacheMode.File) {
+                    return FileService.writeFile$(key, data);
                 }
                 else {
-                    const cacheItem = new CacheItem(JSON.parse(json));
-                    observer.next(cacheItem);
-                    observer.complete();
+                    this.cache_[key] = data;
+                    return of(true);
                 }
-            });
-        });
-    }
-    static writeFile$(type = 'cache', filename, cacheItem) {
-        const service = this;
-        return Observable.create(function (observer) {
-            const key = service.getPath(type, filename);
-            const json = service.serialize(cacheItem);
-            const dirname = path.dirname(key);
-            if (!fs.existsSync(dirname)) {
-                fs.mkdirSync(dirname);
             }
-            fs.writeFile(key, json, 'utf8', function (error) {
-                if (error) {
-                    observer.error(error);
-                }
-                else {
-                    observer.next(cacheItem);
-                    observer.complete();
-                }
-            });
-        });
-    }
-    static serialize(item) {
-        const pool = new Map();
-        const serialized = JSON.stringify(item, (key, value) => {
-            if (value && typeof value === 'object') {
-                if (pool.has(value)) {
-                    return;
-                }
-                pool.set(value, true);
+            else {
+                return of(false);
             }
-            return value;
-        }, 0);
-        pool.clear();
-        return serialized;
+        }));
+    }
+    static delete$(type = 'cache', filename) {
+        let key;
+        const key$ = Observable.create((observer) => {
+            key = this.getPath(type, filename);
+            observer.next(key);
+            observer.complete();
+        });
+        return key$.pipe(switchMap((key) => {
+            if (this.mode === CacheMode.File) {
+                return FileService.unlinkFile$(key);
+            }
+            else if (Object.keys(this.cache_).indexOf(key) !== -1) {
+                delete this.cache_[key];
+                return of(true);
+            }
+            else {
+                return of(false);
+            }
+        }));
     }
     static getPath(type = 'cache', filename) {
         const key = this.getKey(type, filename);

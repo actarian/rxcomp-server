@@ -1,11 +1,11 @@
 import { isPlatformServer, Module, ModuleError, Platform } from 'rxcomp';
-import { Observable, Observer } from 'rxjs';
+import { Observable, Observer, of, throwError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import CacheService, { CacheControlType, CacheMode } from '../cache/cache.service';
+import FileService from '../file/file.service';
 import { IHistory, RxHistory } from '../history/history';
 import { ILocation, RxLocation } from '../location/location';
 import { parse, RxDocument, RxElement, RxText } from '../nodes/nodes';
-const fs = require('fs');
 
 export interface IServerVars {
 	name?: string;
@@ -198,62 +198,63 @@ export default class Server extends Platform {
 }
 
 export function render$(iRequest: IServerRequest, renderRequest$: (request: ServerRequest) => Observable<ServerResponse>): Observable<ServerResponse> {
-	return Observable.create(function (observer: Observer<ServerResponse>) {
-		const request: ServerRequest = new ServerRequest(iRequest);
-		if (request.vars.cacheMode) {
-			CacheService.mode = request.vars.cacheMode;
-		}
-		if (request.vars.cache) {
-			CacheService.folder = request.vars.cache;
-		}
-		const render = CacheService.get('render', request.url);
-		console.log('Server.render$.fromCache', 'route', request.url, !!render);
-		if (render) {
-			observer.next(render);
-			return observer.complete();
-		}
-		template$(request).pipe(
-			switchMap((template: string) => {
-				// console.log('template!', template);
-				request.template = template;
-				return renderRequest$(request);
-			})
-		).subscribe(
-			(response: ServerResponse) => {
-				CacheService.set('render', request.url, response, response.maxAge, response.cacheControl);
-				observer.next(response);
-				observer.complete();
-			},
-			(error) => {
-				observer.error(error);
-			}
-		);
+	let request: ServerRequest;
+	const request$: Observable<ServerRequest> = Observable.create(function (observer: Observer<ServerRequest>) {
+		request = new ServerRequest(iRequest);
+		observer.next(request);
+		observer.complete();
 	});
+	return request$.pipe(
+		switchMap((request: ServerRequest) => fromCache$(request)),
+		switchMap((response: ServerResponse | null) => {
+			console.log('Server.render$.fromCache', 'route', request.url, !!response);
+			if (response) {
+				return of(response);
+			} else {
+				return fromRenderRequest$(request, renderRequest$);
+			}
+		})
+	);
+}
+
+export function fromCache$(request: ServerRequest): Observable<ServerResponse | null> {
+	if (request.vars.cacheMode) {
+		CacheService.mode = request.vars.cacheMode;
+	}
+	if (request.vars.cache) {
+		CacheService.folder = request.vars.cache;
+	}
+	return CacheService.get$<ServerResponse | null>('render', request.url);
+}
+
+export function fromRenderRequest$(request: ServerRequest, renderRequest$: (request: ServerRequest) => Observable<ServerResponse>): Observable<ServerResponse> {
+	return template$(request).pipe(
+		switchMap((template: string) => {
+			request.template = template;
+			return renderRequest$(request);
+		}),
+		switchMap((response: ServerResponse) => {
+			return CacheService.set$('render', request.url, response, response.maxAge, response.cacheControl).pipe(
+				switchMap(() => of(response)),
+			) as Observable<ServerResponse>;
+		}),
+	)
 }
 
 export function template$(request: ServerRequest): Observable<string> {
-	return Observable.create(function (observer: Observer<string>) {
-		const src = request.vars.template;
+	const templateSrc$ = Observable.create(function (observer: Observer<string>) {
+		const src: string | undefined = request.vars.template;
 		if (src) {
-			const template = CacheService.get('template', src);
-			console.log('Server.template$.fromCache', 'path', src, !!template);
-			if (template) {
-				observer.next(template);
-				observer.complete();
-			}
-			fs.readFile(src, request.vars.charset, function (error: NodeJS.ErrnoException, template: string) {
-				if (error) {
-					observer.error(error);
-				} else {
-					CacheService.set('template', src, template, 3600);
-					observer.next(template);
-					observer.complete();
-				}
-			});
+			observer.next(src);
+			observer.complete();
 		} else {
-			observer.error(new Error('ServerError: missing template'));
+			observer.error(new Error('ServerError: you must provide a template path'));
 		}
 	});
+	return templateSrc$.pipe(
+		switchMap((src: string) => FileService.readFile$(src)),
+		switchMap((template: string | null) => template ? of(template) : throwError(new Error(`ServerError: missing template at path ${request.vars.template}`)))
+	);
 }
 
 export function bootstrap$(moduleFactory: typeof Module, request: ServerRequest): Observable<ServerResponse> {

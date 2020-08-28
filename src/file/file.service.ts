@@ -4,11 +4,11 @@ const fs = require('fs');
 
 export default class FileService {
 
-	protected static exists(pathname: string): boolean {
+	static exists(pathname: string): boolean {
 		return fs.existsSync(pathname);
 	}
 
-	protected static exists$(pathname: string): Observable<boolean> {
+	static exists$(pathname: string): Observable<boolean> {
 		return Observable.create((observer: Observer<boolean>) => {
 			try {
 				fs.access(pathname, fs.constants.F_OK, (error: Error) => {
@@ -25,7 +25,7 @@ export default class FileService {
 		});
 	}
 
-	protected static readFile(pathname: string): string | null {
+	static readFile(pathname: string): string | null {
 		const dirname: string = path.dirname(pathname);
 		if (!fs.existsSync(dirname)) {
 			return null;
@@ -33,7 +33,7 @@ export default class FileService {
 		return fs.readFileSync(pathname, 'utf8');
 	}
 
-	protected static readFile$(pathname: string): Observable<string | null> {
+	static readFile$(pathname: string): Observable<string | null> {
 		return Observable.create((observer: Observer<string | null>) => {
 			try {
 				fs.readFile(pathname, 'utf8', (error: Error, data: string) => {
@@ -53,7 +53,7 @@ export default class FileService {
 		});
 	}
 
-	protected static writeFile(pathname: string, content: string): boolean {
+	static writeFile(pathname: string, content: string): boolean {
 		try {
 			const dirname: string = path.dirname(pathname);
 			if (!fs.existsSync(dirname)) {
@@ -67,7 +67,7 @@ export default class FileService {
 		}
 	}
 
-	protected static writeFile$(pathname: string, content: string): Observable<boolean> {
+	static writeFile$(pathname: string, content: string): Observable<boolean> {
 		return Observable.create((observer: Observer<boolean>) => {
 			try {
 				const dirname: string = path.dirname(pathname);
@@ -96,7 +96,7 @@ export default class FileService {
 		});
 	}
 
-	protected static unlinkFile(pathname: string): boolean {
+	static unlinkFile(pathname: string): boolean {
 		try {
 			if (fs.existsSync(pathname)) {
 				fs.unlinkSync(pathname);
@@ -110,7 +110,7 @@ export default class FileService {
 		}
 	}
 
-	protected static unlinkFile$(pathname: string): Observable<boolean> {
+	static unlinkFile$(pathname: string): Observable<boolean> {
 		return Observable.create((observer: Observer<boolean>) => {
 			try {
 				fs.unlink(pathname, (error: Error) => {

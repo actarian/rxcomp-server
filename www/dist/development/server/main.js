@@ -4162,7 +4162,135 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
 
 var fs = require('fs');
 
-var CacheMode;
+var FileService = /*#__PURE__*/function () {
+  function FileService() {}
+
+  FileService.exists = function exists(pathname) {
+    return fs.existsSync(pathname);
+  };
+
+  FileService.exists$ = function exists$(pathname) {
+    return rxjs.Observable.create(function (observer) {
+      try {
+        fs.access(pathname, fs.constants.F_OK, function (error) {
+          var exists = !error;
+          observer.next(exists);
+          observer.complete();
+        });
+      } catch (error) {
+        console.log('FileService.exists$.error', error);
+        observer.next(false);
+        observer.complete(); // observer.error(error);
+      }
+    });
+  };
+
+  FileService.readFile = function readFile(pathname) {
+    var dirname = path.dirname(pathname);
+
+    if (!fs.existsSync(dirname)) {
+      return null;
+    }
+
+    return fs.readFileSync(pathname, 'utf8');
+  };
+
+  FileService.readFile$ = function readFile$(pathname) {
+    return rxjs.Observable.create(function (observer) {
+      try {
+        fs.readFile(pathname, 'utf8', function (error, data) {
+          // return observer.error(error);
+          observer.next(error ? null : data);
+          observer.complete();
+        }); // sync
+        // observer.next(this.readFile(pathname));
+        // observer.complete();
+      } catch (error) {
+        console.log('FileService.readFile$.error', error);
+        observer.next(null);
+        observer.complete(); // observer.error(error);
+      }
+    });
+  };
+
+  FileService.writeFile = function writeFile(pathname, content) {
+    try {
+      var dirname = path.dirname(pathname);
+
+      if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname);
+      }
+
+      fs.writeFileSync(pathname, content, 'utf8');
+      return true;
+    } catch (error) {
+      console.log('FileService.writeFile.error', error);
+      return false;
+    }
+  };
+
+  FileService.writeFile$ = function writeFile$(pathname, content) {
+    return rxjs.Observable.create(function (observer) {
+      try {
+        var dirname = path.dirname(pathname);
+        fs.mkdir(dirname, {
+          recursive: true
+        }, function (error) {
+          if (error) {
+            observer.next(false);
+            observer.complete();
+            return; // return observer.error(error);
+          }
+
+          fs.writeFile(pathname, content, 'utf8', function (error) {
+            observer.next(!error);
+            observer.complete();
+          });
+        }); // sync
+        // this.writeFile(pathname, content);
+        // observer.next(true);
+        // observer.complete();
+      } catch (error) {
+        console.log('FileService.writeFile$.error', error);
+        observer.next(false);
+        observer.complete(); // observer.error(error);
+      }
+    });
+  };
+
+  FileService.unlinkFile = function unlinkFile(pathname) {
+    try {
+      if (fs.existsSync(pathname)) {
+        fs.unlinkSync(pathname);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.log('FileService.unlinkFile.error', error);
+      return false;
+    }
+  };
+
+  FileService.unlinkFile$ = function unlinkFile$(pathname) {
+    return rxjs.Observable.create(function (observer) {
+      try {
+        fs.unlink(pathname, function (error) {
+          observer.next(!error);
+          observer.complete(); // return observer.error(error);
+        }); // sync
+        // this.unlinkFile(pathname);
+        // observer.next(true);
+        // observer.complete();
+      } catch (error) {
+        console.log('FileService.unlinkFile$.error', error);
+        observer.next(false); // observer.error(error);
+      }
+    });
+  };
+
+  return FileService;
+}();var CacheMode;
 
 (function (CacheMode) {
   CacheMode["Memory"] = "memory";
@@ -4192,6 +4320,14 @@ var CacheItem = /*#__PURE__*/function () {
     }
   }
 
+  CacheItem.toData = function toData(cacheItem) {
+    return rxcomp.Serializer.encode(cacheItem, [rxcomp.encodeJson]);
+  };
+
+  CacheItem.fromData = function fromData(data) {
+    return new CacheItem(rxcomp.Serializer.decode(data, [rxcomp.decodeJson]));
+  };
+
   _createClass(CacheItem, [{
     key: "expired",
     get: function get() {
@@ -4212,15 +4348,21 @@ var CacheService = /*#__PURE__*/function () {
 
     var has = false;
 
-    switch (this.mode) {
-      case CacheMode.File:
-        has = this.hasFile(type, filename);
-        break;
+    try {
+      var key = this.getPath(type, filename);
 
-      case CacheMode.Memory:
-      default:
-        var key = this.getPath(type, filename);
-        has = Object.keys(this.cache_).indexOf(key) !== -1;
+      switch (this.mode) {
+        case CacheMode.File:
+          has = FileService.exists(key); // has = this.hasFile(type, filename);
+
+          break;
+
+        case CacheMode.Memory:
+        default:
+          has = Object.keys(this.cache_).indexOf(key) !== -1;
+      }
+    } catch (error) {
+      console.log('CacheService.has.error', error);
     }
 
     return has;
@@ -4233,44 +4375,51 @@ var CacheService = /*#__PURE__*/function () {
 
     var value = null,
         cacheItem;
-    var key = this.getPath(type, filename);
 
-    switch (this.mode) {
-      case CacheMode.File:
-        if (this.hasFile(type, filename)) {
-          cacheItem = this.readFile(type, filename);
+    try {
+      var key = this.getPath(type, filename);
 
-          if (cacheItem) {
-            if (cacheItem.expired) {
-              this.unlinkFile(type, filename);
-            } else {
-              var _cacheItem;
+      switch (this.mode) {
+        case CacheMode.File:
+          if (FileService.exists(key)) {
+            var data = FileService.readFile(key);
 
-              value = (_cacheItem = cacheItem) == null ? void 0 : _cacheItem.value;
-            }
-          }
-        }
+            if (data) {
+              cacheItem = CacheItem.fromData(data);
 
-        break;
-
-      case CacheMode.Memory:
-      default:
-        if (Object.keys(this.cache_).indexOf(key) !== -1) {
-          var data = this.cache_[key];
-
-          if (data) {
-            cacheItem = new CacheItem(JSON.parse(data));
-
-            if (cacheItem) {
               if (cacheItem.expired) {
-                delete this.cache_[key];
+                FileService.unlinkFile(key);
               } else {
-                value = cacheItem.value;
+                var _cacheItem;
+
+                value = (_cacheItem = cacheItem) == null ? void 0 : _cacheItem.value;
               }
             }
           }
-        }
 
+          break;
+
+        case CacheMode.Memory:
+        default:
+          if (Object.keys(this.cache_).indexOf(key) !== -1) {
+            var _data = this.cache_[key];
+
+            if (_data) {
+              cacheItem = CacheItem.fromData(_data);
+
+              if (cacheItem) {
+                if (cacheItem.expired) {
+                  delete this.cache_[key];
+                } else {
+                  value = cacheItem.value;
+                }
+              }
+            }
+          }
+
+      }
+    } catch (error) {
+      console.log('CacheService.get.error', error);
     }
 
     return value;
@@ -4289,22 +4438,36 @@ var CacheService = /*#__PURE__*/function () {
       cacheControl = CacheControlType.Public;
     }
 
-    var key = this.getPath(type, filename);
-    var cacheItem = new CacheItem({
-      value: value,
-      maxAge: maxAge,
-      cacheControl: cacheControl
-    });
+    try {
+      var key = this.getPath(type, filename);
+      var cacheItem = new CacheItem({
+        value: value,
+        maxAge: maxAge,
+        cacheControl: cacheControl
+      });
+      var data;
 
-    switch (this.mode) {
-      case CacheMode.File:
-        this.writeFile(type, filename, cacheItem);
-        break;
+      switch (this.mode) {
+        case CacheMode.File:
+          data = CacheItem.toData(cacheItem);
 
-      case CacheMode.Memory:
-      default:
-        var serialized = this.serialize(cacheItem);
-        this.cache_[key] = serialized;
+          if (data) {
+            FileService.writeFile(key, data);
+          }
+
+          break;
+
+        case CacheMode.Memory:
+        default:
+          data = CacheItem.toData(cacheItem);
+
+          if (data) {
+            this.cache_[key] = data;
+          }
+
+      }
+    } catch (error) {
+      console.log('CacheService.set.error', error);
     }
 
     return value;
@@ -4315,171 +4478,144 @@ var CacheService = /*#__PURE__*/function () {
       type = 'cache';
     }
 
-    switch (this.mode) {
-      case CacheMode.File:
-        this.unlinkFile(type, filename);
-        break;
-
-      case CacheMode.Memory:
-      default:
-        var key = this.getPath(type, filename);
-
-        if (Object.keys(this.cache_).indexOf(key) !== -1) {
-          delete this.cache_[key];
-        }
-
-    }
-  };
-
-  CacheService.hasFile = function hasFile(type, filename) {
-    if (type === void 0) {
-      type = 'cache';
-    }
-
-    var has = false;
-    var key = this.getPath(type, filename);
-
     try {
-      if (fs.existsSync(key)) {
-        has = true;
+      var key = this.getPath(type, filename);
+
+      switch (this.mode) {
+        case CacheMode.File:
+          FileService.unlinkFile(key);
+          break;
+
+        case CacheMode.Memory:
+        default:
+          if (Object.keys(this.cache_).indexOf(key) !== -1) {
+            delete this.cache_[key];
+          }
+
       }
     } catch (error) {
-      throw error;
+      console.log('CacheService.delete.error', error);
     }
-
-    return has;
   };
 
-  CacheService.readFile = function readFile(type, filename) {
+  CacheService.has$ = function has$(type, filename) {
+    var _this = this;
+
     if (type === void 0) {
       type = 'cache';
     }
 
-    var cacheItem = null;
-    var key = this.getPath(type, filename);
+    var key$ = rxjs.Observable.create(function (observer) {
+      var key = _this.getPath(type, filename);
 
-    try {
-      var dirname = path.dirname(key);
-
-      if (!fs.existsSync(dirname)) {
-        return cacheItem;
-      }
-
-      var json = fs.readFileSync(key, 'utf8');
-      cacheItem = new CacheItem(JSON.parse(json));
-    } catch (error) {
-      throw error;
-    }
-
-    return cacheItem;
-  };
-
-  CacheService.writeFile = function writeFile(type, filename, cacheItem) {
-    if (type === void 0) {
-      type = 'cache';
-    }
-
-    var key = this.getPath(type, filename);
-
-    try {
-      var json = this.serialize(cacheItem);
-      var dirname = path.dirname(key);
-
-      if (!fs.existsSync(dirname)) {
-        fs.mkdirSync(dirname);
-      }
-
-      fs.writeFileSync(key, json, 'utf8');
-    } catch (error) {
-      throw error;
-    }
-
-    return cacheItem;
-  };
-
-  CacheService.unlinkFile = function unlinkFile(type, filename) {
-    if (type === void 0) {
-      type = 'cache';
-    }
-
-    var key = this.getPath(type, filename);
-
-    try {
-      if (fs.existsSync(key)) {
-        fs.unlinkSync(key);
-      }
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  CacheService.readFile$ = function readFile$(type, filename) {
-    if (type === void 0) {
-      type = 'cache';
-    }
-
-    var service = this;
-    return rxjs.Observable.create(function (observer) {
-      var key = service.getPath(type, filename);
-      var dirname = path.dirname(key);
-
-      if (!fs.existsSync(dirname)) {
-        observer.error("ENOENT: no such file or directory");
-      }
-
-      fs.readFile(key, 'utf8', function (error, json) {
-        if (error) {
-          observer.error(error);
-        } else {
-          var cacheItem = new CacheItem(JSON.parse(json));
-          observer.next(cacheItem);
-          observer.complete();
-        }
-      });
+      observer.next(key);
+      observer.complete();
     });
+    return key$.pipe(operators.switchMap(function (key) {
+      if (_this.mode === CacheMode.File) {
+        return FileService.exists$(key);
+      } else {
+        return rxjs.of(Object.keys(_this.cache_).indexOf(key) !== -1);
+      }
+    }));
   };
 
-  CacheService.writeFile$ = function writeFile$(type, filename, cacheItem) {
+  CacheService.get$ = function get$(type, filename) {
+    var _this2 = this;
+
     if (type === void 0) {
       type = 'cache';
     }
 
-    var service = this;
-    return rxjs.Observable.create(function (observer) {
-      var key = service.getPath(type, filename);
-      var json = service.serialize(cacheItem);
-      var dirname = path.dirname(key);
+    var key;
+    var key$ = rxjs.Observable.create(function (observer) {
+      key = _this2.getPath(type, filename);
+      observer.next(key);
+      observer.complete();
+    });
+    return key$.pipe(operators.switchMap(function (key) {
+      if (_this2.mode === CacheMode.File) {
+        return FileService.readFile$(key);
+      } else {
+        return rxjs.of(_this2.cache_[key]);
+      }
+    }), operators.switchMap(function (data) {
+      var cacheItem = data ? CacheItem.fromData(data) : null;
 
-      if (!fs.existsSync(dirname)) {
-        fs.mkdirSync(dirname);
+      if (cacheItem && cacheItem.expired) {
+        return FileService.unlinkFile$(key).pipe(operators.map(function () {
+          return null;
+        }));
       }
 
-      fs.writeFile(key, json, 'utf8', function (error) {
-        if (error) {
-          observer.error(error);
-        } else {
-          observer.next(cacheItem);
-          observer.complete();
-        }
-      });
-    });
+      return rxjs.of(cacheItem ? cacheItem.value : null);
+    }));
   };
 
-  CacheService.serialize = function serialize(item) {
-    var pool = new Map();
-    var serialized = JSON.stringify(item, function (key, value) {
-      if (value && typeof value === 'object') {
-        if (pool.has(value)) {
-          return;
+  CacheService.set$ = function set$(type, filename, value, maxAge, cacheControl) {
+    var _this3 = this;
+
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    if (maxAge === void 0) {
+      maxAge = 0;
+    }
+
+    if (cacheControl === void 0) {
+      cacheControl = CacheControlType.Public;
+    }
+
+    var key, cacheItem, data;
+    var data$ = rxjs.Observable.create(function (observer) {
+      key = _this3.getPath(type, filename);
+      cacheItem = new CacheItem({
+        value: value,
+        maxAge: maxAge,
+        cacheControl: cacheControl
+      });
+      data = CacheItem.toData(cacheItem);
+      observer.next(data);
+      observer.complete();
+    });
+    return data$.pipe(operators.switchMap(function (data) {
+      if (data) {
+        if (_this3.mode === CacheMode.File) {
+          return FileService.writeFile$(key, data);
+        } else {
+          _this3.cache_[key] = data;
+          return rxjs.of(true);
         }
-
-        pool.set(value, true);
+      } else {
+        return rxjs.of(false);
       }
+    }));
+  };
 
-      return value;
-    }, 0);
-    pool.clear();
-    return serialized;
+  CacheService.delete$ = function delete$(type, filename) {
+    var _this4 = this;
+
+    if (type === void 0) {
+      type = 'cache';
+    }
+
+    var key;
+    var key$ = rxjs.Observable.create(function (observer) {
+      key = _this4.getPath(type, filename);
+      observer.next(key);
+      observer.complete();
+    });
+    return key$.pipe(operators.switchMap(function (key) {
+      if (_this4.mode === CacheMode.File) {
+        return FileService.unlinkFile$(key);
+      } else if (Object.keys(_this4.cache_).indexOf(key) !== -1) {
+        delete _this4.cache_[key];
+        return rxjs.of(true);
+      } else {
+        return rxjs.of(false);
+      }
+    }));
   };
 
   CacheService.getPath = function getPath(type, filename) {
@@ -4516,9 +4652,7 @@ Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
 Cache-Control: no-cache
 Connection: keep-alive
 Pragma: no-cache
-*/var path$1 = require('path');
-
-var fs$1 = require('fs');var RxDOMStringList = /*#__PURE__*/function (_Array) {
+*/var RxDOMStringList = /*#__PURE__*/function (_Array) {
   _inheritsLoose(RxDOMStringList, _Array);
 
   function RxDOMStringList() {
@@ -6111,9 +6245,7 @@ function _cloneNode(source, deep, parentNode) {
   }
 
   return node;
-}var fs$2 = require('fs');
-
-var ServerRequest = function ServerRequest(options) {
+}var ServerRequest = function ServerRequest(options) {
   if (options) {
     Object.assign(this, options);
   }
@@ -6263,64 +6395,61 @@ Server.render$ = render$;
 Server.template$ = template$;
 Server.bootstrap$ = bootstrap$;
 function render$(iRequest, renderRequest$) {
-  return rxjs.Observable.create(function (observer) {
-    var request = new ServerRequest(iRequest);
-
-    if (request.vars.cacheMode) {
-      CacheService.mode = request.vars.cacheMode;
-    }
-
-    if (request.vars.cache) {
-      CacheService.folder = request.vars.cache;
-    }
-
-    var render = CacheService.get('render', request.url);
-    console.log('Server.render$.fromCache', 'route', request.url, !!render);
-
-    if (render) {
-      observer.next(render);
-      return observer.complete();
-    }
-
-    template$(request).pipe(operators.switchMap(function (template) {
-      // console.log('template!', template);
-      request.template = template;
-      return renderRequest$(request);
-    })).subscribe(function (response) {
-      CacheService.set('render', request.url, response, response.maxAge, response.cacheControl);
-      observer.next(response);
-      observer.complete();
-    }, function (error) {
-      observer.error(error);
-    });
+  var request;
+  var request$ = rxjs.Observable.create(function (observer) {
+    request = new ServerRequest(iRequest);
+    observer.next(request);
+    observer.complete();
   });
+  return request$.pipe(operators.switchMap(function (request) {
+    return fromCache$(request);
+  }), operators.switchMap(function (response) {
+    console.log('Server.render$.fromCache', 'route', request.url, !!response);
+
+    if (response) {
+      return rxjs.of(response);
+    } else {
+      return fromRenderRequest$(request, renderRequest$);
+    }
+  }));
+}
+function fromCache$(request) {
+  if (request.vars.cacheMode) {
+    CacheService.mode = request.vars.cacheMode;
+  }
+
+  if (request.vars.cache) {
+    CacheService.folder = request.vars.cache;
+  }
+
+  return CacheService.get$('render', request.url);
+}
+function fromRenderRequest$(request, renderRequest$) {
+  return template$(request).pipe(operators.switchMap(function (template) {
+    request.template = template;
+    return renderRequest$(request);
+  }), operators.switchMap(function (response) {
+    return CacheService.set$('render', request.url, response, response.maxAge, response.cacheControl).pipe(operators.switchMap(function () {
+      return rxjs.of(response);
+    }));
+  }));
 }
 function template$(request) {
-  return rxjs.Observable.create(function (observer) {
+  var templateSrc$ = rxjs.Observable.create(function (observer) {
     var src = request.vars.template;
 
     if (src) {
-      var template = CacheService.get('template', src);
-      console.log('Server.template$.fromCache', 'path', src, !!template);
-
-      if (template) {
-        observer.next(template);
-        observer.complete();
-      }
-
-      fs$2.readFile(src, request.vars.charset, function (error, template) {
-        if (error) {
-          observer.error(error);
-        } else {
-          CacheService.set('template', src, template, 3600);
-          observer.next(template);
-          observer.complete();
-        }
-      });
+      observer.next(src);
+      observer.complete();
     } else {
-      observer.error(new Error('ServerError: missing template'));
+      observer.error(new Error('ServerError: you must provide a template path'));
     }
   });
+  return templateSrc$.pipe(operators.switchMap(function (src) {
+    return FileService.readFile$(src);
+  }), operators.switchMap(function (template) {
+    return template ? rxjs.of(template) : rxjs.throwError(new Error("ServerError: missing template at path " + request.vars.template));
+  }));
 }
 function bootstrap$(moduleFactory, request) {
   // console.log('Server.bootstrap$', request);

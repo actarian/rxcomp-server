@@ -22,6 +22,8 @@ export declare class CacheItem {
     cacheControl: CacheControlType;
     get expired(): boolean;
     constructor(options?: ICacheItem);
+    static toData(cacheItem: CacheItem): string | undefined;
+    static fromData(data: string): CacheItem;
 }
 export default class CacheService {
     private static cache_;
@@ -31,13 +33,10 @@ export default class CacheService {
     static get(type: string | undefined, filename: string): any;
     static set(type: string | undefined, filename: string, value: any, maxAge?: number, cacheControl?: CacheControlType): any;
     static delete(type: string | undefined, filename: string): void;
-    protected static hasFile(type: string | undefined, filename: string): boolean;
-    protected static readFile(type: string | undefined, filename: string): CacheItem | null;
-    protected static writeFile(type: string | undefined, filename: string, cacheItem: CacheItem): CacheItem;
-    protected static unlinkFile(type: string | undefined, filename: string): void;
-    protected static readFile$(type: string | undefined, filename: string): Observable<CacheItem>;
-    protected static writeFile$(type: string | undefined, filename: string, cacheItem: CacheItem): Observable<CacheItem>;
-    protected static serialize(item: any): string;
+    static has$(type: string | undefined, filename: string): Observable<boolean>;
+    static get$<T>(type: string, filename: string): Observable<T>;
+    static set$(type: string | undefined, filename: string, value: any, maxAge?: number, cacheControl?: CacheControlType): any;
+    static delete$(type: string | undefined, filename: string): Observable<boolean>;
     protected static getPath(type: string | undefined, filename: string): string;
     protected static getKey(type: string | undefined, filename: string): string;
 }

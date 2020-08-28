@@ -76,5 +76,7 @@ export default class Server extends Platform {
     static bootstrap$: typeof bootstrap$;
 }
 export declare function render$(iRequest: IServerRequest, renderRequest$: (request: ServerRequest) => Observable<ServerResponse>): Observable<ServerResponse>;
+export declare function fromCache$(request: ServerRequest): Observable<ServerResponse | null>;
+export declare function fromRenderRequest$(request: ServerRequest, renderRequest$: (request: ServerRequest) => Observable<ServerResponse>): Observable<ServerResponse>;
 export declare function template$(request: ServerRequest): Observable<string>;
 export declare function bootstrap$(moduleFactory: typeof Module, request: ServerRequest): Observable<ServerResponse>;

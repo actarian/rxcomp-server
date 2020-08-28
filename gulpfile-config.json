@@ -30,7 +30,7 @@
         {
           "input": [
             "node_modules/rxjs/bundles/rxjs.umd.js",
-            "../rxcomp/dist/iife/rxcomp.js"
+            "node_modules/rxcomp/dist/umd/rxcomp.js"
           ],
           "output": "docs/js/vendors.js",
           "minify": true
@@ -81,7 +81,7 @@
         {
           "input": [
             "node_modules/rxjs/bundles/rxjs.umd.js",
-            "../rxcomp/dist/iife/rxcomp.js"
+            "node_modules/rxcomp/dist/umd/rxcomp.js"
           ],
           "output": "www/dist/development/browser/js/vendors.js",
           "minify": true

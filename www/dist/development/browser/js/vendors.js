@@ -9421,7 +9421,7 @@
  * License: MIT
  */
 
-var rxcomp=(function(exports,rxjs,operators){'use strict';function _defineProperties(target, props) {
+(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?f(exports,require('rxjs'),require('rxjs/operators')):typeof define==='function'&&define.amd?define(['exports','rxjs','rxjs/operators'],f):(g=typeof globalThis!=='undefined'?globalThis:g||self,f(g.rxcomp={},g.rxjs,g.rxjs.operators));}(this,(function(exports, rxjs, operators){'use strict';function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
     descriptor.enumerable = descriptor.enumerable || false;
@@ -9578,7 +9578,7 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
 }var CONTEXTS = {};
 var NODES = {};
 
-var Factory = function () {
+var Factory = /*#__PURE__*/function () {
   function Factory() {
     this.rxcompId = -1;
     this.unsubscribe$ = new rxjs.Subject();
@@ -9609,7 +9609,7 @@ var Factory = function () {
 }();
 function getContext(instance) {
   return CONTEXTS[instance.rxcompId];
-}var Directive = function (_Factory) {
+}var Directive = /*#__PURE__*/function (_Factory) {
   _inheritsLoose(Directive, _Factory);
 
   function Directive() {
@@ -9617,7 +9617,7 @@ function getContext(instance) {
   }
 
   return Directive;
-}(Factory);var ClassDirective = function (_Directive) {
+}(Factory);var ClassDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(ClassDirective, _Directive);
 
   function ClassDirective() {
@@ -9659,8 +9659,9 @@ function getContext(instance) {
       keys = object.split(/\s+/);
     }
 
-    keys = keys.concat(this.keys);
-    node.setAttribute('class', keys.join(' '));
+    keys = keys.concat(this.keys); // console.log(keys);
+
+    node.setAttribute('class', keys.join(' ')); // console.log('ClassDirective.onChanges', keys);
   };
 
   return ClassDirective;
@@ -9668,7 +9669,7 @@ function getContext(instance) {
 ClassDirective.meta = {
   selector: "[[class]]",
   inputs: ['class']
-};var ModuleError = function (_Error) {
+};var ModuleError = /*#__PURE__*/function (_Error) {
   _inheritsLoose(ModuleError, _Error);
 
   function ModuleError() {
@@ -9676,8 +9677,8 @@ ClassDirective.meta = {
   }
 
   return ModuleError;
-}(_wrapNativeSuper(Error));
-var ExpressionError = function (_Error2) {
+}( /*#__PURE__*/_wrapNativeSuper(Error));
+var ExpressionError = /*#__PURE__*/function (_Error2) {
   _inheritsLoose(ExpressionError, _Error2);
 
   function ExpressionError(error, module, instance, expression, params) {
@@ -9685,7 +9686,8 @@ var ExpressionError = function (_Error2) {
 
     var message = "ExpressionError in " + instance.constructor.name + " \"" + expression + "\"\n\t\t" + error.message;
     _this = _Error2.call(this, message) || this;
-    _this.name = error.name;
+    _this.name = error.name; // this.stack = error.stack;
+
     _this.module = module;
     _this.instance = instance;
     _this.expression = expression;
@@ -9699,8 +9701,8 @@ var ExpressionError = function (_Error2) {
   }
 
   return ExpressionError;
-}(_wrapNativeSuper(Error));
-var ErrorInterceptorHandler = function () {
+}( /*#__PURE__*/_wrapNativeSuper(Error));
+var ErrorInterceptorHandler = /*#__PURE__*/function () {
   function ErrorInterceptorHandler(next, interceptor) {
     this.next = next;
     this.interceptor = interceptor;
@@ -9714,12 +9716,27 @@ var ErrorInterceptorHandler = function () {
 
   return ErrorInterceptorHandler;
 }();
-var DefaultErrorHandler = function () {
+/*
+export class NoopErrorInterceptor implements IErrorInterceptor {
+    intercept(error: Error, next: ErrorHandler): Observable<Error> {
+        return of(error);
+    }
+}
+
+const noopInterceptor = new NoopErrorInterceptor();
+*/
+
+var DefaultErrorHandler = /*#__PURE__*/function () {
   function DefaultErrorHandler() {}
 
   var _proto2 = DefaultErrorHandler.prototype;
 
   _proto2.handle = function handle(error) {
+    /*
+    if (error) {
+        console.error(error);
+    }
+    */
     return rxjs.of(error);
   };
 
@@ -9727,7 +9744,17 @@ var DefaultErrorHandler = function () {
 }();
 var ErrorInterceptors = [];
 var nextError$ = new rxjs.ReplaySubject(1);
-var errors$ = nextError$.pipe(operators.switchMap(function (error) {
+var errors$ = nextError$.pipe(
+/*
+switchMap(error => {
+    const chain = ErrorInterceptors.reduceRight((next: ErrorHandler, interceptor: IErrorInterceptor) => {
+        return new ErrorInterceptorHandler(next, interceptor);
+    }, new NoopErrorInterceptor());
+    return chain.handle(error);
+}),
+*/
+// switchMap(error => merge(ErrorInterceptors.map(x => x.intercept(error, next)))),
+operators.switchMap(function (error) {
   var chain = ErrorInterceptors.reduceRight(function (next, interceptor) {
     return new ErrorInterceptorHandler(next, interceptor);
   }, new DefaultErrorHandler());
@@ -9738,7 +9765,7 @@ var errors$ = nextError$.pipe(operators.switchMap(function (error) {
   }
 }));var EVENTS = ['mousedown', 'mouseup', 'mousemove', 'click', 'dblclick', 'mouseover', 'mouseout', 'mouseenter', 'mouseleave', 'contextmenu', 'touchstart', 'touchmove', 'touchend', 'keydown', 'keyup', 'input', 'change', 'loaded'];
 
-var EventDirective = function (_Directive) {
+var EventDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(EventDirective, _Directive);
 
   function EventDirective() {
@@ -9756,7 +9783,8 @@ var EventDirective = function (_Directive) {
         module = _getContext.module,
         node = _getContext.node,
         parentInstance = _getContext.parentInstance,
-        selector = _getContext.selector;
+        selector = _getContext.selector; // console.log('parentInstance', parentInstance);
+
 
     var event = this.event = selector.replace(/\[|\]|\(|\)/g, '');
     var event$ = rxjs.fromEvent(node, event).pipe(operators.shareReplay(1));
@@ -9769,14 +9797,15 @@ var EventDirective = function (_Directive) {
       });
     } else {
       parentInstance[event + "$"] = event$;
-    }
+    } // console.log('EventDirective.onInit', 'selector', selector, 'event', event);
+
   };
 
   return EventDirective;
 }(Directive);
 EventDirective.meta = {
   selector: "[(" + EVENTS.join(')],[(') + ")]"
-};var Structure = function (_Factory) {
+};var Structure = /*#__PURE__*/function (_Factory) {
   _inheritsLoose(Structure, _Factory);
 
   function Structure() {
@@ -9784,7 +9813,7 @@ EventDirective.meta = {
   }
 
   return Structure;
-}(Factory);var Component = function (_Factory) {
+}(Factory);var Component = /*#__PURE__*/function (_Factory) {
   _inheritsLoose(Component, _Factory);
 
   function Component() {
@@ -9799,8 +9828,12 @@ EventDirective.meta = {
         node = _getContext.node;
 
     if (module.instances) {
-      this.changes$.next(this);
-      module.parse(node, this);
+      // console.log(new Error(`pushChanges ${instance.constructor.name}`).stack);
+      this.changes$.next(this); // console.log('Module.parse', instance.constructor.name);
+      // parse component text nodes
+
+      module.parse(node, this); // calling onView event
+
       this.onView();
     }
   };
@@ -9808,7 +9841,7 @@ EventDirective.meta = {
   return Component;
 }(Factory);var RESERVED_PROPERTIES = ['constructor', 'rxcompId', 'onInit', 'onChanges', 'onDestroy', 'pushChanges', 'changes$', 'unsubscribe$'];
 
-var Context = function (_Component) {
+var Context = /*#__PURE__*/function (_Component) {
   _inheritsLoose(Context, _Component);
 
   function Context(parentInstance, descriptors) {
@@ -9835,7 +9868,7 @@ var Context = function (_Component) {
     if (!context.keys) {
       context.keys = Object.keys(context.parentInstance).filter(function (key) {
         return RESERVED_PROPERTIES.indexOf(key) === -1;
-      });
+      }); // console.log(context.keys.join(','));
     }
 
     if (context.module.instances) {
@@ -9882,13 +9915,36 @@ var Context = function (_Component) {
   };
 
   return Context;
-}(Component);var ForItem = function (_Context) {
+}(Component);var ForItem = /*#__PURE__*/function (_Context) {
   _inheritsLoose(ForItem, _Context);
 
+  // !!! todo: payload options { key, $key, value, $value, index, count }
   function ForItem(key, $key, value, $value, index, count, parentInstance) {
     var _this;
 
+    // console.log('ForItem', arguments);
     _this = _Context.call(this, parentInstance) || this;
+    /*
+    super(parentInstance, {
+        [key]: {
+            get: function() {
+                return this.$key;
+            },
+            set: function(key) {
+                this.$key = key;
+            }
+        },
+        [value]: {
+            get: function() {
+                return this.$value;
+            },
+            set: function(value) {
+                this.$value = value;
+            }
+        }
+    });
+    */
+
     _this[key] = $key;
     _this[value] = $value;
     _this.index = index;
@@ -9919,7 +9975,7 @@ var Context = function (_Component) {
   }]);
 
   return ForItem;
-}(Context);var ForStructure = function (_Structure) {
+}(Context);var ForStructure = /*#__PURE__*/function (_Structure) {
   _inheritsLoose(ForStructure, _Structure);
 
   function ForStructure() {
@@ -9951,7 +10007,8 @@ var Context = function (_Component) {
   _proto.onChanges = function onChanges(changes) {
     var context = getContext(this);
     var module = context.module;
-    var node = context.node;
+    var node = context.node; // resolve
+
     var token = this.token;
     var result = module.resolve(this.forFunction, changes, this) || [];
     var isArray = Array.isArray(result);
@@ -9965,23 +10022,40 @@ var Context = function (_Component) {
         var value = isArray ? array[key] : result[key];
 
         if (i < previous) {
+          // update
           var instance = this.instances[i];
           instance[token.key] = key;
           instance[token.value] = value;
+          /*
+          if (!nextSibling) {
+              const context = getContext(instance);
+              const node = context.node;
+              this.forend.parentNode.insertBefore(node, this.forend);
+          } else {
+              nextSibling = nextSibling.nextSibling;
+          }
+          */
         } else {
+          // create
           var clonedNode = node.cloneNode(true);
           delete clonedNode.rxcompId;
-          this.forend.parentNode.insertBefore(clonedNode, this.forend);
+          this.forend.parentNode.insertBefore(clonedNode, this.forend); // !!! todo: check context.parentInstance
+
           var args = [token.key, key, token.value, value, i, total, context.parentInstance];
 
           var _instance = module.makeInstance(clonedNode, ForItem, context.selector, context.parentInstance, args);
 
           if (_instance) {
-            module.compile(clonedNode, _instance);
+            // const forItemContext = getContext(instance);
+            // console.log('ForStructure', clonedNode, forItemContext.instance.constructor.name);
+            // module.compile(clonedNode, forItemContext.instance);
+            module.compile(clonedNode, _instance); // nextSibling = clonedNode.nextSibling;
+
             this.instances.push(_instance);
           }
         }
       } else {
+        // remove
         var _instance2 = this.instances[i];
 
         var _getContext2 = getContext(_instance2),
@@ -9993,7 +10067,7 @@ var Context = function (_Component) {
       }
     }
 
-    this.instances.length = array.length;
+    this.instances.length = array.length; // console.log('ForStructure', this.instances, token);
   };
 
   _proto.getExpressionToken = function getExpressionToken(expression) {
@@ -10044,7 +10118,7 @@ var Context = function (_Component) {
 }(Structure);
 ForStructure.meta = {
   selector: '[*for]'
-};var HrefDirective = function (_Directive) {
+};var HrefDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(HrefDirective, _Directive);
 
   function HrefDirective() {
@@ -10073,7 +10147,7 @@ ForStructure.meta = {
 HrefDirective.meta = {
   selector: '[[href]]',
   inputs: ['href']
-};var IfStructure = function (_Structure) {
+};var IfStructure = /*#__PURE__*/function (_Structure) {
   _inheritsLoose(IfStructure, _Structure);
 
   function IfStructure() {
@@ -10097,12 +10171,13 @@ HrefDirective.meta = {
     var clonedNode = node.cloneNode(true);
     clonedNode.removeAttribute('*if');
     this.clonedNode = clonedNode;
-    this.element = clonedNode.cloneNode(true);
+    this.element = clonedNode.cloneNode(true); // console.log('IfStructure.expression', expression);
   };
 
   _proto.onChanges = function onChanges(changes) {
     var _getContext2 = getContext(this),
-        module = _getContext2.module;
+        module = _getContext2.module; // console.log('IfStructure.onChanges', changes);
+
 
     var value = module.resolve(this.ifFunction, changes, this);
     var element = this.element;
@@ -10126,7 +10201,7 @@ HrefDirective.meta = {
 }(Structure);
 IfStructure.meta = {
   selector: '[*if]'
-};var InnerHtmlDirective = function (_Directive) {
+};var InnerHtmlDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(InnerHtmlDirective, _Directive);
 
   function InnerHtmlDirective() {
@@ -10142,7 +10217,7 @@ IfStructure.meta = {
         var _getContext = getContext(this),
             node = _getContext.node;
 
-        node.innerHTML = innerHTML == undefined ? '' : innerHTML;
+        node.innerHTML = innerHTML == undefined ? '' : innerHTML; // !!! keep == loose equality
       }
     },
     get: function get() {
@@ -10155,7 +10230,7 @@ IfStructure.meta = {
 InnerHtmlDirective.meta = {
   selector: "[innerHTML]",
   inputs: ['innerHTML']
-};var JsonComponent = function (_Component) {
+};var JsonComponent = /*#__PURE__*/function (_Component) {
   _inheritsLoose(JsonComponent, _Component);
 
   function JsonComponent() {
@@ -10179,7 +10254,7 @@ JsonComponent.meta = {
   selector: 'json-component',
   inputs: ['item'],
   template: "\n\t\t<div class=\"rxc-block\">\n\t\t\t<div class=\"rxc-head\">\n\t\t\t\t<span class=\"rxc-head__title\" (click)=\"onToggle()\">\n\t\t\t\t\t<span *if=\"!active\">+ json </span>\n\t\t\t\t\t<span *if=\"active\">- json </span>\n\t\t\t\t\t<span [innerHTML]=\"item\"></span>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<ul class=\"rxc-list\" *if=\"active\">\n\t\t\t\t<li class=\"rxc-list__item\">\n\t\t\t\t\t<span class=\"rxc-list__value\" [innerHTML]=\"item | json\"></span>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>"
-};var Pipe = function () {
+};var Pipe = /*#__PURE__*/function () {
   function Pipe() {}
 
   Pipe.transform = function transform(value) {
@@ -10189,9 +10264,13 @@ JsonComponent.meta = {
   return Pipe;
 }();var ORDER = [Structure, Component, Directive];
 
-var Platform = function () {
+var Platform = /*#__PURE__*/function () {
   function Platform() {}
 
+  /**
+   * @param moduleFactory
+   * @description This method returns an uncompiled module
+   */
   Platform.bootstrap = function bootstrap(moduleFactory) {
     if (!moduleFactory) {
       throw new ModuleError('missing moduleFactory');
@@ -10218,7 +10297,11 @@ var Platform = function () {
     module.meta = meta;
     meta.imports.forEach(function (moduleFactory) {
       moduleFactory.prototype.constructor.call(module);
-    });
+    }); // const instances = module.compile(meta.node, window);
+    // module.instances = instances;
+    // const root = instances[0];
+    // root.pushChanges();
+
     return module;
   };
 
@@ -10303,7 +10386,8 @@ var Platform = function () {
       }, -1);
       var bi = ORDER.reduce(function (p, c, i) {
         return b.prototype instanceof c ? i : p;
-      }, -1);
+      }, -1); // return ai - bi;
+
       var o = ai - bi;
 
       if (o === 0) {
@@ -10389,12 +10473,18 @@ var Platform = function () {
   return Platform;
 }();
 var PLATFORM_BROWSER = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+/* eslint-disable no-undef */
+
 var PLATFORM_JS_DOM = typeof window !== 'undefined' && window.name === 'nodejs' || typeof navigator !== 'undefined' && navigator.userAgent.includes('Node.js') || typeof navigator !== 'undefined' && navigator.userAgent.includes('jsdom');
+/* eslint-enable no-undef */
+
 var PLATFORM_NODE = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
+/* eslint-disable no-restricted-globals */
+
 var PLATFORM_WEB_WORKER = typeof self === 'object' && self.constructor && self.constructor.name === 'DedicatedWorkerGlobalScope';
 var isPlatformServer = PLATFORM_NODE;
 var isPlatformBrowser = !PLATFORM_NODE && PLATFORM_BROWSER;
-var isPlatformWorker = PLATFORM_WEB_WORKER;var Serializer = function () {
+var isPlatformWorker = PLATFORM_WEB_WORKER;var Serializer = /*#__PURE__*/function () {
   function Serializer() {}
 
   Serializer.encode = function encode(value, encoders) {
@@ -10423,20 +10513,24 @@ function encodeJson(value, circularRef, space) {
   var decoded;
 
   try {
+    // const pool: Map<any, boolean> = new Map();
     var pool = [];
     var json = JSON.stringify(value, function (key, value) {
       if (typeof value === 'object' && value != null) {
+        // if (pool.has(value)) {
         if (pool.indexOf(value) !== -1) {
+          // console.warn(`Serializer.encodeJson.error`, `circular reference found, discard key "${key}"`);
           return circularRef;
         }
 
-        pool.push(value);
+        pool.push(value); // pool.set(value, true);
       }
 
       return value;
     }, space);
     decoded = json;
-  } catch (error) {}
+  } catch (error) {// console.warn(`Serializer.encodeJson.error`, value, error);
+  }
 
   return decoded;
 }
@@ -10451,7 +10545,8 @@ function decodeJson(value) {
   if (value) {
     try {
       decoded = JSON.parse(value);
-    } catch (error) {}
+    } catch (error) {// console.warn(`Serializer.decodeJson.error`, value, error);
+    }
   }
 
   return decoded;
@@ -10461,7 +10556,7 @@ function encodeBase64(value) {
 }
 function decodeBase64(value) {
   return isPlatformBrowser ? btoa(value) : Buffer.from(value, 'base64').toString();
-}var JsonPipe = function (_Pipe) {
+}var JsonPipe = /*#__PURE__*/function (_Pipe) {
   _inheritsLoose(JsonPipe, _Pipe);
 
   function JsonPipe() {
@@ -10478,7 +10573,7 @@ JsonPipe.meta = {
   name: 'json'
 };var ID = 0;
 
-var Module = function () {
+var Module = /*#__PURE__*/function () {
   function Module() {
     this.unsubscribe$ = new rxjs.Subject();
   }
@@ -10503,7 +10598,9 @@ var Module = function () {
       return instance;
     }).filter(function (x) {
       return x !== undefined;
-    });
+    }); // instances.forEach(x => x.onInit());
+    // console.log('compile', instances, node, parentInstance);
+
     return instances;
   };
 
@@ -10511,14 +10608,17 @@ var Module = function () {
     var _this2 = this;
 
     if (parentInstance || node.parentNode) {
-      var meta = factory.meta;
+      var meta = factory.meta; // collect parentInstance scope
+
       parentInstance = parentInstance || this.getParentInstance(node.parentNode);
 
       if (!parentInstance) {
         return undefined;
-      }
+      } // creating factory instance
 
-      var instance = _construct(factory, args || []);
+
+      var instance = _construct(factory, args || []); // injecting custom properties
+
 
       if (inject) {
         Object.keys(inject).forEach(function (key) {
@@ -10529,9 +10629,10 @@ var Module = function () {
             writable: false
           });
         });
-      }
+      } // creating instance context
 
-      var context = Module.makeContext(this, instance, parentInstance, node, factory, selector);
+
+      var context = Module.makeContext(this, instance, parentInstance, node, factory, selector); // creating component input and outputs
 
       if (meta) {
         this.makeHosts(meta, instance, node);
@@ -10541,17 +10642,34 @@ var Module = function () {
         if (parentInstance instanceof Factory) {
           this.resolveInputsOutputs(instance, parentInstance);
         }
-      }
+      } // calling onInit event
 
-      instance.onInit();
+
+      instance.onInit(); // subscribe to parent changes
 
       if (parentInstance instanceof Factory) {
-        parentInstance.changes$.pipe(operators.takeUntil(instance.unsubscribe$)).subscribe(function (changes) {
+        parentInstance.changes$.pipe( // filter(() => node.parentNode),
+        // debounceTime(1),
+
+        /*
+        distinctUntilChanged(function(prev, curr) {
+            // console.log(isComponent, context.inputs);
+            if (isComponent && meta && Object.keys(context.inputs).length === 0) {
+                return true; // same
+            } else {
+                return false;
+            }
+        }),
+        */
+        operators.takeUntil(instance.unsubscribe$)).subscribe(function (changes) {
+          // resolve component input outputs
           if (meta) {
             _this2.resolveInputsOutputs(instance, changes);
-          }
+          } // calling onChanges event with changes
 
-          instance.onChanges(changes);
+
+          instance.onChanges(changes); // push instance changes for subscribers
+
           instance.pushChanges();
         });
       }
@@ -10568,9 +10686,12 @@ var Module = function () {
     }
 
     if (expression) {
-      expression = Module.parseExpression(expression);
+      expression = Module.parseExpression(expression); // console.log(expression);
+
       var args = params.join(',');
-      var expression_func = new Function("with(this) {\n\t\t\t\treturn (function (" + args + ", $$module) {\n\t\t\t\t\ttry {\n\t\t\t\t\t\tconst $$pipes = $$module.meta.pipes;\n\t\t\t\t\t\treturn " + expression + ";\n\t\t\t\t\t} catch(error) {\n\t\t\t\t\t\t$$module.nextError(error, this, " + JSON.stringify(expression) + ", arguments);\n\t\t\t\t\t}\n\t\t\t\t}.bind(this)).apply(this, arguments);\n\t\t\t}");
+      var expression_func = new Function("with(this) {\n\t\t\t\treturn (function (" + args + ", $$module) {\n\t\t\t\t\ttry {\n\t\t\t\t\t\tconst $$pipes = $$module.meta.pipes;\n\t\t\t\t\t\treturn " + expression + ";\n\t\t\t\t\t} catch(error) {\n\t\t\t\t\t\t$$module.nextError(error, this, " + JSON.stringify(expression) + ", arguments);\n\t\t\t\t\t}\n\t\t\t\t}.bind(this)).apply(this, arguments);\n\t\t\t}"); // console.log(this, $$module, $$pipes, "${expression}");
+      // console.log(expression_func);
+
       return expression_func;
     } else {
       return function () {
@@ -10585,6 +10706,7 @@ var Module = function () {
   };
 
   _proto.resolve = function resolve(expression, parentInstance, payload) {
+    // console.log(expression, parentInstance, payload);
     return expression.apply(parentInstance, [payload, this]);
   };
 
@@ -10630,7 +10752,8 @@ var Module = function () {
   };
 
   _proto.makeContext = function makeContext(instance, parentInstance, node, selector) {
-    var context = Module.makeContext(this, instance, parentInstance, node, instance.constructor, selector);
+    var context = Module.makeContext(this, instance, parentInstance, node, instance.constructor, selector); // console.log('Module.makeContext', context, context.instance, context.node);
+
     return context;
   };
 
@@ -10654,7 +10777,8 @@ var Module = function () {
     return Module.traverseUp(node, function (node) {
       return _this3.getInstance(node);
     });
-  };
+  } // reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
+  ;
 
   _proto.parseTextNode = function parseTextNode(node, instance) {
     var _this4 = this;
@@ -10670,9 +10794,11 @@ var Module = function () {
         var text;
 
         if (typeof c === 'function') {
+          // instanceOf ExpressionFunction ?;
           text = _this4.resolve(c, instance, instance);
 
           if (text == undefined) {
+            // !!! keep == loose equality
             text = '';
           }
         } else {
@@ -10749,6 +10875,7 @@ var Module = function () {
     if (node.hasAttribute("[" + key + "]")) {
       expression = node.getAttribute("[" + key + "]");
     } else if (node.hasAttribute(key)) {
+      // const attribute = node.getAttribute(key).replace(/{{/g, '"+').replace(/}}/g, '+"');
       var attribute = node.getAttribute(key).replace(/({{)|(}})|(")/g, function (substring, a, b, c) {
         if (a) {
           return '"+';
@@ -10802,6 +10929,7 @@ var Module = function () {
     var outputFunction = expression ? this.makeFunction(expression, ['$event']) : null;
     var output$ = new rxjs.Subject().pipe(operators.tap(function (event) {
       if (outputFunction) {
+        // console.log(expression, parentInstance);
         _this6.resolve(outputFunction, parentInstance, event);
       }
     }));
@@ -10992,6 +11120,7 @@ var Module = function () {
         results.push(selectorResult);
 
         if (factory.prototype instanceof Structure) {
+          // console.log('Structure', node);
           break;
         }
       }
@@ -11119,10 +11248,14 @@ function getParsableContextByNode(node) {
           return current;
         } else if (current.factory.prototype instanceof Context) {
           return previous ? previous : current;
+          /*
+          } else if (current.factory.prototype instanceof Structure) {
+              return previous ? previous : current;
+          */
         } else {
           return previous;
         }
-      }, undefined);
+      }, undefined); // console.log(node.rxcompId, context);
     }
   }
 
@@ -11146,10 +11279,12 @@ function getHost(instance, factory, node) {
     var nodeContexts = NODES[node.rxcompId];
 
     if (nodeContexts) {
+      // console.log(nodeContexts);
       for (var i = 0; i < nodeContexts.length; i++) {
         var context = nodeContexts[i];
 
         if (context.instance !== instance) {
+          // console.log(context.instance, instance);
           if (context.instance instanceof factory) {
             return context.instance;
           }
@@ -11163,7 +11298,7 @@ function getHost(instance, factory, node) {
   } else {
     return undefined;
   }
-}var SrcDirective = function (_Directive) {
+}var SrcDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(SrcDirective, _Directive);
 
   function SrcDirective() {
@@ -11192,7 +11327,7 @@ function getHost(instance, factory, node) {
 SrcDirective.meta = {
   selector: '[[src]]',
   inputs: ['src']
-};var StyleDirective = function (_Directive) {
+};var StyleDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(StyleDirective, _Directive);
 
   function StyleDirective() {
@@ -11225,13 +11360,14 @@ SrcDirective.meta = {
 
           var _propertyName = _splitted.shift();
 
-          var value = style[_key] + (_splitted.length ? _splitted[0] : '');
+          var value = style[_key] + (_splitted.length ? _splitted[0] : ''); // console.log(propertyName, value, style, key, style[key]);
+
           node.style.setProperty(_propertyName, value);
         }
       }
     }
 
-    this.previousStyle = style;
+    this.previousStyle = style; // console.log('StyleDirective.onChanges', style);
   };
 
   return StyleDirective;
@@ -11242,13 +11378,14 @@ StyleDirective.meta = {
 };var factories = [ClassDirective, EventDirective, ForStructure, HrefDirective, IfStructure, InnerHtmlDirective, JsonComponent, SrcDirective, StyleDirective];
 var pipes = [JsonPipe];
 
-var CoreModule = function (_Module) {
+var CoreModule = /*#__PURE__*/function (_Module) {
   _inheritsLoose(CoreModule, _Module);
 
   function CoreModule() {
     var _this;
 
-    _this = _Module.call(this) || this;
+    _this = _Module.call(this) || this; // console.log('CoreModule');
+
     errors$.pipe(operators.takeUntil(_this.unsubscribe$)).subscribe();
     return _this;
   }
@@ -11258,13 +11395,17 @@ var CoreModule = function (_Module) {
 CoreModule.meta = {
   declarations: [].concat(factories, pipes),
   exports: [].concat(factories, pipes)
-};var Browser = function (_Platform) {
+};var Browser = /*#__PURE__*/function (_Platform) {
   _inheritsLoose(Browser, _Platform);
 
   function Browser() {
     return _Platform.apply(this, arguments) || this;
   }
 
+  /**
+   * @param moduleFactory
+   * @description This method returns a Browser compiled module
+   */
   Browser.bootstrap = function bootstrap(moduleFactory) {
     if (!isPlatformBrowser) {
       throw new ModuleError('missing platform browser, window not found');
@@ -11304,16 +11445,18 @@ CoreModule.meta = {
       clonedNode.innerHTML = meta.nodeInnerHTML = window.rxcomp_hydrate_.innerHTML;
       var instances = module.compile(clonedNode, window);
       module.instances = instances;
-      var root = instances[0];
+      var root = instances[0]; // if (root instanceof module.meta.bootstrap) {
+
       root.pushChanges();
-      (_meta$node$parentNode = meta.node.parentNode) == null ? void 0 : _meta$node$parentNode.replaceChild(clonedNode, meta.node);
+      (_meta$node$parentNode = meta.node.parentNode) == null ? void 0 : _meta$node$parentNode.replaceChild(clonedNode, meta.node); // }
     } else {
       var _instances = module.compile(meta.node, window);
 
       module.instances = _instances;
-      var _root = _instances[0];
+      var _root = _instances[0]; // if (root instanceof module.meta.bootstrap) {
 
-      _root.pushChanges();
+      _root.pushChanges(); // }
+
     }
 
     return module;
@@ -11351,7 +11494,7 @@ CoreModule.meta = {
     search: search,
     hash: hash
   };
-}var TransferService = function () {
+}var TransferService = /*#__PURE__*/function () {
   function TransferService() {}
 
   TransferService.makeKey = function makeKey(base, params) {
@@ -11359,7 +11502,8 @@ CoreModule.meta = {
     var key = "rxcomp-hydrate-" + base + "-" + paramsKey;
     key = key.replace(/(\s+)|(\W+)/g, function () {
       return (arguments.length <= 1 ? undefined : arguments[1]) ? '' : '_';
-    });
+    }); // console.log('TransferService.makeKey', key, base, paramsKey);
+
     return key;
   };
 
@@ -11380,6 +11524,7 @@ CoreModule.meta = {
   };
 
   TransferService.set = function set(key, value) {
+    // console.log('TransferService.set', key, value);
     var json = Serializer.encode(value, [encodeJson]);
 
     if (!json) {
@@ -11392,7 +11537,8 @@ CoreModule.meta = {
     if (!node) {
       node = document.createElement('script');
       node.setAttribute('id', key);
-      node.setAttribute('type', 'text/template');
+      node.setAttribute('type', 'text/template'); // console.log('node', node!!, 'document', document!!, 'head', document.head!!);
+
       node.append(text);
       document.head.append(node);
     } else {
@@ -11430,4 +11576,4 @@ function optionsToKey(v, s) {
   }
 
   return s;
-}exports.Browser=Browser;exports.ClassDirective=ClassDirective;exports.Component=Component;exports.Context=Context;exports.CoreModule=CoreModule;exports.DefaultErrorHandler=DefaultErrorHandler;exports.Directive=Directive;exports.ErrorInterceptorHandler=ErrorInterceptorHandler;exports.ErrorInterceptors=ErrorInterceptors;exports.EventDirective=EventDirective;exports.ExpressionError=ExpressionError;exports.Factory=Factory;exports.ForItem=ForItem;exports.ForStructure=ForStructure;exports.HrefDirective=HrefDirective;exports.IfStructure=IfStructure;exports.InnerHtmlDirective=InnerHtmlDirective;exports.JsonComponent=JsonComponent;exports.JsonPipe=JsonPipe;exports.Module=Module;exports.ModuleError=ModuleError;exports.PLATFORM_BROWSER=PLATFORM_BROWSER;exports.PLATFORM_JS_DOM=PLATFORM_JS_DOM;exports.PLATFORM_NODE=PLATFORM_NODE;exports.PLATFORM_WEB_WORKER=PLATFORM_WEB_WORKER;exports.Pipe=Pipe;exports.Platform=Platform;exports.Serializer=Serializer;exports.SrcDirective=SrcDirective;exports.Structure=Structure;exports.StyleDirective=StyleDirective;exports.TransferService=TransferService;exports.decodeBase64=decodeBase64;exports.decodeJson=decodeJson;exports.encodeBase64=encodeBase64;exports.encodeJson=encodeJson;exports.encodeJsonWithOptions=encodeJsonWithOptions;exports.errors$=errors$;exports.getContext=getContext;exports.getContextByNode=getContextByNode;exports.getHost=getHost;exports.getLocationComponents=getLocationComponents;exports.getParsableContextByNode=getParsableContextByNode;exports.isPlatformBrowser=isPlatformBrowser;exports.isPlatformServer=isPlatformServer;exports.isPlatformWorker=isPlatformWorker;exports.nextError$=nextError$;exports.optionsToKey=optionsToKey;return exports;}({},rxjs,rxjs.operators));
+}exports.Browser=Browser;exports.ClassDirective=ClassDirective;exports.Component=Component;exports.Context=Context;exports.CoreModule=CoreModule;exports.DefaultErrorHandler=DefaultErrorHandler;exports.Directive=Directive;exports.ErrorInterceptorHandler=ErrorInterceptorHandler;exports.ErrorInterceptors=ErrorInterceptors;exports.EventDirective=EventDirective;exports.ExpressionError=ExpressionError;exports.Factory=Factory;exports.ForItem=ForItem;exports.ForStructure=ForStructure;exports.HrefDirective=HrefDirective;exports.IfStructure=IfStructure;exports.InnerHtmlDirective=InnerHtmlDirective;exports.JsonComponent=JsonComponent;exports.JsonPipe=JsonPipe;exports.Module=Module;exports.ModuleError=ModuleError;exports.PLATFORM_BROWSER=PLATFORM_BROWSER;exports.PLATFORM_JS_DOM=PLATFORM_JS_DOM;exports.PLATFORM_NODE=PLATFORM_NODE;exports.PLATFORM_WEB_WORKER=PLATFORM_WEB_WORKER;exports.Pipe=Pipe;exports.Platform=Platform;exports.Serializer=Serializer;exports.SrcDirective=SrcDirective;exports.Structure=Structure;exports.StyleDirective=StyleDirective;exports.TransferService=TransferService;exports.decodeBase64=decodeBase64;exports.decodeJson=decodeJson;exports.encodeBase64=encodeBase64;exports.encodeJson=encodeJson;exports.encodeJsonWithOptions=encodeJsonWithOptions;exports.errors$=errors$;exports.getContext=getContext;exports.getContextByNode=getContextByNode;exports.getHost=getHost;exports.getLocationComponents=getLocationComponents;exports.getParsableContextByNode=getParsableContextByNode;exports.isPlatformBrowser=isPlatformBrowser;exports.isPlatformServer=isPlatformServer;exports.isPlatformWorker=isPlatformWorker;exports.nextError$=nextError$;exports.optionsToKey=optionsToKey;Object.defineProperty(exports,'__esModule',{value:true});})));

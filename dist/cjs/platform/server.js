@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.bootstrap$ = exports.template$ = exports.render$ = exports.ServerErrorResponse = exports.ServerResponse = exports.ServerRequest = void 0;
+exports.bootstrap$ = exports.template$ = exports.fromRenderRequest$ = exports.fromCache$ = exports.render$ = exports.ServerErrorResponse = exports.ServerResponse = exports.ServerRequest = void 0;
 var tslib_1 = require("tslib");
 var rxcomp_1 = require("rxcomp");
 var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
 var cache_service_1 = tslib_1.__importStar(require("../cache/cache.service"));
+var file_service_1 = tslib_1.__importDefault(require("../file/file.service"));
 var history_1 = require("../history/history");
 var location_1 = require("../location/location");
 var nodes_1 = require("../nodes/nodes");
-var fs = require('fs');
 var ServerRequest = /** @class */ (function () {
     function ServerRequest(options) {
         if (options) {
@@ -152,59 +152,54 @@ var Server = /** @class */ (function (_super) {
 }(rxcomp_1.Platform));
 exports.default = Server;
 function render$(iRequest, renderRequest$) {
-    return rxjs_1.Observable.create(function (observer) {
-        var request = new ServerRequest(iRequest);
-        if (request.vars.cacheMode) {
-            cache_service_1.default.mode = request.vars.cacheMode;
-        }
-        if (request.vars.cache) {
-            cache_service_1.default.folder = request.vars.cache;
-        }
-        var render = cache_service_1.default.get('render', request.url);
-        console.log('Server.render$.fromCache', 'route', request.url, !!render);
-        if (render) {
-            observer.next(render);
-            return observer.complete();
-        }
-        template$(request).pipe(operators_1.switchMap(function (template) {
-            // console.log('template!', template);
-            request.template = template;
-            return renderRequest$(request);
-        })).subscribe(function (response) {
-            cache_service_1.default.set('render', request.url, response, response.maxAge, response.cacheControl);
-            observer.next(response);
-            observer.complete();
-        }, function (error) {
-            observer.error(error);
-        });
+    var request;
+    var request$ = rxjs_1.Observable.create(function (observer) {
+        request = new ServerRequest(iRequest);
+        observer.next(request);
+        observer.complete();
     });
-}
-exports.render$ = render$;
-function template$(request) {
-    return rxjs_1.Observable.create(function (observer) {
-        var src = request.vars.template;
-        if (src) {
-            var template = cache_service_1.default.get('template', src);
-            console.log('Server.template$.fromCache', 'path', src, !!template);
-            if (template) {
-                observer.next(template);
-                observer.complete();
-            }
-            fs.readFile(src, request.vars.charset, function (error, template) {
-                if (error) {
-                    observer.error(error);
-                }
-                else {
-                    cache_service_1.default.set('template', src, template, 3600);
-                    observer.next(template);
-                    observer.complete();
-                }
-            });
+    return request$.pipe(operators_1.switchMap(function (request) { return fromCache$(request); }), operators_1.switchMap(function (response) {
+        console.log('Server.render$.fromCache', 'route', request.url, !!response);
+        if (response) {
+            return rxjs_1.of(response);
         }
         else {
-            observer.error(new Error('ServerError: missing template'));
+            return fromRenderRequest$(request, renderRequest$);
+        }
+    }));
+}
+exports.render$ = render$;
+function fromCache$(request) {
+    if (request.vars.cacheMode) {
+        cache_service_1.default.mode = request.vars.cacheMode;
+    }
+    if (request.vars.cache) {
+        cache_service_1.default.folder = request.vars.cache;
+    }
+    return cache_service_1.default.get$('render', request.url);
+}
+exports.fromCache$ = fromCache$;
+function fromRenderRequest$(request, renderRequest$) {
+    return template$(request).pipe(operators_1.switchMap(function (template) {
+        request.template = template;
+        return renderRequest$(request);
+    }), operators_1.switchMap(function (response) {
+        return cache_service_1.default.set$('render', request.url, response, response.maxAge, response.cacheControl).pipe(operators_1.switchMap(function () { return rxjs_1.of(response); }));
+    }));
+}
+exports.fromRenderRequest$ = fromRenderRequest$;
+function template$(request) {
+    var templateSrc$ = rxjs_1.Observable.create(function (observer) {
+        var src = request.vars.template;
+        if (src) {
+            observer.next(src);
+            observer.complete();
+        }
+        else {
+            observer.error(new Error('ServerError: you must provide a template path'));
         }
     });
+    return templateSrc$.pipe(operators_1.switchMap(function (src) { return file_service_1.default.readFile$(src); }), operators_1.switchMap(function (template) { return template ? rxjs_1.of(template) : rxjs_1.throwError(new Error("ServerError: missing template at path " + request.vars.template)); }));
 }
 exports.template$ = template$;
 function bootstrap$(moduleFactory, request) {
