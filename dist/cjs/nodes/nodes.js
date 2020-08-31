@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cloneNode = exports.querySelector = exports.querySelectorAll = exports.matchSelectors = exports.matchSelector = exports.getQueries = exports.parse = exports.isRxProcessingInstruction = exports.isRxDocumentType = exports.isRxDocumentFragment = exports.isRxDocument = exports.isRxComment = exports.isRxText = exports.isRxElement = exports.RxDocument = exports.RxDocumentFragment = exports.RxDocumentType = exports.RxProcessingInstruction = exports.RxComment = exports.RxCData = exports.RxText = exports.RxElement = exports.RxClassList = exports.RxStyle = exports.RxNode = exports.RxQuery = exports.RxSelector = exports.SelectorType = exports.RxNodeType = void 0;
+exports.cloneNode = exports.querySelector = exports.querySelectorAll = exports.matchSelectors = exports.matchSelector = exports.getQueries = exports.parse = exports.isRxProcessingInstruction = exports.isRxDocumentType = exports.isRxDocumentFragment = exports.isRxDocument = exports.isRxComment = exports.isRxText = exports.isRxElement = exports.RxWindow = exports.RxDocument = exports.RxDocumentFragment = exports.RxDocumentType = exports.RxProcessingInstruction = exports.RxComment = exports.RxCData = exports.RxText = exports.RxElement = exports.RxClassList = exports.RxStyle = exports.RxNode = exports.RxQuery = exports.RxSelector = exports.SelectorType = exports.RxNodeType = void 0;
 var tslib_1 = require("tslib");
 var htmlparser2_1 = require("htmlparser2");
 var location_1 = require("../location/location");
@@ -77,6 +77,21 @@ var RxStyle = /** @class */ (function () {
         });
         this.init();
     }
+    RxStyle.prototype.init = function () {
+        var _this = this;
+        var _a;
+        var keys = Object.keys(this);
+        keys.forEach(function (key) { return delete _this[key]; });
+        if ((_a = this.node.attributes) === null || _a === void 0 ? void 0 : _a.style) {
+            var regex = /([^:]+):([^;]+);?\s*/gm;
+            var matches = tslib_1.__spread(this.node.attributes.style.matchAll(regex));
+            matches.forEach(function (match) {
+                var key = match[1];
+                var value = match[2];
+                _this[key] = value;
+            });
+        }
+    };
     RxStyle.prototype.item = function (index) {
         var keys = Object.keys(this);
         if (keys.length > index) {
@@ -112,32 +127,61 @@ var RxStyle = /** @class */ (function () {
             return key + ": " + _this[key] + ";";
         }).join(' ');
     };
-    RxStyle.prototype.init = function () {
-        var _this = this;
-        var _a;
-        var keys = Object.keys(this);
-        keys.forEach(function (key) { return delete _this[key]; });
-        if ((_a = this.node.attributes) === null || _a === void 0 ? void 0 : _a.style) {
-            var regex = /([^:]+):([^;]+);?\s*/gm;
-            var matches = tslib_1.__spread(this.node.attributes.style.matchAll(regex));
-            matches.forEach(function (match) {
-                var key = match[1];
-                var value = match[2];
-                _this[key] = value;
-            });
-        }
-    };
     return RxStyle;
 }());
 exports.RxStyle = RxStyle;
 var RxClassList = /** @class */ (function (_super) {
     tslib_1.__extends(RxClassList, _super);
-    function RxClassList(node) {
-        var _this = _super.call(this) || this;
-        _this.node = node;
-        _this.init();
-        return _this;
+    function RxClassList() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        return _super.apply(this, tslib_1.__spread(args)) || this;
     }
+    Object.defineProperty(RxClassList.prototype, "node", {
+        get: function () {
+            return this.node_;
+        },
+        set: function (node) {
+            if (this.node_ !== node) {
+                this.node_ = node;
+                this.init();
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    RxClassList.prototype.init = function () {
+        this.length = 0;
+        // console.log('RxClassList.node', this.node);
+        if (this.node.hasAttribute('class')) {
+            Array.prototype.push.apply(this, this.node.getAttribute('class').split(' ').map(function (name) { return name.trim(); }));
+        }
+    };
+    RxClassList.prototype.slice = function (start, end) {
+        var length = this.length;
+        start = start || 0;
+        start = (start >= 0) ? start : Math.max(0, length + start);
+        end = (typeof end !== 'undefined') ? end : length;
+        end = (end >= 0) ? Math.min(end, length) : length + end;
+        var size = end - start;
+        var classList = size > 0 ? new RxClassList(size) : new RxClassList();
+        var i;
+        for (i = 0; i < size; i++) {
+            classList[i] = this[start + i];
+        }
+        classList.node = this.node;
+        /*
+        // !!! from string ?
+        if (this.charAt) {
+            for (i = 0; i < size; i++) {
+                classList[i] = this.charAt(from + i);
+            }
+        }
+        */
+        return classList;
+    };
     RxClassList.prototype.item = function (index) {
         return this[index];
     };
@@ -151,11 +195,12 @@ var RxClassList = /** @class */ (function (_super) {
             names[_i] = arguments[_i];
         }
         names.forEach(function (name) {
-            if (_this.indexOf(name) !== -1) {
+            if (_this.indexOf(name) === -1) {
                 _this.push(name);
             }
         });
         this.serialize_();
+        // console.log('RxClasslist.add', `[${this.join(', ')}]`, this.node.attributes.class, names);
     };
     RxClassList.prototype.remove = function () {
         var _this = this;
@@ -203,14 +248,7 @@ var RxClassList = /** @class */ (function (_super) {
         this.serialize_();
     };
     RxClassList.prototype.serialize_ = function () {
-        this.node.attributes.class = this.join(' ');
-    };
-    RxClassList.prototype.init = function () {
-        var _a;
-        this.length = 0;
-        if ((_a = this.node.attributes) === null || _a === void 0 ? void 0 : _a.class) {
-            Array.prototype.push.apply(this, this.node.attributes.class.split(' ').map(function (name) { return name.trim(); }));
-        }
+        this.node.setAttribute('class', this.join(' '));
     };
     return RxClassList;
 }(Array));
@@ -227,13 +265,16 @@ var RxElement = /** @class */ (function (_super) {
         if (attributes && typeof attributes === 'object') {
             _this.attributes = attributes;
         }
+        // console.log('RxElement.constructor', this);
         _this.style = new RxStyle(_this);
-        _this.classList = new RxClassList(_this);
+        var classList = new RxClassList();
+        classList.node = _this;
+        _this.classList = classList;
         _this.childNodes = [];
         return _this;
         /*
-            if (SKIP.indexOf(nodeName) === -1) {
-                console.log(parentNode.nodeName, '>', nodeName);
+        if (SKIP.indexOf(nodeName) === -1) {
+            // console.log(parentNode.nodeName, '>', nodeName);
         }
         */
     }
@@ -242,10 +283,10 @@ var RxElement = /** @class */ (function (_super) {
             var children = [], i = 0, node, nodes = this.childNodes;
             node = nodes[i++];
             while (node) {
-                node = nodes[i++];
                 if (node.nodeType === RxNodeType.ELEMENT_NODE) {
                     children.push(node);
                 }
+                node = nodes[i++];
             }
             return children;
         },
@@ -442,6 +483,18 @@ var RxElement = /** @class */ (function (_super) {
                 this.childNodes.push(node);
         }
         */
+    };
+    RxElement.prototype.appendChild = function (newChild) {
+        if (newChild.parentNode) {
+            newChild.parentNode.removeChild(newChild);
+        }
+        if (isRxDocumentFragment(newChild)) {
+            this.append.apply(this, newChild.childNodes);
+        }
+        else {
+            this.append(newChild);
+        }
+        return newChild;
     };
     RxElement.prototype.prepend = function () {
         var _this = this;
@@ -964,6 +1017,130 @@ var RxDocument = /** @class */ (function (_super) {
     return RxDocument;
 }(RxElement));
 exports.RxDocument = RxDocument;
+var RxWindow = /** @class */ (function () {
+    function RxWindow(options) {
+        if (options) {
+            Object.assign(this, options);
+        }
+    }
+    /* tslint:disable:no-unused-variable */
+    RxWindow.prototype.alert = function (message) { };
+    RxWindow.prototype.blur = function () { };
+    RxWindow.prototype.close = function () { };
+    RxWindow.prototype.confirm = function (message) { return false; };
+    RxWindow.prototype.departFocus = function (navigationReason, origin) { };
+    RxWindow.prototype.focus = function () { };
+    RxWindow.prototype.getComputedStyle = function (elt, pseudoElt) { }; // CSSStyleDeclaration {}
+    RxWindow.prototype.getMatchedCSSRules = function (elt, pseudoElt) { }; // CSSRuleList {}
+    RxWindow.prototype.getSelection = function () { return null; };
+    RxWindow.prototype.matchMedia = function (query) { }; // MediaQueryList { }
+    RxWindow.prototype.moveBy = function (x, y) { };
+    RxWindow.prototype.moveTo = function (x, y) { };
+    RxWindow.prototype.msWriteProfilerMark = function (profilerMarkName) { };
+    RxWindow.prototype.open = function (url, target, features, replace) { return null; };
+    RxWindow.prototype.postMessage = function (message, targetOrigin, transfer) { };
+    RxWindow.prototype.print = function () { };
+    RxWindow.prototype.prompt = function (message, _default) { return null; };
+    RxWindow.prototype.resizeBy = function (x, y) { };
+    RxWindow.prototype.resizeTo = function (x, y) { };
+    RxWindow.prototype.scroll = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+    };
+    RxWindow.prototype.scrollBy = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+    };
+    RxWindow.prototype.scrollTo = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+    };
+    RxWindow.prototype.stop = function () { };
+    RxWindow.prototype.webkitCancelAnimationFrame = function (handle) { };
+    RxWindow.prototype.webkitConvertPointFromNodeToPage = function (node, pt) { }; // WebKitPoint { }
+    RxWindow.prototype.webkitConvertPointFromPageToNode = function (node, pt) { }; // WebKitPoint { }
+    RxWindow.prototype.webkitRequestAnimationFrame = function (callback) { return 0; };
+    RxWindow.prototype.addEventListener = function (type, listener, options) { };
+    RxWindow.prototype.removeEventListener = function (type, listener, options) { };
+    RxWindow.prototype.oncompassneedscalibration = function (event) { return null; };
+    RxWindow.prototype.ondevicelight = function (event) { return null; };
+    RxWindow.prototype.ondevicemotion = function (event) { };
+    RxWindow.prototype.ondeviceorientation = function (event) { };
+    RxWindow.prototype.ondeviceorientationabsolute = function (event) { };
+    RxWindow.prototype.onmousewheel = function (event) { };
+    RxWindow.prototype.onmsgesturechange = function (event) { };
+    RxWindow.prototype.onmsgesturedoubletap = function (event) { };
+    RxWindow.prototype.onmsgestureend = function (event) { };
+    RxWindow.prototype.onmsgesturehold = function (event) { };
+    RxWindow.prototype.onmsgesturestart = function (event) { };
+    RxWindow.prototype.onmsgesturetap = function (event) { };
+    RxWindow.prototype.onmsinertiastart = function (event) { };
+    RxWindow.prototype.onmspointercancel = function (event) { };
+    RxWindow.prototype.onmspointerdown = function (event) { };
+    RxWindow.prototype.onmspointerenter = function (event) { };
+    RxWindow.prototype.onmspointerleave = function (event) { };
+    RxWindow.prototype.onmspointermove = function (event) { };
+    RxWindow.prototype.onmspointerout = function (event) { };
+    RxWindow.prototype.onmspointerover = function (event) { };
+    RxWindow.prototype.onmspointerup = function (event) { };
+    RxWindow.prototype.onreadystatechange = function (event) { };
+    RxWindow.prototype.onvrdisplayactivate = function (event) { };
+    RxWindow.prototype.onvrdisplayblur = function (event) { };
+    RxWindow.prototype.onvrdisplayconnect = function (event) { };
+    RxWindow.prototype.onvrdisplaydeactivate = function (event) { };
+    RxWindow.prototype.onvrdisplaydisconnect = function (event) { };
+    RxWindow.prototype.onvrdisplayfocus = function (event) { };
+    RxWindow.prototype.onvrdisplaypointerrestricted = function (event) { };
+    RxWindow.prototype.onvrdisplaypointerunrestricted = function (event) { };
+    RxWindow.prototype.onvrdisplaypresentchange = function (event) { };
+    return RxWindow;
+}());
+exports.RxWindow = RxWindow;
+/*
+global: [Circular],
+clearInterval: [Function: clearInterval],
+clearTimeout: [Function: clearTimeout],
+setInterval: [Function: setInterval],
+setTimeout: [Function: setTimeout] { [Symbol(util.promisify.custom)]: [Function] },
+queueMicrotask: [Function: queueMicrotask],
+clearImmediate: [Function: clearImmediate],
+setImmediate: [Function: setImmediate] {
+[Symbol(util.promisify.custom)]: [Function]
+},
+__extends: [Function: __extends],
+__assign: [Function: assign],
+__rest: [Function: __rest],
+__decorate: [Function: __decorate],
+__param: [Function: __param],
+__metadata: [Function: __metadata],
+__awaiter: [Function: __awaiter],
+__generator: [Function: __generator],
+__exportStar: [Function: __exportStar],
+__createBinding: [Function],
+__values: [Function: __values],
+__read: [Function: __read],
+__spread: [Function: __spread],
+__spreadArrays: [Function: __spreadArrays],
+__await: [Function: __await],
+__asyncGenerator: [Function: __asyncGenerator],
+__asyncDelegator: [Function: __asyncDelegator],
+__asyncValues: [Function: __asyncValues],
+__makeTemplateObject: [Function: __makeTemplateObject],
+__importStar: [Function: __importStar],
+__importDefault: [Function: __importDefault],
+__classPrivateFieldGet: [Function: __classPrivateFieldGet],
+__classPrivateFieldSet: [Function: __classPrivateFieldSet],
+fetch: [Function: bound fetch] { polyfill: true },
+Response: undefined,
+Headers: undefined,
+Request: undefined
+*/
 function isRxElement(x) {
     return x.nodeType === RxNodeType.ELEMENT_NODE;
 }

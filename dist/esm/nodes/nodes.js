@@ -57,6 +57,28 @@ export class RxNode {
     }
 }
 export class RxStyle {
+    constructor(node) {
+        Object.defineProperty(this, 'node', {
+            value: node,
+            writable: false,
+            enumerable: false
+        });
+        this.init();
+    }
+    init() {
+        var _a;
+        const keys = Object.keys(this);
+        keys.forEach(key => delete this[key]);
+        if ((_a = this.node.attributes) === null || _a === void 0 ? void 0 : _a.style) {
+            const regex = /([^:]+):([^;]+);?\s*/gm;
+            const matches = [...this.node.attributes.style.matchAll(regex)];
+            matches.forEach((match) => {
+                const key = match[1];
+                const value = match[2];
+                this[key] = value;
+            });
+        }
+    }
     item(index) {
         const keys = Object.keys(this);
         if (keys.length > index) {
@@ -91,34 +113,49 @@ export class RxStyle {
             return `${key}: ${this[key]};`;
         }).join(' ');
     }
-    init() {
-        var _a;
-        const keys = Object.keys(this);
-        keys.forEach(key => delete this[key]);
-        if ((_a = this.node.attributes) === null || _a === void 0 ? void 0 : _a.style) {
-            const regex = /([^:]+):([^;]+);?\s*/gm;
-            const matches = [...this.node.attributes.style.matchAll(regex)];
-            matches.forEach((match) => {
-                const key = match[1];
-                const value = match[2];
-                this[key] = value;
-            });
-        }
-    }
-    constructor(node) {
-        Object.defineProperty(this, 'node', {
-            value: node,
-            writable: false,
-            enumerable: false
-        });
-        this.init();
-    }
 }
 export class RxClassList extends Array {
-    constructor(node) {
-        super();
-        this.node = node;
-        this.init();
+    constructor(...args) {
+        super(...args);
+    }
+    get node() {
+        return this.node_;
+    }
+    set node(node) {
+        if (this.node_ !== node) {
+            this.node_ = node;
+            this.init();
+        }
+    }
+    init() {
+        this.length = 0;
+        // console.log('RxClassList.node', this.node);
+        if (this.node.hasAttribute('class')) {
+            Array.prototype.push.apply(this, this.node.getAttribute('class').split(' ').map(name => name.trim()));
+        }
+    }
+    slice(start, end) {
+        const length = this.length;
+        start = start || 0;
+        start = (start >= 0) ? start : Math.max(0, length + start);
+        end = (typeof end !== 'undefined') ? end : length;
+        end = (end >= 0) ? Math.min(end, length) : length + end;
+        const size = end - start;
+        const classList = size > 0 ? new RxClassList(size) : new RxClassList();
+        let i;
+        for (i = 0; i < size; i++) {
+            classList[i] = this[start + i];
+        }
+        classList.node = this.node;
+        /*
+        // !!! from string ?
+        if (this.charAt) {
+            for (i = 0; i < size; i++) {
+                classList[i] = this.charAt(from + i);
+            }
+        }
+        */
+        return classList;
     }
     item(index) {
         return this[index];
@@ -128,11 +165,12 @@ export class RxClassList extends Array {
     }
     add(...names) {
         names.forEach(name => {
-            if (this.indexOf(name) !== -1) {
+            if (this.indexOf(name) === -1) {
                 this.push(name);
             }
         });
         this.serialize_();
+        // console.log('RxClasslist.add', `[${this.join(', ')}]`, this.node.attributes.class, names);
     }
     remove(...names) {
         names.forEach(name => {
@@ -175,14 +213,7 @@ export class RxClassList extends Array {
         this.serialize_();
     }
     serialize_() {
-        this.node.attributes.class = this.join(' ');
-    }
-    init() {
-        var _a;
-        this.length = 0;
-        if ((_a = this.node.attributes) === null || _a === void 0 ? void 0 : _a.class) {
-            Array.prototype.push.apply(this, this.node.attributes.class.split(' ').map(name => name.trim()));
-        }
+        this.node.setAttribute('class', this.join(' '));
     }
 }
 export class RxElement extends RxNode {
@@ -194,12 +225,15 @@ export class RxElement extends RxNode {
         if (attributes && typeof attributes === 'object') {
             this.attributes = attributes;
         }
+        // console.log('RxElement.constructor', this);
         this.style = new RxStyle(this);
-        this.classList = new RxClassList(this);
+        const classList = new RxClassList();
+        classList.node = this;
+        this.classList = classList;
         this.childNodes = [];
         /*
-            if (SKIP.indexOf(nodeName) === -1) {
-                console.log(parentNode.nodeName, '>', nodeName);
+        if (SKIP.indexOf(nodeName) === -1) {
+            // console.log(parentNode.nodeName, '>', nodeName);
         }
         */
     }
@@ -207,10 +241,10 @@ export class RxElement extends RxNode {
         let children = [], i = 0, node, nodes = this.childNodes;
         node = nodes[i++];
         while (node) {
-            node = nodes[i++];
             if (node.nodeType === RxNodeType.ELEMENT_NODE) {
                 children.push(node);
             }
+            node = nodes[i++];
         }
         return children;
     }
@@ -339,6 +373,18 @@ export class RxElement extends RxNode {
                 this.childNodes.push(node);
         }
         */
+    }
+    appendChild(newChild) {
+        if (newChild.parentNode) {
+            newChild.parentNode.removeChild(newChild);
+        }
+        if (isRxDocumentFragment(newChild)) {
+            this.append.apply(this, newChild.childNodes);
+        }
+        else {
+            this.append(newChild);
+        }
+        return newChild;
     }
     prepend(...nodesOrDOMStrings) {
         nodesOrDOMStrings = nodesOrDOMStrings.map(nodeOrDomString => {
@@ -729,6 +775,113 @@ export class RxDocument extends RxElement {
         return `${this.childNodes.map(x => x.serialize()).join('')}`;
     }
 }
+export class RxWindow {
+    constructor(options) {
+        if (options) {
+            Object.assign(this, options);
+        }
+    }
+    /* tslint:disable:no-unused-variable */
+    alert(message) { }
+    blur() { }
+    close() { }
+    confirm(message) { return false; }
+    departFocus(navigationReason, origin) { }
+    focus() { }
+    getComputedStyle(elt, pseudoElt) { } // CSSStyleDeclaration {}
+    getMatchedCSSRules(elt, pseudoElt) { } // CSSRuleList {}
+    getSelection() { return null; }
+    matchMedia(query) { } // MediaQueryList { }
+    moveBy(x, y) { }
+    moveTo(x, y) { }
+    msWriteProfilerMark(profilerMarkName) { }
+    open(url, target, features, replace) { return null; }
+    postMessage(message, targetOrigin, transfer) { }
+    print() { }
+    prompt(message, _default) { return null; }
+    resizeBy(x, y) { }
+    resizeTo(x, y) { }
+    scroll(...args) { }
+    scrollBy(...args) { }
+    scrollTo(...args) { }
+    stop() { }
+    webkitCancelAnimationFrame(handle) { }
+    webkitConvertPointFromNodeToPage(node, pt) { } // WebKitPoint { }
+    webkitConvertPointFromPageToNode(node, pt) { } // WebKitPoint { }
+    webkitRequestAnimationFrame(callback) { return 0; }
+    addEventListener(type, listener, options) { }
+    removeEventListener(type, listener, options) { }
+    oncompassneedscalibration(event) { return null; }
+    ondevicelight(event) { return null; }
+    ondevicemotion(event) { }
+    ondeviceorientation(event) { }
+    ondeviceorientationabsolute(event) { }
+    onmousewheel(event) { }
+    onmsgesturechange(event) { }
+    onmsgesturedoubletap(event) { }
+    onmsgestureend(event) { }
+    onmsgesturehold(event) { }
+    onmsgesturestart(event) { }
+    onmsgesturetap(event) { }
+    onmsinertiastart(event) { }
+    onmspointercancel(event) { }
+    onmspointerdown(event) { }
+    onmspointerenter(event) { }
+    onmspointerleave(event) { }
+    onmspointermove(event) { }
+    onmspointerout(event) { }
+    onmspointerover(event) { }
+    onmspointerup(event) { }
+    onreadystatechange(event) { }
+    onvrdisplayactivate(event) { }
+    onvrdisplayblur(event) { }
+    onvrdisplayconnect(event) { }
+    onvrdisplaydeactivate(event) { }
+    onvrdisplaydisconnect(event) { }
+    onvrdisplayfocus(event) { }
+    onvrdisplaypointerrestricted(event) { }
+    onvrdisplaypointerunrestricted(event) { }
+    onvrdisplaypresentchange(event) { }
+}
+/*
+global: [Circular],
+clearInterval: [Function: clearInterval],
+clearTimeout: [Function: clearTimeout],
+setInterval: [Function: setInterval],
+setTimeout: [Function: setTimeout] { [Symbol(util.promisify.custom)]: [Function] },
+queueMicrotask: [Function: queueMicrotask],
+clearImmediate: [Function: clearImmediate],
+setImmediate: [Function: setImmediate] {
+[Symbol(util.promisify.custom)]: [Function]
+},
+__extends: [Function: __extends],
+__assign: [Function: assign],
+__rest: [Function: __rest],
+__decorate: [Function: __decorate],
+__param: [Function: __param],
+__metadata: [Function: __metadata],
+__awaiter: [Function: __awaiter],
+__generator: [Function: __generator],
+__exportStar: [Function: __exportStar],
+__createBinding: [Function],
+__values: [Function: __values],
+__read: [Function: __read],
+__spread: [Function: __spread],
+__spreadArrays: [Function: __spreadArrays],
+__await: [Function: __await],
+__asyncGenerator: [Function: __asyncGenerator],
+__asyncDelegator: [Function: __asyncDelegator],
+__asyncValues: [Function: __asyncValues],
+__makeTemplateObject: [Function: __makeTemplateObject],
+__importStar: [Function: __importStar],
+__importDefault: [Function: __importDefault],
+__classPrivateFieldGet: [Function: __classPrivateFieldGet],
+__classPrivateFieldSet: [Function: __classPrivateFieldSet],
+fetch: [Function: bound fetch] { polyfill: true },
+Response: undefined,
+Headers: undefined,
+Request: undefined
+*/
 export function isRxElement(x) {
     return x.nodeType === RxNodeType.ELEMENT_NODE;
 }

@@ -1,5 +1,5 @@
 /**
- * @license rxcomp-server v1.0.0-beta.13
+ * @license rxcomp-server v1.0.0-beta.14
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
@@ -970,7 +970,36 @@ var RxNode = /*#__PURE__*/function () {
   return RxNode;
 }();
 var RxStyle = /*#__PURE__*/function () {
+  function RxStyle(node) {
+    Object.defineProperty(this, 'node', {
+      value: node,
+      writable: false,
+      enumerable: false
+    });
+    this.init();
+  }
+
   var _proto2 = RxStyle.prototype;
+
+  _proto2.init = function init() {
+    var _this = this,
+        _this$node$attributes;
+
+    var keys = Object.keys(this);
+    keys.forEach(function (key) {
+      return delete _this[key];
+    });
+
+    if ((_this$node$attributes = this.node.attributes) == null ? void 0 : _this$node$attributes.style) {
+      var regex = /([^:]+):([^;]+);?\s*/gm;
+      var matches = [].concat(this.node.attributes.style.matchAll(regex));
+      matches.forEach(function (match) {
+        var key = match[1];
+        var value = match[2];
+        _this[key] = value;
+      });
+    }
+  };
 
   _proto2.item = function item(index) {
     var keys = Object.keys(this);
@@ -1007,59 +1036,64 @@ var RxStyle = /*#__PURE__*/function () {
   };
 
   _proto2.serialize_ = function serialize_() {
-    var _this = this;
+    var _this2 = this;
 
     this.node.attributes.style = Object.keys(this).map(function (key) {
-      return key + ": " + _this[key] + ";";
+      return key + ": " + _this2[key] + ";";
     }).join(' ');
   };
-
-  _proto2.init = function init() {
-    var _this2 = this,
-        _this$node$attributes;
-
-    var keys = Object.keys(this);
-    keys.forEach(function (key) {
-      return delete _this2[key];
-    });
-
-    if ((_this$node$attributes = this.node.attributes) == null ? void 0 : _this$node$attributes.style) {
-      var regex = /([^:]+):([^;]+);?\s*/gm;
-      var matches = [].concat(this.node.attributes.style.matchAll(regex));
-      matches.forEach(function (match) {
-        var key = match[1];
-        var value = match[2];
-        _this2[key] = value;
-      });
-    }
-  };
-
-  function RxStyle(node) {
-    Object.defineProperty(this, 'node', {
-      value: node,
-      writable: false,
-      enumerable: false
-    });
-    this.init();
-  }
 
   return RxStyle;
 }();
 var RxClassList = /*#__PURE__*/function (_Array) {
   _inheritsLoose(RxClassList, _Array);
 
-  function RxClassList(node) {
-    var _this3;
+  function RxClassList() {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
 
-    _this3 = _Array.call(this) || this;
-    _this3.node = node;
-
-    _this3.init();
-
-    return _this3;
+    return _Array.call.apply(_Array, [this].concat(args)) || this;
   }
 
   var _proto3 = RxClassList.prototype;
+
+  _proto3.init = function init() {
+    this.length = 0; // console.log('RxClassList.node', this.node);
+
+    if (this.node.hasAttribute('class')) {
+      Array.prototype.push.apply(this, this.node.getAttribute('class').split(' ').map(function (name) {
+        return name.trim();
+      }));
+    }
+  };
+
+  _proto3.slice = function slice(start, end) {
+    var length = this.length;
+    start = start || 0;
+    start = start >= 0 ? start : Math.max(0, length + start);
+    end = typeof end !== 'undefined' ? end : length;
+    end = end >= 0 ? Math.min(end, length) : length + end;
+    var size = end - start;
+    var classList = size > 0 ? new RxClassList(size) : new RxClassList();
+    var i;
+
+    for (i = 0; i < size; i++) {
+      classList[i] = this[start + i];
+    }
+
+    classList.node = this.node;
+    /*
+    // !!! from string ?
+    if (this.charAt) {
+        for (i = 0; i < size; i++) {
+            classList[i] = this.charAt(from + i);
+        }
+    }
+    */
+
+    return classList;
+  };
 
   _proto3.item = function item(index) {
     return this[index];
@@ -1070,32 +1104,32 @@ var RxClassList = /*#__PURE__*/function (_Array) {
   };
 
   _proto3.add = function add() {
-    var _this4 = this;
-
-    for (var _len = arguments.length, names = new Array(_len), _key = 0; _key < _len; _key++) {
-      names[_key] = arguments[_key];
-    }
-
-    names.forEach(function (name) {
-      if (_this4.indexOf(name) !== -1) {
-        _this4.push(name);
-      }
-    });
-    this.serialize_();
-  };
-
-  _proto3.remove = function remove() {
-    var _this5 = this;
+    var _this3 = this;
 
     for (var _len2 = arguments.length, names = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
       names[_key2] = arguments[_key2];
     }
 
     names.forEach(function (name) {
-      var index = _this5.indexOf(name);
+      if (_this3.indexOf(name) === -1) {
+        _this3.push(name);
+      }
+    });
+    this.serialize_(); // console.log('RxClasslist.add', `[${this.join(', ')}]`, this.node.attributes.class, names);
+  };
+
+  _proto3.remove = function remove() {
+    var _this4 = this;
+
+    for (var _len3 = arguments.length, names = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      names[_key3] = arguments[_key3];
+    }
+
+    names.forEach(function (name) {
+      var index = _this4.indexOf(name);
 
       if (index !== -1) {
-        _this5.splice(index, 1);
+        _this4.splice(index, 1);
       }
     });
     this.serialize_();
@@ -1135,20 +1169,21 @@ var RxClassList = /*#__PURE__*/function (_Array) {
   };
 
   _proto3.serialize_ = function serialize_() {
-    this.node.attributes.class = this.join(' ');
+    this.node.setAttribute('class', this.join(' '));
   };
 
-  _proto3.init = function init() {
-    var _this$node$attributes2;
-
-    this.length = 0;
-
-    if ((_this$node$attributes2 = this.node.attributes) == null ? void 0 : _this$node$attributes2.class) {
-      Array.prototype.push.apply(this, this.node.attributes.class.split(' ').map(function (name) {
-        return name.trim();
-      }));
+  _createClass(RxClassList, [{
+    key: "node",
+    get: function get() {
+      return this.node_;
+    },
+    set: function set(node) {
+      if (this.node_ !== node) {
+        this.node_ = node;
+        this.init();
+      }
     }
-  };
+  }]);
 
   return RxClassList;
 }( /*#__PURE__*/_wrapNativeSuper(Array));
@@ -1156,7 +1191,7 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
   _inheritsLoose(RxElement, _RxNode);
 
   function RxElement(parentNode, nodeName, attributes) {
-    var _this6;
+    var _this5;
 
     if (parentNode === void 0) {
       parentNode = null;
@@ -1166,44 +1201,47 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
       attributes = null;
     }
 
-    _this6 = _RxNode.call(this, parentNode) || this;
-    _this6.attributes = {};
-    _this6.nodeType = exports.RxNodeType.ELEMENT_NODE;
-    _this6.nodeName = nodeName;
+    _this5 = _RxNode.call(this, parentNode) || this;
+    _this5.attributes = {};
+    _this5.nodeType = exports.RxNodeType.ELEMENT_NODE;
+    _this5.nodeName = nodeName;
 
     if (attributes && typeof attributes === 'object') {
-      _this6.attributes = attributes;
-    }
+      _this5.attributes = attributes;
+    } // console.log('RxElement.constructor', this);
 
-    _this6.style = new RxStyle(_assertThisInitialized(_this6));
-    _this6.classList = new RxClassList(_assertThisInitialized(_this6));
-    _this6.childNodes = [];
+
+    _this5.style = new RxStyle(_assertThisInitialized(_this5));
+    var classList = new RxClassList();
+    classList.node = _assertThisInitialized(_this5);
+    _this5.classList = classList;
+    _this5.childNodes = [];
     /*
-        if (SKIP.indexOf(nodeName) === -1) {
-            console.log(parentNode.nodeName, '>', nodeName);
+    if (SKIP.indexOf(nodeName) === -1) {
+        // console.log(parentNode.nodeName, '>', nodeName);
     }
     */
 
-    return _this6;
+    return _this5;
   }
 
   var _proto4 = RxElement.prototype;
 
   _proto4.append = function append() {
-    var _this7 = this;
+    var _this6 = this;
 
-    for (var _len3 = arguments.length, nodesOrDOMStrings = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-      nodesOrDOMStrings[_key3] = arguments[_key3];
+    for (var _len4 = arguments.length, nodesOrDOMStrings = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      nodesOrDOMStrings[_key4] = arguments[_key4];
     }
 
     nodesOrDOMStrings = nodesOrDOMStrings.map(function (nodeOrDomString) {
       var node;
 
       if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this7, nodeOrDomString);
+        node = new RxText(_this6, nodeOrDomString);
       } else {
         node = nodeOrDomString;
-        node.parentNode = _this7;
+        node.parentNode = _this6;
       }
 
       return node;
@@ -1222,21 +1260,35 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
     */
   };
 
-  _proto4.prepend = function prepend() {
-    var _this8 = this;
+  _proto4.appendChild = function appendChild(newChild) {
+    if (newChild.parentNode) {
+      newChild.parentNode.removeChild(newChild);
+    }
 
-    for (var _len4 = arguments.length, nodesOrDOMStrings = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-      nodesOrDOMStrings[_key4] = arguments[_key4];
+    if (isRxDocumentFragment(newChild)) {
+      this.append.apply(this, newChild.childNodes);
+    } else {
+      this.append(newChild);
+    }
+
+    return newChild;
+  };
+
+  _proto4.prepend = function prepend() {
+    var _this7 = this;
+
+    for (var _len5 = arguments.length, nodesOrDOMStrings = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+      nodesOrDOMStrings[_key5] = arguments[_key5];
     }
 
     nodesOrDOMStrings = nodesOrDOMStrings.map(function (nodeOrDomString) {
       var node;
 
       if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this8, nodeOrDomString);
+        node = new RxText(_this7, nodeOrDomString);
       } else {
         node = nodeOrDomString;
-        node.parentNode = _this8;
+        node.parentNode = _this7;
       }
 
       return node;
@@ -1256,20 +1308,20 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
   };
 
   _proto4.replaceChildren = function replaceChildren() {
-    var _this9 = this;
+    var _this8 = this;
 
-    for (var _len5 = arguments.length, nodesOrDOMStrings = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-      nodesOrDOMStrings[_key5] = arguments[_key5];
+    for (var _len6 = arguments.length, nodesOrDOMStrings = new Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
+      nodesOrDOMStrings[_key6] = arguments[_key6];
     }
 
     var nodes = nodesOrDOMStrings.map(function (nodeOrDomString) {
       var node;
 
       if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this9, nodeOrDomString);
+        node = new RxText(_this8, nodeOrDomString);
       } else {
         node = nodeOrDomString;
-        node.parentNode = _this9;
+        node.parentNode = _this8;
       }
 
       return node;
@@ -1384,14 +1436,14 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
   };
 
   _proto4.serializeAttributes = function serializeAttributes() {
-    var _this10 = this;
+    var _this9 = this;
 
     var attributes = '';
     var keys = Object.keys(this.attributes);
 
     if (keys.length) {
       attributes = ' ' + keys.map(function (k) {
-        return k + "=\"" + _this10.attributes[k] + "\"";
+        return k + "=\"" + _this9.attributes[k] + "\"";
       }).join(' ');
     }
 
@@ -1408,11 +1460,11 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
       node = nodes[i++];
 
       while (node) {
-        node = nodes[i++];
-
         if (node.nodeType === exports.RxNodeType.ELEMENT_NODE) {
           children.push(node);
         }
+
+        node = nodes[i++];
       }
 
       return children;
@@ -1567,11 +1619,11 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
       }).join('');
     },
     set: function set(html) {
-      var _this11 = this;
+      var _this10 = this;
 
       var doc = parse(html);
       var childNodes = doc.childNodes.map(function (n) {
-        n.parentNode = _this11;
+        n.parentNode = _this10;
         return n;
       });
       this.childNodes = childNodes;
@@ -1584,17 +1636,17 @@ var RxText = /*#__PURE__*/function (_RxNode2) {
   _inheritsLoose(RxText, _RxNode2);
 
   function RxText(parentNode, nodeValue) {
-    var _this12;
+    var _this11;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this12 = _RxNode2.call(this, parentNode) || this;
-    _this12.nodeType = exports.RxNodeType.TEXT_NODE;
-    _this12.nodeValue = String(nodeValue); // console.log('RxText', nodeValue);
+    _this11 = _RxNode2.call(this, parentNode) || this;
+    _this11.nodeType = exports.RxNodeType.TEXT_NODE;
+    _this11.nodeValue = String(nodeValue); // console.log('RxText', nodeValue);
 
-    return _this12;
+    return _this11;
   }
 
   var _proto5 = RxText.prototype;
@@ -1643,16 +1695,16 @@ var RxCData = /*#__PURE__*/function (_RxNode3) {
   _inheritsLoose(RxCData, _RxNode3);
 
   function RxCData(parentNode, nodeValue) {
-    var _this13;
+    var _this12;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this13 = _RxNode3.call(this, parentNode) || this;
-    _this13.nodeType = exports.RxNodeType.CDATA_SECTION_NODE;
-    _this13.nodeValue = String(nodeValue);
-    return _this13;
+    _this12 = _RxNode3.call(this, parentNode) || this;
+    _this12.nodeType = exports.RxNodeType.CDATA_SECTION_NODE;
+    _this12.nodeValue = String(nodeValue);
+    return _this12;
   }
 
   var _proto6 = RxCData.prototype;
@@ -1701,16 +1753,16 @@ var RxComment = /*#__PURE__*/function (_RxNode4) {
   _inheritsLoose(RxComment, _RxNode4);
 
   function RxComment(parentNode, nodeValue) {
-    var _this14;
+    var _this13;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this14 = _RxNode4.call(this, parentNode) || this;
-    _this14.nodeType = exports.RxNodeType.COMMENT_NODE;
-    _this14.nodeValue = String(nodeValue);
-    return _this14;
+    _this13 = _RxNode4.call(this, parentNode) || this;
+    _this13.nodeType = exports.RxNodeType.COMMENT_NODE;
+    _this13.nodeValue = String(nodeValue);
+    return _this13;
   }
 
   var _proto7 = RxComment.prototype;
@@ -1759,16 +1811,16 @@ var RxProcessingInstruction = /*#__PURE__*/function (_RxNode5) {
   _inheritsLoose(RxProcessingInstruction, _RxNode5);
 
   function RxProcessingInstruction(parentNode, nodeValue) {
-    var _this15;
+    var _this14;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this15 = _RxNode5.call(this, parentNode) || this;
-    _this15.nodeType = exports.RxNodeType.PROCESSING_INSTRUCTION_NODE;
-    _this15.nodeValue = String(nodeValue);
-    return _this15;
+    _this14 = _RxNode5.call(this, parentNode) || this;
+    _this14.nodeType = exports.RxNodeType.PROCESSING_INSTRUCTION_NODE;
+    _this14.nodeValue = String(nodeValue);
+    return _this14;
   }
 
   var _proto8 = RxProcessingInstruction.prototype;
@@ -1783,16 +1835,16 @@ var RxDocumentType = /*#__PURE__*/function (_RxNode6) {
   _inheritsLoose(RxDocumentType, _RxNode6);
 
   function RxDocumentType(parentNode, nodeValue) {
-    var _this16;
+    var _this15;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this16 = _RxNode6.call(this, parentNode) || this;
-    _this16.nodeType = exports.RxNodeType.DOCUMENT_TYPE_NODE;
-    _this16.nodeValue = String(nodeValue);
-    return _this16;
+    _this15 = _RxNode6.call(this, parentNode) || this;
+    _this15.nodeType = exports.RxNodeType.DOCUMENT_TYPE_NODE;
+    _this15.nodeValue = String(nodeValue);
+    return _this15;
   }
 
   var _proto9 = RxDocumentType.prototype;
@@ -1807,12 +1859,12 @@ var RxDocumentFragment = /*#__PURE__*/function (_RxElement) {
   _inheritsLoose(RxDocumentFragment, _RxElement);
 
   function RxDocumentFragment() {
-    var _this17;
+    var _this16;
 
-    _this17 = _RxElement.call(this, null, '#document-fragment') || this;
-    _this17.nodeType = exports.RxNodeType.DOCUMENT_FRAGMENT_NODE;
-    _this17.childNodes = [];
-    return _this17;
+    _this16 = _RxElement.call(this, null, '#document-fragment') || this;
+    _this16.nodeType = exports.RxNodeType.DOCUMENT_FRAGMENT_NODE;
+    _this16.childNodes = [];
+    return _this16;
   }
 
   return RxDocumentFragment;
@@ -1850,13 +1902,13 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
       readonly visibilityState: VisibilityState;
       */
   function RxDocument() {
-    var _this18;
+    var _this17;
 
-    _this18 = _RxElement2.call(this, null, '#document') || this;
-    _this18.location_ = RxLocation.location;
-    _this18.nodeType = exports.RxNodeType.DOCUMENT_NODE;
-    _this18.childNodes = [];
-    return _this18;
+    _this17 = _RxElement2.call(this, null, '#document') || this;
+    _this17.location_ = RxLocation.location;
+    _this17.nodeType = exports.RxNodeType.DOCUMENT_NODE;
+    _this17.childNodes = [];
+    return _this17;
   }
 
   var _proto10 = RxDocument.prototype;
@@ -2016,6 +2068,198 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
 
   return RxDocument;
 }(RxElement);
+var RxWindow = /*#__PURE__*/function () {
+  function RxWindow(options) {
+    if (options) {
+      Object.assign(this, options);
+    }
+  }
+  /* tslint:disable:no-unused-variable */
+
+
+  var _proto11 = RxWindow.prototype;
+
+  _proto11.alert = function alert(message) {};
+
+  _proto11.blur = function blur() {};
+
+  _proto11.close = function close() {};
+
+  _proto11.confirm = function confirm(message) {
+    return false;
+  };
+
+  _proto11.departFocus = function departFocus(navigationReason, origin) {};
+
+  _proto11.focus = function focus() {};
+
+  _proto11.getComputedStyle = function getComputedStyle(elt, pseudoElt) {} // CSSStyleDeclaration {}
+  ;
+
+  _proto11.getMatchedCSSRules = function getMatchedCSSRules(elt, pseudoElt) {} // CSSRuleList {}
+  ;
+
+  _proto11.getSelection = function getSelection() {
+    return null;
+  };
+
+  _proto11.matchMedia = function matchMedia(query) {} // MediaQueryList { }
+  ;
+
+  _proto11.moveBy = function moveBy(x, y) {};
+
+  _proto11.moveTo = function moveTo(x, y) {};
+
+  _proto11.msWriteProfilerMark = function msWriteProfilerMark(profilerMarkName) {};
+
+  _proto11.open = function open(url, target, features, replace) {
+    return null;
+  };
+
+  _proto11.postMessage = function postMessage(message, targetOrigin, transfer) {};
+
+  _proto11.print = function print() {};
+
+  _proto11.prompt = function prompt(message, _default) {
+    return null;
+  };
+
+  _proto11.resizeBy = function resizeBy(x, y) {};
+
+  _proto11.resizeTo = function resizeTo(x, y) {};
+
+  _proto11.scroll = function scroll() {};
+
+  _proto11.scrollBy = function scrollBy() {};
+
+  _proto11.scrollTo = function scrollTo() {};
+
+  _proto11.stop = function stop() {};
+
+  _proto11.webkitCancelAnimationFrame = function webkitCancelAnimationFrame(handle) {};
+
+  _proto11.webkitConvertPointFromNodeToPage = function webkitConvertPointFromNodeToPage(node, pt) {} // WebKitPoint { }
+  ;
+
+  _proto11.webkitConvertPointFromPageToNode = function webkitConvertPointFromPageToNode(node, pt) {} // WebKitPoint { }
+  ;
+
+  _proto11.webkitRequestAnimationFrame = function webkitRequestAnimationFrame(callback) {
+    return 0;
+  };
+
+  _proto11.addEventListener = function addEventListener(type, listener, options) {};
+
+  _proto11.removeEventListener = function removeEventListener(type, listener, options) {};
+
+  _proto11.oncompassneedscalibration = function oncompassneedscalibration(event) {
+    return null;
+  };
+
+  _proto11.ondevicelight = function ondevicelight(event) {
+    return null;
+  };
+
+  _proto11.ondevicemotion = function ondevicemotion(event) {};
+
+  _proto11.ondeviceorientation = function ondeviceorientation(event) {};
+
+  _proto11.ondeviceorientationabsolute = function ondeviceorientationabsolute(event) {};
+
+  _proto11.onmousewheel = function onmousewheel(event) {};
+
+  _proto11.onmsgesturechange = function onmsgesturechange(event) {};
+
+  _proto11.onmsgesturedoubletap = function onmsgesturedoubletap(event) {};
+
+  _proto11.onmsgestureend = function onmsgestureend(event) {};
+
+  _proto11.onmsgesturehold = function onmsgesturehold(event) {};
+
+  _proto11.onmsgesturestart = function onmsgesturestart(event) {};
+
+  _proto11.onmsgesturetap = function onmsgesturetap(event) {};
+
+  _proto11.onmsinertiastart = function onmsinertiastart(event) {};
+
+  _proto11.onmspointercancel = function onmspointercancel(event) {};
+
+  _proto11.onmspointerdown = function onmspointerdown(event) {};
+
+  _proto11.onmspointerenter = function onmspointerenter(event) {};
+
+  _proto11.onmspointerleave = function onmspointerleave(event) {};
+
+  _proto11.onmspointermove = function onmspointermove(event) {};
+
+  _proto11.onmspointerout = function onmspointerout(event) {};
+
+  _proto11.onmspointerover = function onmspointerover(event) {};
+
+  _proto11.onmspointerup = function onmspointerup(event) {};
+
+  _proto11.onreadystatechange = function onreadystatechange(event) {};
+
+  _proto11.onvrdisplayactivate = function onvrdisplayactivate(event) {};
+
+  _proto11.onvrdisplayblur = function onvrdisplayblur(event) {};
+
+  _proto11.onvrdisplayconnect = function onvrdisplayconnect(event) {};
+
+  _proto11.onvrdisplaydeactivate = function onvrdisplaydeactivate(event) {};
+
+  _proto11.onvrdisplaydisconnect = function onvrdisplaydisconnect(event) {};
+
+  _proto11.onvrdisplayfocus = function onvrdisplayfocus(event) {};
+
+  _proto11.onvrdisplaypointerrestricted = function onvrdisplaypointerrestricted(event) {};
+
+  _proto11.onvrdisplaypointerunrestricted = function onvrdisplaypointerunrestricted(event) {};
+
+  _proto11.onvrdisplaypresentchange = function onvrdisplaypresentchange(event) {};
+
+  return RxWindow;
+}();
+/*
+global: [Circular],
+clearInterval: [Function: clearInterval],
+clearTimeout: [Function: clearTimeout],
+setInterval: [Function: setInterval],
+setTimeout: [Function: setTimeout] { [Symbol(util.promisify.custom)]: [Function] },
+queueMicrotask: [Function: queueMicrotask],
+clearImmediate: [Function: clearImmediate],
+setImmediate: [Function: setImmediate] {
+[Symbol(util.promisify.custom)]: [Function]
+},
+__extends: [Function: __extends],
+__assign: [Function: assign],
+__rest: [Function: __rest],
+__decorate: [Function: __decorate],
+__param: [Function: __param],
+__metadata: [Function: __metadata],
+__awaiter: [Function: __awaiter],
+__generator: [Function: __generator],
+__exportStar: [Function: __exportStar],
+__createBinding: [Function],
+__values: [Function: __values],
+__read: [Function: __read],
+__spread: [Function: __spread],
+__spreadArrays: [Function: __spreadArrays],
+__await: [Function: __await],
+__asyncGenerator: [Function: __asyncGenerator],
+__asyncDelegator: [Function: __asyncDelegator],
+__asyncValues: [Function: __asyncValues],
+__makeTemplateObject: [Function: __makeTemplateObject],
+__importStar: [Function: __importStar],
+__importDefault: [Function: __importDefault],
+__classPrivateFieldGet: [Function: __classPrivateFieldGet],
+__classPrivateFieldSet: [Function: __classPrivateFieldSet],
+fetch: [Function: bound fetch] { polyfill: true },
+Response: undefined,
+Headers: undefined,
+Request: undefined
+*/
+
 function isRxElement(x) {
   return x.nodeType === exports.RxNodeType.ELEMENT_NODE;
 }
@@ -2456,6 +2700,13 @@ var Server = /*#__PURE__*/function (_Platform) {
 
     global.document = this.document;
     history.replaceState(null, document.title || '', location.origin);
+    global.window = global.self = new RxWindow({
+      document: document,
+      history: history,
+      location: location,
+      devicePixelRatio: 1
+    }); // console.log('window', window);
+
     return this.document;
   };
 
@@ -2578,4 +2829,4 @@ var ServerModule = /*#__PURE__*/function (_Module) {
 ServerModule.meta = {
   declarations: [].concat(factories, pipes),
   exports: [].concat(factories, pipes)
-};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.FileService=FileService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDOMStringList=RxDOMStringList;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxHistory=RxHistory;exports.RxLocation=RxLocation;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerRequest=ServerRequest;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=_querySelectorAll;exports.render$=render$;exports.template$=template$;Object.defineProperty(exports,'__esModule',{value:true});})));
+};exports.CacheItem=CacheItem;exports.CacheService=CacheService;exports.FileService=FileService;exports.RxCData=RxCData;exports.RxComment=RxComment;exports.RxDOMStringList=RxDOMStringList;exports.RxDocument=RxDocument;exports.RxDocumentType=RxDocumentType;exports.RxElement=RxElement;exports.RxHistory=RxHistory;exports.RxLocation=RxLocation;exports.RxNode=RxNode;exports.RxProcessingInstruction=RxProcessingInstruction;exports.RxQuery=RxQuery;exports.RxSelector=RxSelector;exports.RxText=RxText;exports.Server=Server;exports.ServerModule=ServerModule;exports.ServerRequest=ServerRequest;exports.ServerResponse=ServerResponse;exports.bootstrap$=bootstrap$;exports.cloneNode=_cloneNode;exports.fromCache$=fromCache$;exports.fromRenderRequest$=fromRenderRequest$;exports.getQueries=getQueries;exports.isRxComment=isRxComment;exports.isRxDocument=isRxDocument;exports.isRxDocumentType=isRxDocumentType;exports.isRxElement=isRxElement;exports.isRxProcessingInstruction=isRxProcessingInstruction;exports.isRxText=isRxText;exports.matchSelector=matchSelector;exports.matchSelectors=matchSelectors;exports.parse=parse;exports.querySelector=_querySelector;exports.querySelectorAll=_querySelectorAll;exports.render$=render$;exports.template$=template$;Object.defineProperty(exports,'__esModule',{value:true});})));

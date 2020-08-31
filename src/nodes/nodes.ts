@@ -66,6 +66,27 @@ export class RxNode {
 
 export class RxStyle {
 	[key: string]: any;
+	constructor(node: RxElement) {
+		Object.defineProperty(this, 'node', {
+			value: node,
+			writable: false,
+			enumerable: false
+		});
+		this.init();
+	}
+	init() {
+		const keys = Object.keys(this);
+		keys.forEach(key => delete this[key]);
+		if (this.node.attributes?.style) {
+			const regex: RegExp = /([^:]+):([^;]+);?\s*/gm
+			const matches: RegExpMatchArray[] = [...this.node.attributes.style.matchAll(regex)];
+			matches.forEach((match: RegExpMatchArray) => {
+				const key: string = match[1];
+				const value: string = match[2];
+				this[key] = value;
+			});
+		}
+	}
 	item(index: number): string | undefined {
 		const keys = Object.keys(this);
 		if (keys.length > index) {
@@ -98,31 +119,52 @@ export class RxStyle {
 			return `${key}: ${this[key]};`;
 		}).join(' ');
 	}
-	init() {
-		const keys = Object.keys(this);
-		keys.forEach(key => delete this[key]);
-		if (this.node.attributes?.style) {
-			const regex: RegExp = /([^:]+):([^;]+);?\s*/gm
-			const matches: RegExpMatchArray[] = [...this.node.attributes.style.matchAll(regex)];
-			matches.forEach((match: RegExpMatchArray) => {
-				const key: string = match[1];
-				const value: string = match[2];
-				this[key] = value;
-			});
-		}
-	}
-	constructor(node: RxElement) {
-		Object.defineProperty(this, 'node', {
-			value: node,
-			writable: false,
-			enumerable: false
-		});
-		this.init();
-	}
 }
 
 export class RxClassList extends Array<string> {
-	node: RxElement;
+	private node_!: RxElement;
+	get node(): RxElement {
+		return this.node_;
+	}
+	set node(node) {
+		if (this.node_ !== node) {
+			this.node_ = node;
+			this.init();
+		}
+	}
+	constructor(...args: any[]) {
+		super(...args);
+	}
+	init() {
+		this.length = 0;
+		// console.log('RxClassList.node', this.node);
+		if (this.node.hasAttribute('class')) {
+			Array.prototype.push.apply(this, this.node.getAttribute('class')!.split(' ').map(name => name.trim()));
+		}
+	}
+	slice(start?: number, end?: number): RxClassList {
+		const length = this.length;
+		start = start || 0;
+		start = (start >= 0) ? start : Math.max(0, length + start);
+		end = (typeof end !== 'undefined') ? end : length;
+		end = (end >= 0) ? Math.min(end, length) : length + end;
+		const size: number = end - start;
+		const classList: RxClassList = size > 0 ? new RxClassList(size) : new RxClassList();
+		let i: number;
+		for (i = 0; i < size; i++) {
+			classList[i] = this[start + i];
+		}
+		classList.node = this.node;
+		/*
+		// !!! from string ?
+		if (this.charAt) {
+			for (i = 0; i < size; i++) {
+				classList[i] = this.charAt(from + i);
+			}
+		}
+		*/
+		return classList;
+	}
 	item(index: number) {
 		return this[index];
 	}
@@ -131,11 +173,12 @@ export class RxClassList extends Array<string> {
 	}
 	add(...names: string[]) {
 		names.forEach(name => {
-			if (this.indexOf(name) !== -1) {
+			if (this.indexOf(name) === -1) {
 				this.push(name);
 			}
 		});
 		this.serialize_();
+		// console.log('RxClasslist.add', `[${this.join(', ')}]`, this.node.attributes.class, names);
 	}
 	remove(...names: string[]) {
 		names.forEach(name => {
@@ -175,18 +218,7 @@ export class RxClassList extends Array<string> {
 		this.serialize_();
 	}
 	private serialize_() {
-		this.node.attributes.class = this.join(' ');
-	}
-	init() {
-		this.length = 0;
-		if (this.node.attributes?.class) {
-			Array.prototype.push.apply(this, this.node.attributes.class.split(' ').map(name => name.trim()));
-		}
-	}
-	constructor(node: RxElement) {
-		super();
-		this.node = node;
-		this.init();
+		this.node.setAttribute('class', this.join(' '));
 	}
 }
 
@@ -203,10 +235,10 @@ export class RxElement extends RxNode {
 			nodes = this.childNodes;
 		node = nodes[i++];
 		while (node) {
-			node = nodes[i++];
 			if (node.nodeType === RxNodeType.ELEMENT_NODE) {
 				children.push(node as RxElement);
 			}
+			node = nodes[i++];
 		}
 		return children;
 	}
@@ -321,12 +353,15 @@ export class RxElement extends RxNode {
 		if (attributes && typeof attributes === 'object') {
 			this.attributes = attributes;
 		}
+		// console.log('RxElement.constructor', this);
 		this.style = new RxStyle(this);
-		this.classList = new RxClassList(this);
+		const classList = new RxClassList();
+		classList.node = this;
+		this.classList = classList;
 		this.childNodes = [];
 		/*
-			if (SKIP.indexOf(nodeName) === -1) {
-				console.log(parentNode.nodeName, '>', nodeName);
+		if (SKIP.indexOf(nodeName) === -1) {
+			// console.log(parentNode.nodeName, '>', nodeName);
 		}
 		*/
 	}
@@ -353,6 +388,17 @@ export class RxElement extends RxNode {
 				this.childNodes.push(node);
 		}
 		*/
+	}
+	appendChild<T extends RxNode>(newChild: T): T {
+		if (newChild.parentNode) {
+			newChild.parentNode.removeChild(newChild);
+		}
+		if (isRxDocumentFragment(newChild)) {
+			this.append.apply(this, newChild.childNodes);
+		} else {
+			this.append(newChild);
+		}
+		return newChild;
 	}
 	prepend(...nodesOrDOMStrings: (RxNode | string)[]) {
 		nodesOrDOMStrings = nodesOrDOMStrings.map(nodeOrDomString => {
@@ -680,8 +726,6 @@ export interface IDocument extends Document {
 	createDocumentFragment(): DocumentFragment; // Creates a new document.
 	createElement<K extends keyof HTMLElementTagNameMap>(tagName: K, options?: ElementCreationOptions): HTMLElementTagNameMap[K]; // Creates an instance of the element for the specified tag.
 	// @param tagName The name of an element.
-	// @deprecated
-	// createElement<K extends keyof HTMLElementDeprecatedTagNameMap>(tagName: K, options?: ElementCreationOptions): HTMLElementDeprecatedTagNameMap[K];
 	createElement(tagName: string, options?: ElementCreationOptions): HTMLElement;
 	createElementNS(namespaceURI: 'http://www.w3.org/1999/xhtml', qualifiedName: string): HTMLElement;
 	createElementNS<K extends keyof SVGElementTagNameMap>(namespaceURI: 'http://www.w3.org/2000/svg', qualifiedName: K): SVGElementTagNameMap[K];
@@ -788,8 +832,6 @@ export interface IDocument extends Document {
 	// @param whatToShow The type of nodes or elements to appear in the node list. For more information, see whatToShow.
 	// @param filter A custom NodeFilter function to use.
 	// @param entityReferenceExpansion A flag that specifies whether entity reference nodes are expanded.
-	// @deprecated
-	// createTreeWalker(root: Node, whatToShow: number, filter: NodeFilter | null, entityReferenceExpansion?: boolean): TreeWalker;
 	elementFromPoint(x: number, y: number): Element | null; // Returns the element for the specified x coordinate and the specified y coordinate.
 	// @param x The x-offset
 	// @param y The y-offset
@@ -844,6 +886,10 @@ export interface IDocument extends Document {
 	removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
 	removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
 	// DEPRECATED !!!
+	// @deprecated
+	// createElement<K extends keyof HTMLElementDeprecatedTagNameMap>(tagName: K, options?: ElementCreationOptions): HTMLElementDeprecatedTagNameMap[K];
+	// @deprecated
+	// createTreeWalker(root: Node, whatToShow: number, filter: NodeFilter | null, entityReferenceExpansion?: boolean): TreeWalker;
 	// Sets or gets the color of all active links in the document.
 	// @deprecated
 	// alinkColor: string; // Returns a reference to the collection of elements contained by the object.
@@ -1006,6 +1052,292 @@ export class RxDocument extends RxElement {
 	}
 }
 
+/** A window containing a DOM document; the document property points to the DOM document loaded in that window. */
+export interface IWindow { // extends Window
+	readonly applicationCache?: ApplicationCache;
+	readonly clientInformation?: Navigator;
+	readonly closed?: boolean;
+	readonly devicePixelRatio?: number;
+	readonly doNotTrack?: string;
+	readonly document?: Document;
+	readonly frameElement?: Element;
+	readonly frames?: Window;
+	readonly history?: History;
+	readonly innerHeight?: number;
+	readonly innerWidth?: number;
+	readonly length?: number;
+	readonly locationbar?: BarProp;
+	readonly menubar?: BarProp;
+	readonly msContentScript?: ExtensionScriptApis;
+	readonly navigator?: Navigator;
+	readonly outerHeight?: number;
+	readonly outerWidth?: number;
+	readonly pageXOffset?: number;
+	readonly pageYOffset?: number;
+	readonly parent?: Window;
+	readonly personalbar?: BarProp;
+	readonly screen?: Screen;
+	readonly screenLeft?: number;
+	readonly screenTop?: number;
+	readonly screenX?: number;
+	readonly screenY?: number;
+	readonly scrollX?: number;
+	readonly scrollY?: number;
+	readonly scrollbars?: BarProp;
+	readonly self?: Window & typeof globalThis;
+	readonly speechSynthesis?: SpeechSynthesis;
+	readonly statusbar?: BarProp;
+	readonly styleMedia?: StyleMedia;
+	readonly toolbar?: BarProp;
+	readonly top?: Window;
+	readonly window?: Window & typeof globalThis;
+	customElements?: CustomElementRegistry;
+	defaultStatus?: string;
+	location?: Location;
+	name?: string;
+	offscreenBuffering?: string | boolean;
+	opener?: any;
+	status?: string;
+	[index: number]: Window;
+	/*
+	alert(message?: any): void;
+	blur(): void;
+	close(): void;
+	confirm(message?: string): boolean;
+	departFocus(navigationReason: NavigationReason, origin: FocusNavigationOrigin): void;
+	focus(): void;
+	getComputedStyle(elt: Element, pseudoElt?: string | null): CSSStyleDeclaration;
+	getMatchedCSSRules(elt: Element, pseudoElt?: string | null): CSSRuleList;
+	getSelection(): Selection | null;
+	matchMedia(query: string): MediaQueryList;
+	moveBy(x: number, y: number): void;
+	moveTo(x: number, y: number): void;
+	msWriteProfilerMark(profilerMarkName: string): void;
+	open(url?: string, target?: string, features?: string, replace?: boolean): Window | null;
+	postMessage(message: any, targetOrigin: string, transfer?: Transferable[]): void;
+	print(): void;
+	prompt(message?: string, _default?: string): string | null;
+	resizeBy(x: number, y: number): void;
+	resizeTo(x: number, y: number): void;
+	scroll(options?: ScrollToOptions): void;
+	scroll(x: number, y: number): void;
+	scrollBy(options?: ScrollToOptions): void;
+	scrollBy(x: number, y: number): void;
+	scrollTo(options?: ScrollToOptions): void;
+	scrollTo(x: number, y: number): void;
+	stop(): void;
+	webkitCancelAnimationFrame(handle: number): void;
+	webkitConvertPointFromNodeToPage(node: Node, pt: WebKitPoint): WebKitPoint;
+	webkitConvertPointFromPageToNode(node: Node, pt: WebKitPoint): WebKitPoint;
+	webkitRequestAnimationFrame(callback: FrameRequestCallback): number;
+	addEventListener<K extends keyof WindowEventMap>(type: K, listener: (this: Window, event: WindowEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+	addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+	removeEventListener<K extends keyof WindowEventMap>(type: K, listener: (this: Window, event: WindowEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+	removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+	oncompassneedscalibration: ((this: Window, event: Event) => any) | null;
+	ondevicelight: ((this: Window, event: DeviceLightEvent) => any) | null;
+	ondevicemotion: ((this: Window, event: DeviceMotionEvent) => any) | null;
+	ondeviceorientation: ((this: Window, event: DeviceOrientationEvent) => any) | null;
+	ondeviceorientationabsolute: ((this: Window, event: DeviceOrientationEvent) => any) | null;
+	onmousewheel: ((this: Window, event: Event) => any) | null;
+	onmsgesturechange: ((this: Window, event: Event) => any) | null;
+	onmsgesturedoubletap: ((this: Window, event: Event) => any) | null;
+	onmsgestureend: ((this: Window, event: Event) => any) | null;
+	onmsgesturehold: ((this: Window, event: Event) => any) | null;
+	onmsgesturestart: ((this: Window, event: Event) => any) | null;
+	onmsgesturetap: ((this: Window, event: Event) => any) | null;
+	onmsinertiastart: ((this: Window, event: Event) => any) | null;
+	onmspointercancel: ((this: Window, event: Event) => any) | null;
+	onmspointerdown: ((this: Window, event: Event) => any) | null;
+	onmspointerenter: ((this: Window, event: Event) => any) | null;
+	onmspointerleave: ((this: Window, event: Event) => any) | null;
+	onmspointermove: ((this: Window, event: Event) => any) | null;
+	onmspointerout: ((this: Window, event: Event) => any) | null;
+	onmspointerover: ((this: Window, event: Event) => any) | null;
+	onmspointerup: ((this: Window, event: Event) => any) | null;
+	onreadystatechange: ((this: Window, event: ProgressEvent<Window>) => any) | null;
+	onvrdisplayactivate: ((this: Window, event: Event) => any) | null;
+	onvrdisplayblur: ((this: Window, event: Event) => any) | null;
+	onvrdisplayconnect: ((this: Window, event: Event) => any) | null;
+	onvrdisplaydeactivate: ((this: Window, event: Event) => any) | null;
+	onvrdisplaydisconnect: ((this: Window, event: Event) => any) | null;
+	onvrdisplayfocus: ((this: Window, event: Event) => any) | null;
+	onvrdisplaypointerrestricted: ((this: Window, event: Event) => any) | null;
+	onvrdisplaypointerunrestricted: ((this: Window, event: Event) => any) | null;
+	onvrdisplaypresentchange: ((this: Window, event: Event) => any) | null;
+	*/
+	// DEPRECATED !!!
+	// @deprecated
+	// readonly event: Event | undefined;
+	// @deprecated
+	// readonly external: External;
+	// @deprecated
+	// readonly orientation: string | number;
+	// @deprecated
+	// captureEvents(): void;
+	// @deprecated
+	// releaseEvents(): void;
+	// @deprecated
+	// onorientationchange: ((this: Window, event: Event) => any) | null;
+}
+
+export class RxWindow {
+	readonly applicationCache!: ApplicationCache;
+	readonly clientInformation!: Navigator;
+	readonly closed!: boolean;
+	readonly devicePixelRatio!: number;
+	readonly doNotTrack!: string;
+	readonly document!: Document;
+	readonly frameElement!: Element;
+	readonly frames!: Window;
+	readonly history!: History;
+	readonly innerHeight!: number;
+	readonly innerWidth!: number;
+	readonly length!: number;
+	readonly locationbar!: BarProp;
+	readonly menubar!: BarProp;
+	readonly msContentScript!: ExtensionScriptApis;
+	readonly navigator!: Navigator;
+	readonly outerHeight!: number;
+	readonly outerWidth!: number;
+	readonly pageXOffset!: number;
+	readonly pageYOffset!: number;
+	readonly parent!: Window;
+	readonly personalbar!: BarProp;
+	readonly screen!: Screen;
+	readonly screenLeft!: number;
+	readonly screenTop!: number;
+	readonly screenX!: number;
+	readonly screenY!: number;
+	readonly scrollX!: number;
+	readonly scrollY!: number;
+	readonly scrollbars!: BarProp;
+	readonly self!: Window & typeof globalThis;
+	readonly speechSynthesis!: SpeechSynthesis;
+	readonly statusbar!: BarProp;
+	readonly styleMedia!: StyleMedia;
+	readonly toolbar!: BarProp;
+	readonly top!: Window;
+	readonly window!: Window & typeof globalThis;
+	customElements!: CustomElementRegistry;
+	defaultStatus!: string;
+	location!: Location;
+	name!: string;
+	offscreenBuffering!: string | boolean;
+	opener!: any;
+	status!: string;
+	[index: number]: Window;
+	constructor(options?: IWindow) {
+		if (options) {
+			Object.assign(this, options);
+		}
+	}
+	/* tslint:disable:no-unused-variable */
+	alert(message?: any): void { }
+	blur(): void { }
+	close(): void { }
+	confirm(message?: string): boolean { return false; }
+	departFocus(navigationReason: NavigationReason, origin: FocusNavigationOrigin): void { }
+	focus(): void { }
+	getComputedStyle(elt: Element, pseudoElt?: string | null): any { } // CSSStyleDeclaration {}
+	getMatchedCSSRules(elt: Element, pseudoElt?: string | null): any { } // CSSRuleList {}
+	getSelection(): Selection | null { return null; }
+	matchMedia(query: string): any { } // MediaQueryList { }
+	moveBy(x: number, y: number): void { }
+	moveTo(x: number, y: number): void { }
+	msWriteProfilerMark(profilerMarkName: string): void { }
+	open(url?: string, target?: string, features?: string, replace?: boolean): Window | null { return null; }
+	postMessage(message: any, targetOrigin: string, transfer?: Transferable[]): void { }
+	print(): void { }
+	prompt(message?: string, _default?: string): string | null { return null; }
+	resizeBy(x: number, y: number): void { }
+	resizeTo(x: number, y: number): void { }
+	scroll(...args: any[]): void { }
+	scrollBy(...args: any[]): void { }
+	scrollTo(...args: any[]): void { }
+	stop(): void { }
+	webkitCancelAnimationFrame(handle: number): void { }
+	webkitConvertPointFromNodeToPage(node: Node, pt: WebKitPoint): any { } // WebKitPoint { }
+	webkitConvertPointFromPageToNode(node: Node, pt: WebKitPoint): any { } // WebKitPoint { }
+	webkitRequestAnimationFrame(callback: FrameRequestCallback): number { return 0; }
+	addEventListener<K extends keyof WindowEventMap>(type: K, listener: (this: Window, event: WindowEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+	addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void { }
+	removeEventListener<K extends keyof WindowEventMap>(type: K, listener: (this: Window, event: WindowEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+	removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void { }
+	oncompassneedscalibration(event: Event): any | null { return null; }
+	ondevicelight(event: DeviceLightEvent): any | null { return null; }
+	ondevicemotion(event: DeviceMotionEvent): any | null { }
+	ondeviceorientation(event: DeviceOrientationEvent): any | null { }
+	ondeviceorientationabsolute(event: DeviceOrientationEvent): any | null { }
+	onmousewheel(event: Event): any | null { }
+	onmsgesturechange(event: Event): any | null { }
+	onmsgesturedoubletap(event: Event): any | null { }
+	onmsgestureend(event: Event): any | null { }
+	onmsgesturehold(event: Event): any | null { }
+	onmsgesturestart(event: Event): any | null { }
+	onmsgesturetap(event: Event): any | null { }
+	onmsinertiastart(event: Event): any | null { }
+	onmspointercancel(event: Event): any | null { }
+	onmspointerdown(event: Event): any | null { }
+	onmspointerenter(event: Event): any | null { }
+	onmspointerleave(event: Event): any | null { }
+	onmspointermove(event: Event): any | null { }
+	onmspointerout(event: Event): any | null { }
+	onmspointerover(event: Event): any | null { }
+	onmspointerup(event: Event): any | null { }
+	onreadystatechange(event: ProgressEvent<Window>): any | null { }
+	onvrdisplayactivate(event: Event): any | null { }
+	onvrdisplayblur(event: Event): any | null { }
+	onvrdisplayconnect(event: Event): any | null { }
+	onvrdisplaydeactivate(event: Event): any | null { }
+	onvrdisplaydisconnect(event: Event): any | null { }
+	onvrdisplayfocus(event: Event): any | null { }
+	onvrdisplaypointerrestricted(event: Event): any | null { }
+	onvrdisplaypointerunrestricted(event: Event): any | null { }
+	onvrdisplaypresentchange(event: Event): any | null { }
+	/* tslint:enable:no-unused-variable */
+}
+
+/*
+global: [Circular],
+clearInterval: [Function: clearInterval],
+clearTimeout: [Function: clearTimeout],
+setInterval: [Function: setInterval],
+setTimeout: [Function: setTimeout] { [Symbol(util.promisify.custom)]: [Function] },
+queueMicrotask: [Function: queueMicrotask],
+clearImmediate: [Function: clearImmediate],
+setImmediate: [Function: setImmediate] {
+[Symbol(util.promisify.custom)]: [Function]
+},
+__extends: [Function: __extends],
+__assign: [Function: assign],
+__rest: [Function: __rest],
+__decorate: [Function: __decorate],
+__param: [Function: __param],
+__metadata: [Function: __metadata],
+__awaiter: [Function: __awaiter],
+__generator: [Function: __generator],
+__exportStar: [Function: __exportStar],
+__createBinding: [Function],
+__values: [Function: __values],
+__read: [Function: __read],
+__spread: [Function: __spread],
+__spreadArrays: [Function: __spreadArrays],
+__await: [Function: __await],
+__asyncGenerator: [Function: __asyncGenerator],
+__asyncDelegator: [Function: __asyncDelegator],
+__asyncValues: [Function: __asyncValues],
+__makeTemplateObject: [Function: __makeTemplateObject],
+__importStar: [Function: __importStar],
+__importDefault: [Function: __importDefault],
+__classPrivateFieldGet: [Function: __classPrivateFieldGet],
+__classPrivateFieldSet: [Function: __classPrivateFieldSet],
+fetch: [Function: bound fetch] { polyfill: true },
+Response: undefined,
+Headers: undefined,
+Request: undefined
+*/
+
 export function isRxElement(x: RxNode): x is RxElement {
 	return x.nodeType === RxNodeType.ELEMENT_NODE;
 }
@@ -1083,25 +1415,25 @@ export function parse(html: string) {
 			},
 			/*
 			oncdatastart: () => {
-				console.log('oncdatastart');
+				// console.log('oncdatastart');
 			},
 			oncdataend: () => {
-				console.log('oncdataend');
+				// console.log('oncdataend');
 			},
 			onerror: error => {
-				console.log('error', error);
+				// console.log('error', error);
 			},
 			onopentagname: (name) => {
-				console.log('onopentagname', name);
+				// console.log('onopentagname', name);
 			},
 			onattribute: (name, value) => {
-				console.log('onattribute', name, value);
+				// console.log('onattribute', name, value);
 			},
 			onreset: () => {
-				console.log('reset');
+				// console.log('reset');
 			},
 			onend: () => {
-				console.log('end');
+				// console.log('end');
 			},
 			*/
 		},

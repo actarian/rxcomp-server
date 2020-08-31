@@ -1,0 +1,14 @@
+<!-- @@master = ./templates/layout.html { "class": "page--test", "title": "RxCompServer" } -->
+<!-- @@block = main-->
+<main class="app" app-component>
+	<div class="app__inner">
+		<!-- @@include ./templates/shared/header.html -->
+		<div class="container">
+			<router-outlet></router-outlet>
+		</div>
+	</div>
+</main>
+<!-- @@close-->
+<!-- @@block = js-->
+<script src="/rxcomp-server/js/main.js"></script>
+<!-- @@close-->

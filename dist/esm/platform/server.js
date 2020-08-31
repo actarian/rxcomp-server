@@ -5,7 +5,7 @@ import CacheService, { CacheControlType, CacheMode } from '../cache/cache.servic
 import FileService from '../file/file.service';
 import { RxHistory } from '../history/history';
 import { RxLocation } from '../location/location';
-import { parse, RxDocument, RxElement, RxText } from '../nodes/nodes';
+import { parse, RxDocument, RxElement, RxText, RxWindow } from '../nodes/nodes';
 export class ServerRequest {
     constructor(options) {
         if (options) {
@@ -129,6 +129,13 @@ export default class Server extends Platform {
         this.document = document; // !!!
         global.document = this.document;
         history.replaceState(null, document.title || '', location.origin);
+        global.window = global.self = new RxWindow({
+            document: document,
+            history,
+            location,
+            devicePixelRatio: 1,
+        });
+        // console.log('window', window);
         return this.document;
     }
 }

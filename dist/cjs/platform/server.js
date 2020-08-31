@@ -143,6 +143,13 @@ var Server = /** @class */ (function (_super) {
         this.document = document; // !!!
         global.document = this.document;
         history.replaceState(null, document.title || '', location.origin);
+        global.window = global.self = new nodes_1.RxWindow({
+            document: document,
+            history: history,
+            location: location,
+            devicePixelRatio: 1,
+        });
+        // console.log('window', window);
         return this.document;
     };
     Server.render$ = render$;

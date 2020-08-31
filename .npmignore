@@ -3,6 +3,6 @@ esdoc
 gulpfile
 src
 test
-www
+web
 
 *.ignore

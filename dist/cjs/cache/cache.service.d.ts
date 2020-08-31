@@ -30,7 +30,7 @@ export default class CacheService {
     static mode: CacheMode;
     static folder: string;
     static has(type: string | undefined, filename: string): boolean;
-    static get(type: string | undefined, filename: string): any;
+    static get<T>(type: string, filename: string): T;
     static set(type: string | undefined, filename: string, value: any, maxAge?: number, cacheControl?: CacheControlType): any;
     static delete(type: string | undefined, filename: string): void;
     static has$(type: string | undefined, filename: string): Observable<boolean>;

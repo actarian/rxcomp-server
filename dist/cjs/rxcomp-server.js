@@ -40,6 +40,8 @@ Object.defineProperty(exports, "SelectorType", { enumerable: true, get: function
 var server_1 = require("./platform/server");
 Object.defineProperty(exports, "bootstrap$", { enumerable: true, get: function () { return server_1.bootstrap$; } });
 Object.defineProperty(exports, "Server", { enumerable: true, get: function () { return server_1.default; } });
+Object.defineProperty(exports, "fromCache$", { enumerable: true, get: function () { return server_1.fromCache$; } });
+Object.defineProperty(exports, "fromRenderRequest$", { enumerable: true, get: function () { return server_1.fromRenderRequest$; } });
 Object.defineProperty(exports, "render$", { enumerable: true, get: function () { return server_1.render$; } });
 Object.defineProperty(exports, "ServerRequest", { enumerable: true, get: function () { return server_1.ServerRequest; } });
 Object.defineProperty(exports, "ServerResponse", { enumerable: true, get: function () { return server_1.ServerResponse; } });
