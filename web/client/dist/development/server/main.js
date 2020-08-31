@@ -2629,7 +2629,36 @@ var RxNode = /*#__PURE__*/function () {
   return RxNode;
 }();
 var RxStyle = /*#__PURE__*/function () {
+  function RxStyle(node) {
+    Object.defineProperty(this, 'node', {
+      value: node,
+      writable: false,
+      enumerable: false
+    });
+    this.init();
+  }
+
   var _proto2 = RxStyle.prototype;
+
+  _proto2.init = function init() {
+    var _this = this,
+        _this$node$attributes;
+
+    var keys = Object.keys(this);
+    keys.forEach(function (key) {
+      return delete _this[key];
+    });
+
+    if ((_this$node$attributes = this.node.attributes) == null ? void 0 : _this$node$attributes.style) {
+      var regex = /([^:]+):([^;]+);?\s*/gm;
+      var matches = [].concat(this.node.attributes.style.matchAll(regex));
+      matches.forEach(function (match) {
+        var key = match[1];
+        var value = match[2];
+        _this[key] = value;
+      });
+    }
+  };
 
   _proto2.item = function item(index) {
     var keys = Object.keys(this);
@@ -2666,60 +2695,64 @@ var RxStyle = /*#__PURE__*/function () {
   };
 
   _proto2.serialize_ = function serialize_() {
-    var _this = this;
+    var _this2 = this;
 
     this.node.attributes.style = Object.keys(this).map(function (key) {
-      return key + ": " + _this[key] + ";";
+      return key + ": " + _this2[key] + ";";
     }).join(' ');
   };
-
-  _proto2.init = function init() {
-    var _this2 = this,
-        _this$node$attributes;
-
-    var keys = Object.keys(this);
-    keys.forEach(function (key) {
-      return delete _this2[key];
-    });
-
-    if ((_this$node$attributes = this.node.attributes) == null ? void 0 : _this$node$attributes.style) {
-      var regex = /([^:]+):([^;]+);?\s*/gm;
-      var matches = [].concat(this.node.attributes.style.matchAll(regex));
-      matches.forEach(function (match) {
-        var key = match[1];
-        var value = match[2];
-        _this2[key] = value;
-      });
-    }
-  };
-
-  function RxStyle(node) {
-    Object.defineProperty(this, 'node', {
-      value: node,
-      writable: false,
-      enumerable: false
-    });
-    this.init();
-  }
 
   return RxStyle;
 }();
 var RxClassList = /*#__PURE__*/function (_Array) {
   _inheritsLoose(RxClassList, _Array);
 
-  function RxClassList(node) {
-    var _this3;
+  function RxClassList() {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
 
-    console.log('RxClassList.constructor', node);
-    _this3 = _Array.call(this) || this;
-    _this3.node = node;
-
-    _this3.init();
-
-    return _this3;
+    return _Array.call.apply(_Array, [this].concat(args)) || this;
   }
 
   var _proto3 = RxClassList.prototype;
+
+  _proto3.init = function init() {
+    this.length = 0; // console.log('RxClassList.node', this.node);
+
+    if (this.node.hasAttribute('class')) {
+      Array.prototype.push.apply(this, this.node.getAttribute('class').split(' ').map(function (name) {
+        return name.trim();
+      }));
+    }
+  };
+
+  _proto3.slice = function slice(start, end) {
+    var length = this.length;
+    start = start || 0;
+    start = start >= 0 ? start : Math.max(0, length + start);
+    end = typeof end !== 'undefined' ? end : length;
+    end = end >= 0 ? Math.min(end, length) : length + end;
+    var size = end - start;
+    var classList = size > 0 ? new RxClassList(size) : new RxClassList();
+    var i;
+
+    for (i = 0; i < size; i++) {
+      classList[i] = this[start + i];
+    }
+
+    classList.node = this.node;
+    /*
+    // !!! from string ?
+    if (this.charAt) {
+        for (i = 0; i < size; i++) {
+            classList[i] = this.charAt(from + i);
+        }
+    }
+    */
+
+    return classList;
+  };
 
   _proto3.item = function item(index) {
     return this[index];
@@ -2730,32 +2763,32 @@ var RxClassList = /*#__PURE__*/function (_Array) {
   };
 
   _proto3.add = function add() {
-    var _this4 = this;
-
-    for (var _len = arguments.length, names = new Array(_len), _key = 0; _key < _len; _key++) {
-      names[_key] = arguments[_key];
-    }
-
-    names.forEach(function (name) {
-      if (_this4.indexOf(name) === -1) {
-        _this4.push(name);
-      }
-    });
-    this.serialize_(); // console.log('RxClasslist.add', `[${this.join(', ')}]`, this.node.attributes.class, names);
-  };
-
-  _proto3.remove = function remove() {
-    var _this5 = this;
+    var _this3 = this;
 
     for (var _len2 = arguments.length, names = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
       names[_key2] = arguments[_key2];
     }
 
     names.forEach(function (name) {
-      var index = _this5.indexOf(name);
+      if (_this3.indexOf(name) === -1) {
+        _this3.push(name);
+      }
+    });
+    this.serialize_(); // console.log('RxClasslist.add', `[${this.join(', ')}]`, this.node.attributes.class, names);
+  };
+
+  _proto3.remove = function remove() {
+    var _this4 = this;
+
+    for (var _len3 = arguments.length, names = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      names[_key3] = arguments[_key3];
+    }
+
+    names.forEach(function (name) {
+      var index = _this4.indexOf(name);
 
       if (index !== -1) {
-        _this5.splice(index, 1);
+        _this4.splice(index, 1);
       }
     });
     this.serialize_();
@@ -2798,16 +2831,18 @@ var RxClassList = /*#__PURE__*/function (_Array) {
     this.node.setAttribute('class', this.join(' '));
   };
 
-  _proto3.init = function init() {
-    this.length = 0;
-    console.log('RxClassList.node', this.node);
-
-    if (this.node.hasAttribute('class')) {
-      Array.prototype.push.apply(this, this.node.getAttribute('class').split(' ').map(function (name) {
-        return name.trim();
-      }));
+  _createClass(RxClassList, [{
+    key: "node",
+    get: function get() {
+      return this.node_;
+    },
+    set: function set(node) {
+      if (this.node_ !== node) {
+        this.node_ = node;
+        this.init();
+      }
     }
-  };
+  }]);
 
   return RxClassList;
 }( /*#__PURE__*/_wrapNativeSuper(Array));
@@ -2815,7 +2850,7 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
   _inheritsLoose(RxElement, _RxNode);
 
   function RxElement(parentNode, nodeName, attributes) {
-    var _this6;
+    var _this5;
 
     if (parentNode === void 0) {
       parentNode = null;
@@ -2825,45 +2860,47 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
       attributes = null;
     }
 
-    _this6 = _RxNode.call(this, parentNode) || this;
-    _this6.attributes = {};
-    _this6.nodeType = RxNodeType.ELEMENT_NODE;
-    _this6.nodeName = nodeName;
+    _this5 = _RxNode.call(this, parentNode) || this;
+    _this5.attributes = {};
+    _this5.nodeType = RxNodeType.ELEMENT_NODE;
+    _this5.nodeName = nodeName;
 
     if (attributes && typeof attributes === 'object') {
-      _this6.attributes = attributes;
-    }
+      _this5.attributes = attributes;
+    } // console.log('RxElement.constructor', this);
 
-    console.log('RxElement.constructor', _assertThisInitialized(_this6));
-    _this6.style = new RxStyle(_assertThisInitialized(_this6));
-    _this6.classList = new RxClassList(_assertThisInitialized(_this6));
-    _this6.childNodes = [];
+
+    _this5.style = new RxStyle(_assertThisInitialized(_this5));
+    var classList = new RxClassList();
+    classList.node = _assertThisInitialized(_this5);
+    _this5.classList = classList;
+    _this5.childNodes = [];
     /*
-        if (SKIP.indexOf(nodeName) === -1) {
-            console.log(parentNode.nodeName, '>', nodeName);
+    if (SKIP.indexOf(nodeName) === -1) {
+        // console.log(parentNode.nodeName, '>', nodeName);
     }
     */
 
-    return _this6;
+    return _this5;
   }
 
   var _proto4 = RxElement.prototype;
 
   _proto4.append = function append() {
-    var _this7 = this;
+    var _this6 = this;
 
-    for (var _len3 = arguments.length, nodesOrDOMStrings = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-      nodesOrDOMStrings[_key3] = arguments[_key3];
+    for (var _len4 = arguments.length, nodesOrDOMStrings = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      nodesOrDOMStrings[_key4] = arguments[_key4];
     }
 
     nodesOrDOMStrings = nodesOrDOMStrings.map(function (nodeOrDomString) {
       var node;
 
       if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this7, nodeOrDomString);
+        node = new RxText(_this6, nodeOrDomString);
       } else {
         node = nodeOrDomString;
-        node.parentNode = _this7;
+        node.parentNode = _this6;
       }
 
       return node;
@@ -2897,20 +2934,20 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
   };
 
   _proto4.prepend = function prepend() {
-    var _this8 = this;
+    var _this7 = this;
 
-    for (var _len4 = arguments.length, nodesOrDOMStrings = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-      nodesOrDOMStrings[_key4] = arguments[_key4];
+    for (var _len5 = arguments.length, nodesOrDOMStrings = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+      nodesOrDOMStrings[_key5] = arguments[_key5];
     }
 
     nodesOrDOMStrings = nodesOrDOMStrings.map(function (nodeOrDomString) {
       var node;
 
       if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this8, nodeOrDomString);
+        node = new RxText(_this7, nodeOrDomString);
       } else {
         node = nodeOrDomString;
-        node.parentNode = _this8;
+        node.parentNode = _this7;
       }
 
       return node;
@@ -2930,20 +2967,20 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
   };
 
   _proto4.replaceChildren = function replaceChildren() {
-    var _this9 = this;
+    var _this8 = this;
 
-    for (var _len5 = arguments.length, nodesOrDOMStrings = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-      nodesOrDOMStrings[_key5] = arguments[_key5];
+    for (var _len6 = arguments.length, nodesOrDOMStrings = new Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
+      nodesOrDOMStrings[_key6] = arguments[_key6];
     }
 
     var nodes = nodesOrDOMStrings.map(function (nodeOrDomString) {
       var node;
 
       if (typeof nodeOrDomString === 'string') {
-        node = new RxText(_this9, nodeOrDomString);
+        node = new RxText(_this8, nodeOrDomString);
       } else {
         node = nodeOrDomString;
-        node.parentNode = _this9;
+        node.parentNode = _this8;
       }
 
       return node;
@@ -3058,14 +3095,14 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
   };
 
   _proto4.serializeAttributes = function serializeAttributes() {
-    var _this10 = this;
+    var _this9 = this;
 
     var attributes = '';
     var keys = Object.keys(this.attributes);
 
     if (keys.length) {
       attributes = ' ' + keys.map(function (k) {
-        return k + "=\"" + _this10.attributes[k] + "\"";
+        return k + "=\"" + _this9.attributes[k] + "\"";
       }).join(' ');
     }
 
@@ -3241,11 +3278,11 @@ var RxElement = /*#__PURE__*/function (_RxNode) {
       }).join('');
     },
     set: function set(html) {
-      var _this11 = this;
+      var _this10 = this;
 
       var doc = parse(html);
       var childNodes = doc.childNodes.map(function (n) {
-        n.parentNode = _this11;
+        n.parentNode = _this10;
         return n;
       });
       this.childNodes = childNodes;
@@ -3258,17 +3295,17 @@ var RxText = /*#__PURE__*/function (_RxNode2) {
   _inheritsLoose(RxText, _RxNode2);
 
   function RxText(parentNode, nodeValue) {
-    var _this12;
+    var _this11;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this12 = _RxNode2.call(this, parentNode) || this;
-    _this12.nodeType = RxNodeType.TEXT_NODE;
-    _this12.nodeValue = String(nodeValue); // console.log('RxText', nodeValue);
+    _this11 = _RxNode2.call(this, parentNode) || this;
+    _this11.nodeType = RxNodeType.TEXT_NODE;
+    _this11.nodeValue = String(nodeValue); // console.log('RxText', nodeValue);
 
-    return _this12;
+    return _this11;
   }
 
   var _proto5 = RxText.prototype;
@@ -3317,16 +3354,16 @@ var RxComment = /*#__PURE__*/function (_RxNode4) {
   _inheritsLoose(RxComment, _RxNode4);
 
   function RxComment(parentNode, nodeValue) {
-    var _this14;
+    var _this13;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this14 = _RxNode4.call(this, parentNode) || this;
-    _this14.nodeType = RxNodeType.COMMENT_NODE;
-    _this14.nodeValue = String(nodeValue);
-    return _this14;
+    _this13 = _RxNode4.call(this, parentNode) || this;
+    _this13.nodeType = RxNodeType.COMMENT_NODE;
+    _this13.nodeValue = String(nodeValue);
+    return _this13;
   }
 
   var _proto7 = RxComment.prototype;
@@ -3375,16 +3412,16 @@ var RxProcessingInstruction = /*#__PURE__*/function (_RxNode5) {
   _inheritsLoose(RxProcessingInstruction, _RxNode5);
 
   function RxProcessingInstruction(parentNode, nodeValue) {
-    var _this15;
+    var _this14;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this15 = _RxNode5.call(this, parentNode) || this;
-    _this15.nodeType = RxNodeType.PROCESSING_INSTRUCTION_NODE;
-    _this15.nodeValue = String(nodeValue);
-    return _this15;
+    _this14 = _RxNode5.call(this, parentNode) || this;
+    _this14.nodeType = RxNodeType.PROCESSING_INSTRUCTION_NODE;
+    _this14.nodeValue = String(nodeValue);
+    return _this14;
   }
 
   var _proto8 = RxProcessingInstruction.prototype;
@@ -3399,16 +3436,16 @@ var RxDocumentType = /*#__PURE__*/function (_RxNode6) {
   _inheritsLoose(RxDocumentType, _RxNode6);
 
   function RxDocumentType(parentNode, nodeValue) {
-    var _this16;
+    var _this15;
 
     if (parentNode === void 0) {
       parentNode = null;
     }
 
-    _this16 = _RxNode6.call(this, parentNode) || this;
-    _this16.nodeType = RxNodeType.DOCUMENT_TYPE_NODE;
-    _this16.nodeValue = String(nodeValue);
-    return _this16;
+    _this15 = _RxNode6.call(this, parentNode) || this;
+    _this15.nodeType = RxNodeType.DOCUMENT_TYPE_NODE;
+    _this15.nodeValue = String(nodeValue);
+    return _this15;
   }
 
   var _proto9 = RxDocumentType.prototype;
@@ -3423,12 +3460,12 @@ var RxDocumentFragment = /*#__PURE__*/function (_RxElement) {
   _inheritsLoose(RxDocumentFragment, _RxElement);
 
   function RxDocumentFragment() {
-    var _this17;
+    var _this16;
 
-    _this17 = _RxElement.call(this, null, '#document-fragment') || this;
-    _this17.nodeType = RxNodeType.DOCUMENT_FRAGMENT_NODE;
-    _this17.childNodes = [];
-    return _this17;
+    _this16 = _RxElement.call(this, null, '#document-fragment') || this;
+    _this16.nodeType = RxNodeType.DOCUMENT_FRAGMENT_NODE;
+    _this16.childNodes = [];
+    return _this16;
   }
 
   return RxDocumentFragment;
@@ -3466,13 +3503,13 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
       readonly visibilityState: VisibilityState;
       */
   function RxDocument() {
-    var _this18;
+    var _this17;
 
-    _this18 = _RxElement2.call(this, null, '#document') || this;
-    _this18.location_ = RxLocation.location;
-    _this18.nodeType = RxNodeType.DOCUMENT_NODE;
-    _this18.childNodes = [];
-    return _this18;
+    _this17 = _RxElement2.call(this, null, '#document') || this;
+    _this17.location_ = RxLocation.location;
+    _this17.nodeType = RxNodeType.DOCUMENT_NODE;
+    _this17.childNodes = [];
+    return _this17;
   }
 
   var _proto10 = RxDocument.prototype;
@@ -4266,8 +4303,8 @@ var Server = /*#__PURE__*/function (_Platform) {
       history: history,
       location: location,
       devicePixelRatio: 1
-    });
-    console.log('window', window);
+    }); // console.log('window', window);
+
     return this.document;
   };
 
@@ -4799,7 +4836,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
   privateMap.set(receiver, value);
   return value;
-}var tslib_es6=/*#__PURE__*/Object.freeze({__proto__:null,__extends: __extends,get __assign(){return _assign},__rest: __rest,__decorate: __decorate,__param: __param,__metadata: __metadata,__awaiter: __awaiter,__generator: __generator,__createBinding: __createBinding,__exportStar: __exportStar,__values: __values,__read: __read,__spread: __spread,__spreadArrays: __spreadArrays,__await: __await,__asyncGenerator: __asyncGenerator,__asyncDelegator: __asyncDelegator,__asyncValues: __asyncValues,__makeTemplateObject: __makeTemplateObject,__importStar: __importStar,__importDefault: __importDefault,__classPrivateFieldGet: __classPrivateFieldGet,__classPrivateFieldSet: __classPrivateFieldSet});var tslib_1 = getCjsExportFromNamespace(tslib_es6);var view = createCommonjsModule(function (module, exports) {
+}var tslib_es6=/*#__PURE__*/Object.freeze({__proto__:null,__extends: __extends,get __assign(){return _assign},__rest: __rest,__decorate: __decorate,__param: __param,__metadata: __metadata,__awaiter: __awaiter,__generator: __generator,__createBinding: __createBinding,__exportStar: __exportStar,__values: __values,__read: __read,__spread: __spread,__spreadArrays: __spreadArrays,__await: __await,__asyncGenerator: __asyncGenerator,__asyncDelegator: __asyncDelegator,__asyncValues: __asyncValues,__makeTemplateObject: __makeTemplateObject,__importStar: __importStar,__importDefault: __importDefault,__classPrivateFieldGet: __classPrivateFieldGet,__classPrivateFieldSet: __classPrivateFieldSet});var view = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -4808,7 +4845,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var View =
   /** @class */
   function (_super) {
-    tslib_1.__extends(View, _super);
+    tslib_es6.__extends(View, _super);
 
     function View() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -4873,7 +4910,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       var matches = url.matchAll(regExp);
 
       try {
-        for (var matches_1 = tslib_1.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
+        for (var matches_1 = tslib_es6.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
           var match = matches_1_1.value;
           var g1 = match[1];
           var g2 = match[2];
@@ -5028,7 +5065,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var LocationStrategyPath =
   /** @class */
   function (_super) {
-    tslib_1.__extends(LocationStrategyPath, _super);
+    tslib_es6.__extends(LocationStrategyPath, _super);
 
     function LocationStrategyPath() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5056,7 +5093,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       var matches = url.matchAll(regExp);
 
       try {
-        for (var matches_2 = tslib_1.__values(matches), matches_2_1 = matches_2.next(); !matches_2_1.done; matches_2_1 = matches_2.next()) {
+        for (var matches_2 = tslib_es6.__values(matches), matches_2_1 = matches_2.next(); !matches_2_1.done; matches_2_1 = matches_2.next()) {
           var match = matches_2_1.value;
           var g1 = match[1];
           var g2 = match[2];
@@ -5114,7 +5151,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var LocationStrategyHash =
   /** @class */
   function (_super) {
-    tslib_1.__extends(LocationStrategyHash, _super);
+    tslib_es6.__extends(LocationStrategyHash, _super);
 
     function LocationStrategyHash() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5156,7 +5193,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       var matches = url.matchAll(regExp);
 
       try {
-        for (var matches_3 = tslib_1.__values(matches), matches_3_1 = matches_3.next(); !matches_3_1.done; matches_3_1 = matches_3.next()) {
+        for (var matches_3 = tslib_es6.__values(matches), matches_3_1 = matches_3.next(); !matches_3_1.done; matches_3_1 = matches_3.next()) {
           var match = matches_3_1.value;
           var g1 = match[1];
           var g2 = match[2];
@@ -5388,7 +5425,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         var matches = this.path.matchAll(regExp);
 
         try {
-          for (var matches_1 = tslib_1.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
+          for (var matches_1 = tslib_es6.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
             var match = matches_1_1.value;
             var g1 = match[1];
             var g2 = match[2];
@@ -5577,7 +5614,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var NavigationStart =
   /** @class */
   function (_super) {
-    tslib_1.__extends(NavigationStart, _super);
+    tslib_es6.__extends(NavigationStart, _super);
 
     function NavigationStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5591,7 +5628,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var RoutesRecognized =
   /** @class */
   function (_super) {
-    tslib_1.__extends(RoutesRecognized, _super);
+    tslib_es6.__extends(RoutesRecognized, _super);
 
     function RoutesRecognized() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5605,7 +5642,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var GuardsCheckStart =
   /** @class */
   function (_super) {
-    tslib_1.__extends(GuardsCheckStart, _super);
+    tslib_es6.__extends(GuardsCheckStart, _super);
 
     function GuardsCheckStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5619,7 +5656,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var ChildActivationStart =
   /** @class */
   function (_super) {
-    tslib_1.__extends(ChildActivationStart, _super);
+    tslib_es6.__extends(ChildActivationStart, _super);
 
     function ChildActivationStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5633,7 +5670,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var ActivationStart =
   /** @class */
   function (_super) {
-    tslib_1.__extends(ActivationStart, _super);
+    tslib_es6.__extends(ActivationStart, _super);
 
     function ActivationStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5647,7 +5684,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var GuardsCheckEnd =
   /** @class */
   function (_super) {
-    tslib_1.__extends(GuardsCheckEnd, _super);
+    tslib_es6.__extends(GuardsCheckEnd, _super);
 
     function GuardsCheckEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5661,7 +5698,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var ResolveStart =
   /** @class */
   function (_super) {
-    tslib_1.__extends(ResolveStart, _super);
+    tslib_es6.__extends(ResolveStart, _super);
 
     function ResolveStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5675,7 +5712,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var ResolveEnd =
   /** @class */
   function (_super) {
-    tslib_1.__extends(ResolveEnd, _super);
+    tslib_es6.__extends(ResolveEnd, _super);
 
     function ResolveEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5689,7 +5726,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var ActivationEnd =
   /** @class */
   function (_super) {
-    tslib_1.__extends(ActivationEnd, _super);
+    tslib_es6.__extends(ActivationEnd, _super);
 
     function ActivationEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5703,7 +5740,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var ChildActivationEnd =
   /** @class */
   function (_super) {
-    tslib_1.__extends(ChildActivationEnd, _super);
+    tslib_es6.__extends(ChildActivationEnd, _super);
 
     function ChildActivationEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5717,7 +5754,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var RouteConfigLoadStart =
   /** @class */
   function (_super) {
-    tslib_1.__extends(RouteConfigLoadStart, _super);
+    tslib_es6.__extends(RouteConfigLoadStart, _super);
 
     function RouteConfigLoadStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5731,7 +5768,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var RouteConfigLoadEnd =
   /** @class */
   function (_super) {
-    tslib_1.__extends(RouteConfigLoadEnd, _super);
+    tslib_es6.__extends(RouteConfigLoadEnd, _super);
 
     function RouteConfigLoadEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5745,7 +5782,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var NavigationEnd =
   /** @class */
   function (_super) {
-    tslib_1.__extends(NavigationEnd, _super);
+    tslib_es6.__extends(NavigationEnd, _super);
 
     function NavigationEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5759,7 +5796,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var NavigationCancel =
   /** @class */
   function (_super) {
-    tslib_1.__extends(NavigationCancel, _super);
+    tslib_es6.__extends(NavigationCancel, _super);
 
     function NavigationCancel() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5773,7 +5810,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var NavigationError =
   /** @class */
   function (_super) {
-    tslib_1.__extends(NavigationError, _super);
+    tslib_es6.__extends(NavigationError, _super);
 
     function NavigationError() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -5849,10 +5886,34 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     };
 
     RouterService.findRouteByUrl = function (initialUrl) {
+      var e_1, _a;
+
       var routes = getFlatRoutes_(this.routes);
-      var resolvedRoute = routes.find(function (route) {
-        return initialUrl.match(route.matcher);
-      }) || null;
+      var resolvedRoute = null;
+      var lastMatcbesLength = Number.NEGATIVE_INFINITY;
+
+      try {
+        for (var routes_1 = tslib_es6.__values(routes), routes_1_1 = routes_1.next(); !routes_1_1.done; routes_1_1 = routes_1.next()) {
+          var route = routes_1_1.value;
+          var matches = initialUrl.match(route.matcher);
+
+          if (matches && (!resolvedRoute || matches[0].length > lastMatcbesLength)) {
+            lastMatcbesLength = matches[0].length;
+            resolvedRoute = route;
+          }
+        }
+      } catch (e_1_1) {
+        e_1 = {
+          error: e_1_1
+        };
+      } finally {
+        try {
+          if (routes_1_1 && !routes_1_1.done && (_a = routes_1.return)) _a.call(routes_1);
+        } finally {
+          if (e_1) throw e_1.error;
+        }
+      }
+
       var urlAfterRedirects = initialUrl;
 
       if (resolvedRoute && resolvedRoute.redirectTo) {
@@ -5860,7 +5921,8 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         // urlAfterRedirects = routePath.url;
         urlAfterRedirects = resolvedRoute.redirectTo;
         resolvedRoute = this.findRouteByUrl(urlAfterRedirects);
-      }
+      } // console.log('RouterService.findRouteByUrl', resolvedRoute);
+
 
       return resolvedRoute;
     };
@@ -5962,28 +6024,28 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   }
 
   function resolveRoutes_(routes, childRoutes, initialUrl) {
-    var e_1, _a;
+    var e_2, _a;
 
     var resolvedRoute;
 
     try {
-      for (var childRoutes_1 = tslib_1.__values(childRoutes), childRoutes_1_1 = childRoutes_1.next(); !childRoutes_1_1.done; childRoutes_1_1 = childRoutes_1.next()) {
-        var route = childRoutes_1_1.value;
-        resolvedRoute = resolveRoute_(routes, route, initialUrl);
+      for (var childRoutes_1 = tslib_es6.__values(childRoutes), childRoutes_1_1 = childRoutes_1.next(); !childRoutes_1_1.done; childRoutes_1_1 = childRoutes_1.next()) {
+        var childRoute = childRoutes_1_1.value;
+        var route = resolveRoute_(routes, childRoute, initialUrl);
 
-        if (resolvedRoute) {
-          return resolvedRoute;
+        if (route && (!resolvedRoute || route.remainUrl.length < resolvedRoute.remainUrl.length)) {
+          resolvedRoute = route;
         }
       }
-    } catch (e_1_1) {
-      e_1 = {
-        error: e_1_1
+    } catch (e_2_1) {
+      e_2 = {
+        error: e_2_1
       };
     } finally {
       try {
         if (childRoutes_1_1 && !childRoutes_1_1.done && (_a = childRoutes_1.return)) _a.call(childRoutes_1);
       } finally {
-        if (e_1) throw e_1.error;
+        if (e_2) throw e_2.error;
       }
     }
 
@@ -6018,7 +6080,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     remainUrl = initialUrl.substring(match[0].length, initialUrl.length);
     var routePath$1 = new routePath.RoutePath(extractedUrl, route.segments, undefined, RouterService.locationStrategy);
     var params = routePath$1.params;
-    var snapshot = new routeSnapshot.RouteSnapshot(tslib_1.__assign(tslib_1.__assign({}, route), {
+    var snapshot = new routeSnapshot.RouteSnapshot(tslib_es6.__assign(tslib_es6.__assign({}, route), {
       initialUrl: initialUrl,
       urlAfterRedirects: urlAfterRedirects,
       extractedUrl: extractedUrl,
@@ -6042,7 +6104,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
   function makeActivatorResponse$_(event, activators) {
     // console.log('makeActivatorResponse$_', event);
-    return rxjs__default.combineLatest.apply(void 0, tslib_1.__spread(activators)).pipe(operators__default.map(function (values) {
+    return rxjs__default.combineLatest.apply(void 0, tslib_es6.__spread(activators)).pipe(operators__default.map(function (values) {
       var canActivate = values.reduce(function (p, c) {
         return p === true ? c === true ? true : c : p;
       }, true);
@@ -6050,7 +6112,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       if (canActivate === true) {
         return event;
       } else {
-        var cancelEvent = tslib_1.__assign(tslib_1.__assign({}, event), {
+        var cancelEvent = tslib_es6.__assign(tslib_es6.__assign({}, event), {
           reason: 'An activation guard has dismissed navigation to the route.'
         });
 
@@ -6191,47 +6253,47 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         if (snapshot) {
           // console.log(routes);
           currentRoute = snapshot;
-          events$.next(new routerEvents.RoutesRecognized(tslib_1.__assign(tslib_1.__assign({}, event), {
+          events$.next(new routerEvents.RoutesRecognized(tslib_es6.__assign(tslib_es6.__assign({}, event), {
             route: snapshot
           })));
         } else {
-          events$.next(new routerEvents.NavigationError(tslib_1.__assign(tslib_1.__assign({}, event), {
+          events$.next(new routerEvents.NavigationError(tslib_es6.__assign(tslib_es6.__assign({}, event), {
             error: new Error('unknown route')
           })));
         }
       } else if (event instanceof routerEvents.RoutesRecognized) {
         // console.log('RoutesRecognized', event.route.component, event.route.initialUrl, event.route.extractedUrl, event.route.urlAfterRedirects);
-        events$.next(new routerEvents.GuardsCheckStart(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.GuardsCheckStart(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.GuardsCheckStart) {
         // console.log('GuardsCheckStart', event);
-        events$.next(new routerEvents.ChildActivationStart(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.ChildActivationStart(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.ChildActivationStart) {
         // console.log('ChildActivationStart', event);
-        events$.next(new routerEvents.ActivationStart(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.ActivationStart(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.ActivationStart) {
         // console.log('ActivationStart', event);
-        events$.next(new routerEvents.GuardsCheckEnd(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.GuardsCheckEnd(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.GuardsCheckEnd) {
         // console.log('GuardsCheckEnd', event);
-        events$.next(new routerEvents.ResolveStart(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.ResolveStart(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.ResolveStart) {
         // console.log('ResolveStart', event);
-        events$.next(new routerEvents.ResolveEnd(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.ResolveEnd(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.ResolveEnd) {
         // console.log('ResolveEnd', event);
-        events$.next(new routerEvents.ActivationEnd(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.ActivationEnd(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.ActivationEnd) {
         // console.log('ActivationEnd', event);
-        events$.next(new routerEvents.ChildActivationEnd(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.ChildActivationEnd(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.ChildActivationEnd) {
         // console.log('ChildActivationEnd', event);
-        events$.next(new routerEvents.RouteConfigLoadStart(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.RouteConfigLoadStart(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.RouteConfigLoadStart) {
         // console.log('RouteConfigLoadStart', event);
-        events$.next(new routerEvents.RouteConfigLoadEnd(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.RouteConfigLoadEnd(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.RouteConfigLoadEnd) {
         // console.log('RouteConfigLoadEnd', event);
-        events$.next(new routerEvents.NavigationEnd(tslib_1.__assign({}, event)));
+        events$.next(new routerEvents.NavigationEnd(tslib_es6.__assign({}, event)));
       } else if (event instanceof routerEvents.NavigationEnd) {
         var segments = [];
         var source = event.route;
@@ -6273,7 +6335,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         console.log('NavigationError', event.error);
       }
     }), operators__default.catchError(function (error) {
-      return rxjs__default.of(new routerEvents.NavigationError(tslib_1.__assign(tslib_1.__assign({}, event), {
+      return rxjs__default.of(new routerEvents.NavigationError(tslib_es6.__assign(tslib_es6.__assign({}, event), {
         error: error
       })));
     }), operators__default.shareReplay(1));
@@ -6284,12 +6346,12 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     value: true
   });
 
-  var router_service_1 = tslib_1.__importDefault(router_service);
+  var router_service_1 = tslib_es6.__importDefault(router_service);
 
   var RouterLinkDirective =
   /** @class */
   function (_super) {
-    tslib_1.__extends(RouterLinkDirective, _super);
+    tslib_es6.__extends(RouterLinkDirective, _super);
 
     function RouterLinkDirective() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -6319,7 +6381,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
           var components = [];
 
           try {
-            for (var matches_1 = tslib_1.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
+            for (var matches_1 = tslib_es6.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
               var match = matches_1_1.value;
               var g1 = match[1];
               var g2 = match[2];
@@ -6402,14 +6464,14 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     value: true
   });
 
-  var router_link_directive_1 = tslib_1.__importDefault(routerLink_directive);
+  var router_link_directive_1 = tslib_es6.__importDefault(routerLink_directive);
 
-  var router_service_1 = tslib_1.__importDefault(router_service);
+  var router_service_1 = tslib_es6.__importDefault(router_service);
 
   var RouterLinkActiveDirective =
   /** @class */
   function (_super) {
-    tslib_1.__extends(RouterLinkActiveDirective, _super);
+    tslib_es6.__extends(RouterLinkActiveDirective, _super);
 
     function RouterLinkActiveDirective() {
       var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -6471,14 +6533,14 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     value: true
   });
 
-  var view_1 = tslib_1.__importDefault(view);
+  var view_1 = tslib_es6.__importDefault(view);
 
-  var router_service_1 = tslib_1.__importDefault(router_service);
+  var router_service_1 = tslib_es6.__importDefault(router_service);
 
   var RouterOutletStructure =
   /** @class */
   function (_super) {
-    tslib_1.__extends(RouterOutletStructure, _super);
+    tslib_es6.__extends(RouterOutletStructure, _super);
 
     function RouterOutletStructure() {
       var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -6614,7 +6676,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       var subscription;
 
       try {
-        var result = callback.apply(void 0, tslib_1.__spread(args));
+        var result = callback.apply(void 0, tslib_es6.__spread(args));
 
         if (rxjs__default.isObservable(result)) {
           subscription = result.subscribe(function (result) {
@@ -6650,13 +6712,13 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     value: true
   });
 
-  var router_link_active_directive_1 = tslib_1.__importDefault(routerLinkActive_directive);
+  var router_link_active_directive_1 = tslib_es6.__importDefault(routerLinkActive_directive);
 
-  var router_link_directive_1 = tslib_1.__importDefault(routerLink_directive);
+  var router_link_directive_1 = tslib_es6.__importDefault(routerLink_directive);
 
-  var router_outlet_structure_1 = tslib_1.__importDefault(routerOutlet_structure);
+  var router_outlet_structure_1 = tslib_es6.__importDefault(routerOutlet_structure);
 
-  var router_service_1 = tslib_1.__importDefault(router_service);
+  var router_service_1 = tslib_es6.__importDefault(router_service);
 
   var factories = [router_outlet_structure_1.default, router_link_directive_1.default, router_link_active_directive_1.default];
   var pipes = [];
@@ -6684,7 +6746,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   var RouterModule =
   /** @class */
   function (_super) {
-    tslib_1.__extends(RouterModule, _super);
+    tslib_es6.__extends(RouterModule, _super);
 
     function RouterModule() {
       var _this = _super.call(this) || this; // console.log('RouterModule');
@@ -6715,8 +6777,8 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     };
 
     RouterModule.meta = {
-      declarations: tslib_1.__spread(factories, pipes),
-      exports: tslib_1.__spread(factories, pipes)
+      declarations: tslib_es6.__spread(factories, pipes),
+      exports: tslib_es6.__spread(factories, pipes)
     };
     return RouterModule;
   }(rxcomp__default.Module);
@@ -7118,7 +7180,7 @@ export function getSlug(url) {
         return url;
     }
     if (STATIC) {
-        console.log(url);
+        // console.log(url);
         return url;
     }
     url = url.replace(`/${ENV.NAME}`, '');

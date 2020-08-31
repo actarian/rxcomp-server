@@ -19301,9 +19301,9 @@ Scroll {routerEvent: NavigationEnd, position: null, anchor: null, constructor: O
       // urlAfterRedirects = routePath.url;
       urlAfterRedirects = resolvedRoute.redirectTo;
       resolvedRoute = this.findRouteByUrl(urlAfterRedirects);
-    }
+    } // console.log('RouterService.findRouteByUrl', resolvedRoute);
 
-    console.log('RouterService.findRouteByUrl', resolvedRoute);
+
     return resolvedRoute;
   };
 

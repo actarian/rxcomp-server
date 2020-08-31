@@ -18,6 +18,10 @@
 	}, fn(module, module.exports), module.exports;
 }
 
+function getCjsExportFromNamespace (n) {
+	return n && n['default'] || n;
+}
+
 function commonjsRequire () {
 	throw new Error('Dynamic requires are not currently supported by @rollup/plugin-commonjs');
 }var _extendStatics = function extendStatics(d, b) {
@@ -445,14 +449,14 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
   privateMap.set(receiver, value);
   return value;
-}var tslib_es6=/*#__PURE__*/Object.freeze({__proto__:null,__extends: __extends,get __assign(){return _assign},__rest: __rest,__decorate: __decorate,__param: __param,__metadata: __metadata,__awaiter: __awaiter,__generator: __generator,__createBinding: __createBinding,__exportStar: __exportStar,__values: __values,__read: __read,__spread: __spread,__spreadArrays: __spreadArrays,__await: __await,__asyncGenerator: __asyncGenerator,__asyncDelegator: __asyncDelegator,__asyncValues: __asyncValues,__makeTemplateObject: __makeTemplateObject,__importStar: __importStar,__importDefault: __importDefault,__classPrivateFieldGet: __classPrivateFieldGet,__classPrivateFieldSet: __classPrivateFieldSet});var view = createCommonjsModule(function (module, exports) {
+}var tslib_es6=/*#__PURE__*/Object.freeze({__proto__:null,__extends: __extends,get __assign(){return _assign},__rest: __rest,__decorate: __decorate,__param: __param,__metadata: __metadata,__awaiter: __awaiter,__generator: __generator,__createBinding: __createBinding,__exportStar: __exportStar,__values: __values,__read: __read,__spread: __spread,__spreadArrays: __spreadArrays,__await: __await,__asyncGenerator: __asyncGenerator,__asyncDelegator: __asyncDelegator,__asyncValues: __asyncValues,__makeTemplateObject: __makeTemplateObject,__importStar: __importStar,__importDefault: __importDefault,__classPrivateFieldGet: __classPrivateFieldGet,__classPrivateFieldSet: __classPrivateFieldSet});var tslib_1 = getCjsExportFromNamespace(tslib_es6);var view = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
 
   var View = function (_super) {
-    tslib_es6.__extends(View, _super);
+    tslib_1.__extends(View, _super);
 
     function View() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -515,7 +519,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       var matches = url.matchAll(regExp);
 
       try {
-        for (var matches_1 = tslib_es6.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
+        for (var matches_1 = tslib_1.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
           var match = matches_1_1.value;
           var g1 = match[1];
           var g2 = match[2];
@@ -664,7 +668,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.decodeParam = decodeParam;
 
   var LocationStrategyPath = function (_super) {
-    tslib_es6.__extends(LocationStrategyPath, _super);
+    tslib_1.__extends(LocationStrategyPath, _super);
 
     function LocationStrategyPath() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -692,7 +696,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       var matches = url.matchAll(regExp);
 
       try {
-        for (var matches_2 = tslib_es6.__values(matches), matches_2_1 = matches_2.next(); !matches_2_1.done; matches_2_1 = matches_2.next()) {
+        for (var matches_2 = tslib_1.__values(matches), matches_2_1 = matches_2.next(); !matches_2_1.done; matches_2_1 = matches_2.next()) {
           var match = matches_2_1.value;
           var g1 = match[1];
           var g2 = match[2];
@@ -747,7 +751,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.LocationStrategyPath = LocationStrategyPath;
 
   var LocationStrategyHash = function (_super) {
-    tslib_es6.__extends(LocationStrategyHash, _super);
+    tslib_1.__extends(LocationStrategyHash, _super);
 
     function LocationStrategyHash() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -789,7 +793,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       var matches = url.matchAll(regExp);
 
       try {
-        for (var matches_3 = tslib_es6.__values(matches), matches_3_1 = matches_3.next(); !matches_3_1.done; matches_3_1 = matches_3.next()) {
+        for (var matches_3 = tslib_1.__values(matches), matches_3_1 = matches_3.next(); !matches_3_1.done; matches_3_1 = matches_3.next()) {
           var match = matches_3_1.value;
           var g1 = match[1];
           var g2 = match[2];
@@ -1016,7 +1020,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         var matches = this.path.matchAll(regExp);
 
         try {
-          for (var matches_1 = tslib_es6.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
+          for (var matches_1 = tslib_1.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
             var match = matches_1_1.value;
             var g1 = match[1];
             var g2 = match[2];
@@ -1197,7 +1201,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.RouterEvent = RouterEvent;
 
   var NavigationStart = function (_super) {
-    tslib_es6.__extends(NavigationStart, _super);
+    tslib_1.__extends(NavigationStart, _super);
 
     function NavigationStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1209,7 +1213,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.NavigationStart = NavigationStart;
 
   var RoutesRecognized = function (_super) {
-    tslib_es6.__extends(RoutesRecognized, _super);
+    tslib_1.__extends(RoutesRecognized, _super);
 
     function RoutesRecognized() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1221,7 +1225,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.RoutesRecognized = RoutesRecognized;
 
   var GuardsCheckStart = function (_super) {
-    tslib_es6.__extends(GuardsCheckStart, _super);
+    tslib_1.__extends(GuardsCheckStart, _super);
 
     function GuardsCheckStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1233,7 +1237,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.GuardsCheckStart = GuardsCheckStart;
 
   var ChildActivationStart = function (_super) {
-    tslib_es6.__extends(ChildActivationStart, _super);
+    tslib_1.__extends(ChildActivationStart, _super);
 
     function ChildActivationStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1245,7 +1249,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.ChildActivationStart = ChildActivationStart;
 
   var ActivationStart = function (_super) {
-    tslib_es6.__extends(ActivationStart, _super);
+    tslib_1.__extends(ActivationStart, _super);
 
     function ActivationStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1257,7 +1261,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.ActivationStart = ActivationStart;
 
   var GuardsCheckEnd = function (_super) {
-    tslib_es6.__extends(GuardsCheckEnd, _super);
+    tslib_1.__extends(GuardsCheckEnd, _super);
 
     function GuardsCheckEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1269,7 +1273,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.GuardsCheckEnd = GuardsCheckEnd;
 
   var ResolveStart = function (_super) {
-    tslib_es6.__extends(ResolveStart, _super);
+    tslib_1.__extends(ResolveStart, _super);
 
     function ResolveStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1281,7 +1285,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.ResolveStart = ResolveStart;
 
   var ResolveEnd = function (_super) {
-    tslib_es6.__extends(ResolveEnd, _super);
+    tslib_1.__extends(ResolveEnd, _super);
 
     function ResolveEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1293,7 +1297,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.ResolveEnd = ResolveEnd;
 
   var ActivationEnd = function (_super) {
-    tslib_es6.__extends(ActivationEnd, _super);
+    tslib_1.__extends(ActivationEnd, _super);
 
     function ActivationEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1305,7 +1309,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.ActivationEnd = ActivationEnd;
 
   var ChildActivationEnd = function (_super) {
-    tslib_es6.__extends(ChildActivationEnd, _super);
+    tslib_1.__extends(ChildActivationEnd, _super);
 
     function ChildActivationEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1317,7 +1321,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.ChildActivationEnd = ChildActivationEnd;
 
   var RouteConfigLoadStart = function (_super) {
-    tslib_es6.__extends(RouteConfigLoadStart, _super);
+    tslib_1.__extends(RouteConfigLoadStart, _super);
 
     function RouteConfigLoadStart() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1329,7 +1333,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.RouteConfigLoadStart = RouteConfigLoadStart;
 
   var RouteConfigLoadEnd = function (_super) {
-    tslib_es6.__extends(RouteConfigLoadEnd, _super);
+    tslib_1.__extends(RouteConfigLoadEnd, _super);
 
     function RouteConfigLoadEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1341,7 +1345,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.RouteConfigLoadEnd = RouteConfigLoadEnd;
 
   var NavigationEnd = function (_super) {
-    tslib_es6.__extends(NavigationEnd, _super);
+    tslib_1.__extends(NavigationEnd, _super);
 
     function NavigationEnd() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1353,7 +1357,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.NavigationEnd = NavigationEnd;
 
   var NavigationCancel = function (_super) {
-    tslib_es6.__extends(NavigationCancel, _super);
+    tslib_1.__extends(NavigationCancel, _super);
 
     function NavigationCancel() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1365,7 +1369,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   exports.NavigationCancel = NavigationCancel;
 
   var NavigationError = function (_super) {
-    tslib_es6.__extends(NavigationError, _super);
+    tslib_1.__extends(NavigationError, _super);
 
     function NavigationError() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1422,10 +1426,34 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     };
 
     RouterService.findRouteByUrl = function (initialUrl) {
+      var e_1, _a;
+
       var routes = getFlatRoutes_(this.routes);
-      var resolvedRoute = routes.find(function (route) {
-        return initialUrl.match(route.matcher);
-      }) || null;
+      var resolvedRoute = null;
+      var lastMatcbesLength = Number.NEGATIVE_INFINITY;
+
+      try {
+        for (var routes_1 = tslib_1.__values(routes), routes_1_1 = routes_1.next(); !routes_1_1.done; routes_1_1 = routes_1.next()) {
+          var route = routes_1_1.value;
+          var matches = initialUrl.match(route.matcher);
+
+          if (matches && (!resolvedRoute || matches[0].length > lastMatcbesLength)) {
+            lastMatcbesLength = matches[0].length;
+            resolvedRoute = route;
+          }
+        }
+      } catch (e_1_1) {
+        e_1 = {
+          error: e_1_1
+        };
+      } finally {
+        try {
+          if (routes_1_1 && !routes_1_1.done && (_a = routes_1.return)) _a.call(routes_1);
+        } finally {
+          if (e_1) throw e_1.error;
+        }
+      }
+
       var urlAfterRedirects = initialUrl;
 
       if (resolvedRoute && resolvedRoute.redirectTo) {
@@ -1532,28 +1560,28 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   }
 
   function resolveRoutes_(routes, childRoutes, initialUrl) {
-    var e_1, _a;
+    var e_2, _a;
 
     var resolvedRoute;
 
     try {
-      for (var childRoutes_1 = tslib_es6.__values(childRoutes), childRoutes_1_1 = childRoutes_1.next(); !childRoutes_1_1.done; childRoutes_1_1 = childRoutes_1.next()) {
-        var route = childRoutes_1_1.value;
-        resolvedRoute = resolveRoute_(routes, route, initialUrl);
+      for (var childRoutes_1 = tslib_1.__values(childRoutes), childRoutes_1_1 = childRoutes_1.next(); !childRoutes_1_1.done; childRoutes_1_1 = childRoutes_1.next()) {
+        var childRoute = childRoutes_1_1.value;
+        var route = resolveRoute_(routes, childRoute, initialUrl);
 
-        if (resolvedRoute) {
-          return resolvedRoute;
+        if (route && (!resolvedRoute || route.remainUrl.length < resolvedRoute.remainUrl.length)) {
+          resolvedRoute = route;
         }
       }
-    } catch (e_1_1) {
-      e_1 = {
-        error: e_1_1
+    } catch (e_2_1) {
+      e_2 = {
+        error: e_2_1
       };
     } finally {
       try {
         if (childRoutes_1_1 && !childRoutes_1_1.done && (_a = childRoutes_1.return)) _a.call(childRoutes_1);
       } finally {
-        if (e_1) throw e_1.error;
+        if (e_2) throw e_2.error;
       }
     }
 
@@ -1581,7 +1609,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     remainUrl = initialUrl.substring(match[0].length, initialUrl.length);
     var routePath$1 = new routePath.RoutePath(extractedUrl, route.segments, undefined, RouterService.locationStrategy);
     var params = routePath$1.params;
-    var snapshot = new routeSnapshot.RouteSnapshot(tslib_es6.__assign(tslib_es6.__assign({}, route), {
+    var snapshot = new routeSnapshot.RouteSnapshot(tslib_1.__assign(tslib_1.__assign({}, route), {
       initialUrl: initialUrl,
       urlAfterRedirects: urlAfterRedirects,
       extractedUrl: extractedUrl,
@@ -1603,7 +1631,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   }
 
   function makeActivatorResponse$_(event, activators) {
-    return rxjs__default.combineLatest.apply(void 0, tslib_es6.__spread(activators)).pipe(operators__default.map(function (values) {
+    return rxjs__default.combineLatest.apply(void 0, tslib_1.__spread(activators)).pipe(operators__default.map(function (values) {
       var canActivate = values.reduce(function (p, c) {
         return p === true ? c === true ? true : c : p;
       }, true);
@@ -1611,7 +1639,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       if (canActivate === true) {
         return event;
       } else {
-        var cancelEvent = tslib_es6.__assign(tslib_es6.__assign({}, event), {
+        var cancelEvent = tslib_1.__assign(tslib_1.__assign({}, event), {
           reason: 'An activation guard has dismissed navigation to the route.'
         });
 
@@ -1734,36 +1762,36 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
         if (snapshot) {
           currentRoute = snapshot;
-          events$.next(new routerEvents.RoutesRecognized(tslib_es6.__assign(tslib_es6.__assign({}, event), {
+          events$.next(new routerEvents.RoutesRecognized(tslib_1.__assign(tslib_1.__assign({}, event), {
             route: snapshot
           })));
         } else {
-          events$.next(new routerEvents.NavigationError(tslib_es6.__assign(tslib_es6.__assign({}, event), {
+          events$.next(new routerEvents.NavigationError(tslib_1.__assign(tslib_1.__assign({}, event), {
             error: new Error('unknown route')
           })));
         }
       } else if (event instanceof routerEvents.RoutesRecognized) {
-        events$.next(new routerEvents.GuardsCheckStart(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.GuardsCheckStart(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.GuardsCheckStart) {
-        events$.next(new routerEvents.ChildActivationStart(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.ChildActivationStart(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.ChildActivationStart) {
-        events$.next(new routerEvents.ActivationStart(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.ActivationStart(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.ActivationStart) {
-        events$.next(new routerEvents.GuardsCheckEnd(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.GuardsCheckEnd(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.GuardsCheckEnd) {
-        events$.next(new routerEvents.ResolveStart(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.ResolveStart(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.ResolveStart) {
-        events$.next(new routerEvents.ResolveEnd(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.ResolveEnd(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.ResolveEnd) {
-        events$.next(new routerEvents.ActivationEnd(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.ActivationEnd(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.ActivationEnd) {
-        events$.next(new routerEvents.ChildActivationEnd(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.ChildActivationEnd(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.ChildActivationEnd) {
-        events$.next(new routerEvents.RouteConfigLoadStart(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.RouteConfigLoadStart(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.RouteConfigLoadStart) {
-        events$.next(new routerEvents.RouteConfigLoadEnd(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.RouteConfigLoadEnd(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.RouteConfigLoadEnd) {
-        events$.next(new routerEvents.NavigationEnd(tslib_es6.__assign({}, event)));
+        events$.next(new routerEvents.NavigationEnd(tslib_1.__assign({}, event)));
       } else if (event instanceof routerEvents.NavigationEnd) {
         var segments = [];
         var source = event.route;
@@ -1802,7 +1830,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
         console.log('NavigationError', event.error);
       }
     }), operators__default.catchError(function (error) {
-      return rxjs__default.of(new routerEvents.NavigationError(tslib_es6.__assign(tslib_es6.__assign({}, event), {
+      return rxjs__default.of(new routerEvents.NavigationError(tslib_1.__assign(tslib_1.__assign({}, event), {
         error: error
       })));
     }), operators__default.shareReplay(1));
@@ -1813,10 +1841,10 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     value: true
   });
 
-  var router_service_1 = tslib_es6.__importDefault(router_service);
+  var router_service_1 = tslib_1.__importDefault(router_service);
 
   var RouterLinkDirective = function (_super) {
-    tslib_es6.__extends(RouterLinkDirective, _super);
+    tslib_1.__extends(RouterLinkDirective, _super);
 
     function RouterLinkDirective() {
       return _super !== null && _super.apply(this, arguments) || this;
@@ -1845,7 +1873,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
           var components = [];
 
           try {
-            for (var matches_1 = tslib_es6.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
+            for (var matches_1 = tslib_1.__values(matches), matches_1_1 = matches_1.next(); !matches_1_1.done; matches_1_1 = matches_1.next()) {
               var match = matches_1_1.value;
               var g1 = match[1];
               var g2 = match[2];
@@ -1913,12 +1941,12 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     value: true
   });
 
-  var router_link_directive_1 = tslib_es6.__importDefault(routerLink_directive);
+  var router_link_directive_1 = tslib_1.__importDefault(routerLink_directive);
 
-  var router_service_1 = tslib_es6.__importDefault(router_service);
+  var router_service_1 = tslib_1.__importDefault(router_service);
 
   var RouterLinkActiveDirective = function (_super) {
-    tslib_es6.__extends(RouterLinkActiveDirective, _super);
+    tslib_1.__extends(RouterLinkActiveDirective, _super);
 
     function RouterLinkActiveDirective() {
       var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -1978,12 +2006,12 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     value: true
   });
 
-  var view_1 = tslib_es6.__importDefault(view);
+  var view_1 = tslib_1.__importDefault(view);
 
-  var router_service_1 = tslib_es6.__importDefault(router_service);
+  var router_service_1 = tslib_1.__importDefault(router_service);
 
   var RouterOutletStructure = function (_super) {
-    tslib_es6.__extends(RouterOutletStructure, _super);
+    tslib_1.__extends(RouterOutletStructure, _super);
 
     function RouterOutletStructure() {
       var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2118,7 +2146,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
       var subscription;
 
       try {
-        var result = callback.apply(void 0, tslib_es6.__spread(args));
+        var result = callback.apply(void 0, tslib_1.__spread(args));
 
         if (rxjs__default.isObservable(result)) {
           subscription = result.subscribe(function (result) {
@@ -2154,19 +2182,19 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     value: true
   });
 
-  var router_link_active_directive_1 = tslib_es6.__importDefault(routerLinkActive_directive);
+  var router_link_active_directive_1 = tslib_1.__importDefault(routerLinkActive_directive);
 
-  var router_link_directive_1 = tslib_es6.__importDefault(routerLink_directive);
+  var router_link_directive_1 = tslib_1.__importDefault(routerLink_directive);
 
-  var router_outlet_structure_1 = tslib_es6.__importDefault(routerOutlet_structure);
+  var router_outlet_structure_1 = tslib_1.__importDefault(routerOutlet_structure);
 
-  var router_service_1 = tslib_es6.__importDefault(router_service);
+  var router_service_1 = tslib_1.__importDefault(router_service);
 
   var factories = [router_outlet_structure_1.default, router_link_directive_1.default, router_link_active_directive_1.default];
   var pipes = [];
 
   var RouterModule = function (_super) {
-    tslib_es6.__extends(RouterModule, _super);
+    tslib_1.__extends(RouterModule, _super);
 
     function RouterModule() {
       var _this = _super.call(this) || this;
@@ -2196,8 +2224,8 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     };
 
     RouterModule.meta = {
-      declarations: tslib_es6.__spread(factories, pipes),
-      exports: tslib_es6.__spread(factories, pipes)
+      declarations: tslib_1.__spread(factories, pipes),
+      exports: tslib_1.__spread(factories, pipes)
     };
     return RouterModule;
   }(rxcomp__default.Module);
