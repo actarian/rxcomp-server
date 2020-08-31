@@ -5838,7 +5838,7 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
   Object.defineProperty(exports, "__esModule", {
     value: true
-  }); // !!! todo: hash navigation strategy
+  });
 
   var RouterService =
   /** @class */
@@ -6190,13 +6190,9 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   function makeObserve$_(routes, route$, events$, locationStrategy) {
     var currentRoute; // console.log('RouterService.WINDOW', WINDOW!!);
 
-    var stateEvents$ = rxcomp__default.isPlatformServer ? rxjs__default.EMPTY : rxjs__default.merge(rxjs__default.fromEvent(rxcomp__default.WINDOW, 'popstate')).pipe(
-    /*
-    tap((event: PopStateEvent) => {
-        // console.log('location', document.location.pathname, 'state', event.state);
-    }),
-    */
-    operators__default.map(function (event) {
+    var stateEvents$ = rxcomp__default.isPlatformServer ? rxjs__default.EMPTY : rxjs__default.merge(rxjs__default.fromEvent(rxcomp__default.WINDOW, 'popstate')).pipe(operators__default.tap(function (event) {
+      console.log('RouterService.onPopState', document.location.pathname, 'state', event.state);
+    }), operators__default.map(function (event) {
       return new routerEvents.NavigationStart({
         routerLink: document.location.pathname,
         trigger: 'popstate'

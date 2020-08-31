@@ -24,6 +24,7 @@ const Vars = {
 const app = express();
 app.disable('x-powered-by');
 app.use('/api', useApi());
+app.use('/rxcomp-server', serveStatic(path.join(__dirname, ROOT)));
 app.get('*', (request, response) => {
 	Server.render$({ url: request.url, vars: Vars }, renderRequest$).subscribe(
 		success => {
@@ -38,7 +39,6 @@ app.get('*', (request, response) => {
 });
 // app.use(express.static(path.join(__dirname, ROOT)));
 app.use('/', serveStatic(path.join(__dirname, ROOT)));
-app.use('/rxcomp-server', serveStatic(path.join(__dirname, ROOT)));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
