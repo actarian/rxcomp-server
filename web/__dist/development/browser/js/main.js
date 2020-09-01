@@ -1712,7 +1712,9 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
   function makeObserve$_(routes, route$, events$, locationStrategy) {
     var currentRoute;
     var stateEvents$ = rxcomp__default.isPlatformServer ? rxjs__default.EMPTY : rxjs__default.merge(rxjs__default.fromEvent(rxcomp__default.WINDOW, 'popstate')).pipe(operators__default.tap(function (event) {
-      console.log('RouterService.onPopState', document.location.pathname, 'state', event.state);
+      event.preventDefault();
+      history.go(1);
+      console.log('RouterService.onPopState', "location: \"" + document.location.pathname + "\"", "state: \"" + event.state + "\"");
     }), operators__default.map(function (event) {
       return new routerEvents.NavigationStart({
         routerLink: document.location.pathname,
@@ -2603,6 +2605,7 @@ TodolistItemComponent.meta = {
       query: "{ getTodos { id, title, completed } }"
     };
     var methodUrl = "" + Vars.host + Vars.api;
+    console.log('TodolistComponent.onInit', this);
 
     {
       rxcompHttp.HttpService.post$(methodUrl, payload, {

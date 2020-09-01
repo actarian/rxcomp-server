@@ -6191,7 +6191,10 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
     var currentRoute; // console.log('RouterService.WINDOW', WINDOW!!);
 
     var stateEvents$ = rxcomp__default.isPlatformServer ? rxjs__default.EMPTY : rxjs__default.merge(rxjs__default.fromEvent(rxcomp__default.WINDOW, 'popstate')).pipe(operators__default.tap(function (event) {
-      console.log('RouterService.onPopState', document.location.pathname, 'state', event.state);
+      // detech rxcomp !!!
+      event.preventDefault();
+      history.go(1);
+      console.log('RouterService.onPopState', "location: \"" + document.location.pathname + "\"", "state: \"" + event.state + "\"");
     }), operators__default.map(function (event) {
       return new routerEvents.NavigationStart({
         routerLink: document.location.pathname,
@@ -7203,6 +7206,7 @@ export function getSlug(url) {
       query: "{ getTodos { id, title, completed } }"
     };
     var methodUrl = "" + Vars.host + Vars.api;
+    console.log('TodolistComponent.onInit', this);
 
     {
       rxcompHttp.HttpService.post$(methodUrl, payload, {

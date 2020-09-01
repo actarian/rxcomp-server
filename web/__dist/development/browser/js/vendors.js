@@ -15299,7 +15299,9 @@ InnerHtmlDirective.meta = {
 JsonComponent.meta = {
   selector: 'json-component',
   inputs: ['item'],
-  template: "\n\t\t<div class=\"rxc-block\">\n\t\t\t<div class=\"rxc-head\">\n\t\t\t\t<span class=\"rxc-head__title\" (click)=\"onToggle()\">\n\t\t\t\t\t<span *if=\"!active\">+ json </span>\n\t\t\t\t\t<span *if=\"active\">- json </span>\n\t\t\t\t\t<span [innerHTML]=\"item\"></span>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<ul class=\"rxc-list\" *if=\"active\">\n\t\t\t\t<li class=\"rxc-list__item\">\n\t\t\t\t\t<span class=\"rxc-list__value\" [innerHTML]=\"item | json\"></span>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>"
+  template:
+  /* html */
+  "\n\t\t<div class=\"rxc-block\">\n\t\t\t<div class=\"rxc-head\">\n\t\t\t\t<span class=\"rxc-head__title\" (click)=\"onToggle()\">\n\t\t\t\t\t<span *if=\"!active\">+ json </span>\n\t\t\t\t\t<span *if=\"active\">- json </span>\n\t\t\t\t\t<span [innerHTML]=\"item\"></span>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<ul class=\"rxc-list\" *if=\"active\">\n\t\t\t\t<li class=\"rxc-list__item\">\n\t\t\t\t\t<span class=\"rxc-list__value\" [innerHTML]=\"item | json\"></span>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>"
 };var Pipe = /*#__PURE__*/function () {
   function Pipe() {}
 
@@ -15865,8 +15867,7 @@ var Module = /*#__PURE__*/function () {
     return Module.traverseUp(node, function (node) {
       return _this3.getInstance(node);
     });
-  } // reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
-  ;
+  };
 
   _proto.parseTextNode = function parseTextNode(node, instance) {
     var _this4 = this;
@@ -19560,7 +19561,10 @@ function makeObserve$_(routes, route$, events$, locationStrategy) {
   var currentRoute; // console.log('RouterService.WINDOW', WINDOW!!);
 
   var stateEvents$ = rxcomp.isPlatformServer ? rxjs.EMPTY : rxjs.merge(rxjs.fromEvent(rxcomp.WINDOW, 'popstate')).pipe(operators.tap(function (event) {
-    console.log('RouterService.onPopState', document.location.pathname, 'state', event.state);
+    // detech rxcomp !!!
+    event.preventDefault();
+    history.go(1);
+    console.log('RouterService.onPopState', "location: \"" + document.location.pathname + "\"", "state: \"" + event.state + "\"");
   }), operators.map(function (event) {
     return new NavigationStart({
       routerLink: document.location.pathname,

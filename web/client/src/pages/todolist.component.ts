@@ -10,10 +10,10 @@ export default class TodolistComponent extends Component {
 	items: ITodoItem[] = [];
 	error: any = null;
 	onInit() {
-		// console.log('TodolistComponent.onInit', this);
 		const mode: number = 1;
 		const payload = { query: `{ getTodos { id, title, completed } }` };
 		const methodUrl: string = `${Vars.host}${Vars.api}`;
+		console.log('TodolistComponent.onInit', this);
 		if (mode === 1) {
 			HttpService.post$<IResponseData>(methodUrl, payload, {
 				params: { query: `{ getTodos { id, title, completed } }` },
@@ -24,7 +24,7 @@ export default class TodolistComponent extends Component {
 				this.items = response.data.getTodos;
 				this.pushChanges();
 				// console.log('TodolistComponent.getTodos', this.items);
-			}, error => console.warn);
+			}, console.warn);
 		} else if (mode === 2) {
 			// console.log('TodolistComponent.methodUrl', methodUrl);
 			HttpService.post$<IResponseData>(methodUrl, payload).pipe(
@@ -33,7 +33,7 @@ export default class TodolistComponent extends Component {
 				this.items = response.data.getTodos;
 				this.pushChanges();
 				// console.log('TodolistComponent.getTodos', this.items);
-			}, error => console.warn);
+			}, console.warn);
 		} else {
 			HttpService.get$<IResponseData>(`${Vars.host}/data/todos.json`).pipe(
 				first(),
@@ -41,7 +41,7 @@ export default class TodolistComponent extends Component {
 				this.items = response.data.getTodos;
 				this.pushChanges();
 				// console.log('TodolistComponent.getTodos', this.items);
-			}, error => console.warn);
+			}, console.warn);
 		}
 		const route = this.host.route;
 		if (route) {
