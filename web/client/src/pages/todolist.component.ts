@@ -77,8 +77,9 @@ export default class TodolistComponent extends Component {
 			<ul class="list">
 				<li class="list__item" *for="let item of items" [class]="{ completed: item.completed }" [style]="{ 'border-color': item.completed ? 'red' : 'black' }">
 					<div class="title" [routerLink]="['/todolist', item.id]" [innerHTML]="item.title"></div>
-					<!-- <div class="completed" [innerHTML]="item.completed"></div> -->
-					<div class="completed" (click)="onClick(item)">{{item.completed}}</div>
+					<div class="completed" (click)="onClick(item)" [innerHTML]="item.completed"></div>
+					<!-- !!! debug -->
+					<!-- <div class="completed" (click)="onClick(item)">{{item.completed}}</div> -->
 				</li>
 			</ul>
 			<div *if="error">

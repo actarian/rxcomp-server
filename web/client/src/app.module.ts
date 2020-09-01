@@ -1,6 +1,6 @@
 import { CoreModule, IModuleMeta, Module } from 'rxcomp';
 import { HttpModule } from 'rxcomp-http';
-import { LocationStrategyHash, RouterModule } from '../../../../rxcomp-router/dist/cjs/rxcomp-router';
+import { RouterModule } from '../../../../rxcomp-router/dist/cjs/rxcomp-router';
 import AppComponent from './app.component';
 import { CustomRequestInterceptor, CustomResponseInterceptor } from './custom-interceptor/custom.interceptor';
 import NotFoundComponent from './pages/not-found.component';
@@ -18,7 +18,7 @@ export default class AppModule extends Module {
 				{ path: 'todolist', component: TodolistComponent, data: { title: 'Todolist' } },
 				{ path: 'todolist/:itemId', component: TodolistItemComponent, data: { title: 'Todolist Item' } },
 				{ path: '**', component: NotFoundComponent },
-			]).useStrategy(LocationStrategyHash),
+			]), // .useStrategy(LocationStrategyHash),
 		],
 		declarations: [
 			TodolistComponent,

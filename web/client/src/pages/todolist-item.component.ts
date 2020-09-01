@@ -21,8 +21,8 @@ export default class TodolistItemComponent extends View {
 			gsap.set(node, { opacity: 0 });
 			gsap.to(node, {
 				opacity: 1,
-				duration: 1,
-				ease: Power3.easeInOut,
+				duration: 0.6,
+				ease: Power3.easeOut,
 				onComplete: () => {
 					complete(true);
 				}
@@ -34,8 +34,8 @@ export default class TodolistItemComponent extends View {
 			gsap.set(node, { opacity: 1 });
 			gsap.to(node, {
 				opacity: 0,
-				duration: 1,
-				ease: Power3.easeInOut,
+				duration: 0.6,
+				ease: Power3.easeOut,
 				onComplete: () => {
 					complete(true);
 				}

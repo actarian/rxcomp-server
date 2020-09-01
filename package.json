@@ -51,7 +51,7 @@
     "express": "4.17.1",
     "graphql": "15.3.0",
     "gsap": "3.5.1",
-    "gulpfile-config": "1.0.0-alpha.13",
+    "gulpfile-config": "1.0.0-alpha.14",
     "https": "1.0.0",
     "typedoc": "0.17.8",
     "typescript": "3.9.7"
