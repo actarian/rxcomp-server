@@ -14462,7 +14462,7 @@
 
 
 /**
- * @license rxcomp v1.0.0-beta.14
+ * @license rxcomp v1.0.0-beta.15
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
@@ -14762,27 +14762,12 @@ var ErrorInterceptorHandler = /*#__PURE__*/function () {
 
   return ErrorInterceptorHandler;
 }();
-/*
-export class NoopErrorInterceptor implements IErrorInterceptor {
-    intercept(error: Error, next: ErrorHandler): Observable<Error> {
-        return of(error);
-    }
-}
-
-const noopInterceptor = new NoopErrorInterceptor();
-*/
-
 var DefaultErrorHandler = /*#__PURE__*/function () {
   function DefaultErrorHandler() {}
 
   var _proto2 = DefaultErrorHandler.prototype;
 
   _proto2.handle = function handle(error) {
-    /*
-    if (error) {
-        console.error(error);
-    }
-    */
     return rxjs.of(error);
   };
 
@@ -14790,17 +14775,7 @@ var DefaultErrorHandler = /*#__PURE__*/function () {
 }();
 var ErrorInterceptors = [];
 var nextError$ = new rxjs.ReplaySubject(1);
-var errors$ = nextError$.pipe(
-/*
-switchMap(error => {
-    const chain = ErrorInterceptors.reduceRight((next: ErrorHandler, interceptor: IErrorInterceptor) => {
-        return new ErrorInterceptorHandler(next, interceptor);
-    }, new NoopErrorInterceptor());
-    return chain.handle(error);
-}),
-*/
-// switchMap(error => merge(ErrorInterceptors.map(x => x.intercept(error, next)))),
-operators.switchMap(function (error) {
+var errors$ = nextError$.pipe(operators.switchMap(function (error) {
   var chain = ErrorInterceptors.reduceRight(function (next, interceptor) {
     return new ErrorInterceptorHandler(next, interceptor);
   }, new DefaultErrorHandler());
@@ -14878,6 +14853,13 @@ EventDirective.meta = {
       this.changes$.next(this); // console.log('Module.parse', instance.constructor.name);
       // parse component text nodes
 
+      /*
+      if (this instanceof Context) {
+          const instances: Factory[] = module.getChildInstances(node);
+          console.log(node, instances);
+      }
+      */
+
       module.parse(node, this); // calling onView event
 
       this.onView();
@@ -14919,6 +14901,7 @@ var Context = /*#__PURE__*/function (_Component) {
 
     if (context.module.instances) {
       context.keys.forEach(function (key) {
+        // console.log('Context', key, context.parentInstance);
         _this2[key] = context.parentInstance[key];
       });
     }
@@ -15087,15 +15070,21 @@ var Context = /*#__PURE__*/function (_Component) {
           delete clonedNode.rxcompId;
           this.forend.parentNode.insertBefore(clonedNode, this.forend); // !!! todo: check context.parentInstance
 
-          var args = [token.key, key, token.value, value, i, total, context.parentInstance];
+          var args = [token.key, key, token.value, value, i, total, context.parentInstance]; // console.log('ForStructure.makeInstance.ForItem');
 
-          var _instance = module.makeInstance(clonedNode, ForItem, context.selector, context.parentInstance, args);
+          var skipSubscription = true;
+
+          var _instance = module.makeInstance(clonedNode, ForItem, context.selector, context.parentInstance, args, undefined, skipSubscription); // console.log('ForStructure.instance.created', instance);
+
 
           if (_instance) {
             // const forItemContext = getContext(instance);
             // console.log('ForStructure', clonedNode, forItemContext.instance.constructor.name);
             // module.compile(clonedNode, forItemContext.instance);
-            module.compile(clonedNode, _instance); // nextSibling = clonedNode.nextSibling;
+            // const instances: Factory[];
+            module.compile(clonedNode, _instance);
+            module.makeInstanceSubscription(_instance, context.parentInstance); // console.log('ForStructure.instance.compiled', instances);
+            // nextSibling = clonedNode.nextSibling;
 
             this.instances.push(_instance);
           }
@@ -15299,7 +15288,9 @@ InnerHtmlDirective.meta = {
 JsonComponent.meta = {
   selector: 'json-component',
   inputs: ['item'],
-  template: "\n\t\t<div class=\"rxc-block\">\n\t\t\t<div class=\"rxc-head\">\n\t\t\t\t<span class=\"rxc-head__title\" (click)=\"onToggle()\">\n\t\t\t\t\t<span *if=\"!active\">+ json </span>\n\t\t\t\t\t<span *if=\"active\">- json </span>\n\t\t\t\t\t<span [innerHTML]=\"item\"></span>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<ul class=\"rxc-list\" *if=\"active\">\n\t\t\t\t<li class=\"rxc-list__item\">\n\t\t\t\t\t<span class=\"rxc-list__value\" [innerHTML]=\"item | json\"></span>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>"
+  template:
+  /* html */
+  "\n\t\t<div class=\"rxc-block\">\n\t\t\t<div class=\"rxc-head\">\n\t\t\t\t<span class=\"rxc-head__title\" (click)=\"onToggle()\">\n\t\t\t\t\t<span *if=\"!active\">+ json </span>\n\t\t\t\t\t<span *if=\"active\">- json </span>\n\t\t\t\t\t<span [innerHTML]=\"item\"></span>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<ul class=\"rxc-list\" *if=\"active\">\n\t\t\t\t<li class=\"rxc-list__item\">\n\t\t\t\t\t<span class=\"rxc-list__value\" [innerHTML]=\"item | json\"></span>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>"
 };var Pipe = /*#__PURE__*/function () {
   function Pipe() {}
 
@@ -15691,8 +15682,10 @@ var Module = /*#__PURE__*/function () {
     return instances;
   };
 
-  _proto.makeInstance = function makeInstance(node, factory, selector, parentInstance, args, inject) {
-    var _this2 = this;
+  _proto.makeInstance = function makeInstance(node, factory, selector, parentInstance, args, inject, skipSubscription) {
+    if (skipSubscription === void 0) {
+      skipSubscription = false;
+    }
 
     if (parentInstance || node.parentNode) {
       var meta = factory.meta; // collect parentInstance scope
@@ -15722,7 +15715,7 @@ var Module = /*#__PURE__*/function () {
 
       var context = Module.makeContext(this, instance, parentInstance, node, factory, selector); // creating component input and outputs
 
-      if (meta) {
+      if (!(instance instanceof Context)) {
         this.makeHosts(meta, instance, node);
         context.inputs = this.makeInputs(meta, instance);
         context.outputs = this.makeOutputs(meta, instance);
@@ -15735,36 +15728,46 @@ var Module = /*#__PURE__*/function () {
 
       instance.onInit(); // subscribe to parent changes
 
-      if (parentInstance instanceof Factory) {
-        parentInstance.changes$.pipe( // filter(() => node.parentNode),
-        // debounceTime(1),
-
-        /*
-        distinctUntilChanged(function(prev, curr) {
-            // console.log(isComponent, context.inputs);
-            if (isComponent && meta && Object.keys(context.inputs).length === 0) {
-                return true; // same
-            } else {
-                return false;
-            }
-        }),
-        */
-        operators.takeUntil(instance.unsubscribe$)).subscribe(function (changes) {
-          // resolve component input outputs
-          if (meta) {
-            _this2.resolveInputsOutputs(instance, changes);
-          } // calling onChanges event with changes
-
-
-          instance.onChanges(changes); // push instance changes for subscribers
-
-          instance.pushChanges();
-        });
+      if (!skipSubscription) {
+        this.makeInstanceSubscription(instance, parentInstance);
       }
 
       return instance;
     } else {
       return undefined;
+    }
+  };
+
+  _proto.makeInstanceSubscription = function makeInstanceSubscription(instance, parentInstance) {
+    var _this2 = this;
+
+    // subscribe to parent changes
+    if (parentInstance instanceof Factory) {
+      parentInstance.changes$.pipe( // filter(() => node.parentNode),
+      // debounceTime(1),
+
+      /*
+      distinctUntilChanged(function(prev, curr) {
+          // console.log(isComponent, context.inputs);
+          if (isComponent && meta && Object.keys(context.inputs).length === 0) {
+              return true; // same
+          } else {
+              return false;
+          }
+      }),
+      */
+      operators.takeUntil(instance.unsubscribe$)).subscribe(function (changes) {
+        // console.log('Module.makeInstanceSubscription.changes', instance);
+        // resolve component input outputs
+        if (!(instance instanceof Context)) {
+          _this2.resolveInputsOutputs(instance, changes);
+        } // calling onChanges event with changes
+
+
+        instance.onChanges(changes); // push instance changes for subscribers
+
+        instance.pushChanges();
+      });
     }
   };
 
@@ -15774,10 +15777,11 @@ var Module = /*#__PURE__*/function () {
     }
 
     if (expression) {
-      expression = Module.parseExpression(expression); // console.log(expression);
-
+      expression = Module.parseExpression(expression);
       var args = params.join(',');
-      var expression_func = new Function("with(this) {\n\t\t\t\treturn (function (" + args + ", $$module) {\n\t\t\t\t\ttry {\n\t\t\t\t\t\tconst $$pipes = $$module.meta.pipes;\n\t\t\t\t\t\treturn " + expression + ";\n\t\t\t\t\t} catch(error) {\n\t\t\t\t\t\t$$module.nextError(error, this, " + JSON.stringify(expression) + ", arguments);\n\t\t\t\t\t}\n\t\t\t\t}.bind(this)).apply(this, arguments);\n\t\t\t}"); // console.log(this, $$module, $$pipes, "${expression}");
+      var expressionFunction = "with(this) {\n\t\t\t\treturn (function (" + args + ", $$module) {\n\t\t\t\t\ttry {\n\t\t\t\t\t\tconst $$pipes = $$module.meta.pipes;\n\t\t\t\t\t\treturn " + expression + ";\n\t\t\t\t\t} catch(error) {\n\t\t\t\t\t\t$$module.nextError(error, this, " + JSON.stringify(expression) + ", arguments);\n\t\t\t\t\t}\n\t\t\t\t}.bind(this)).apply(this, arguments);\n\t\t\t}"; // console.log('Module.makeFunction.expressionFunction', expressionFunction);
+
+      var expression_func = new Function(expressionFunction); // console.log(this, $$module, $$pipes, "${expression}");
       // console.log(expression_func);
 
       return expression_func;
@@ -15794,7 +15798,7 @@ var Module = /*#__PURE__*/function () {
   };
 
   _proto.resolve = function resolve(expression, parentInstance, payload) {
-    // console.log(expression, parentInstance, payload);
+    // console.log('Module.resolve', expression, parentInstance, payload, getContext);
     return expression.apply(parentInstance, [payload, this]);
   };
 
@@ -15804,13 +15808,20 @@ var Module = /*#__PURE__*/function () {
 
       if (child.nodeType === 1) {
         var element = child;
-        var context = getParsableContextByNode(element);
+        var context = getParsableContextByElement(element);
 
         if (!context) {
           this.parse(element, instance);
-        }
+        } // else { console.log('Module.parse', element, context.instance); }
+
       } else if (child.nodeType === 3) {
         var text = child;
+        /*
+        if (text.nodeValue!.trim() !== '') {
+            // console.log('Module.parse', text.nodeValue, instance);
+        }
+        */
+
         this.parseTextNode(text, instance);
       }
     }
@@ -15865,8 +15876,7 @@ var Module = /*#__PURE__*/function () {
     return Module.traverseUp(node, function (node) {
       return _this3.getInstance(node);
     });
-  } // reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
-  ;
+  };
 
   _proto.parseTextNode = function parseTextNode(node, instance) {
     var _this4 = this;
@@ -15883,6 +15893,7 @@ var Module = /*#__PURE__*/function () {
 
         if (typeof c === 'function') {
           // instanceOf ExpressionFunction ?;
+          // console.log('Module.parseTextNode', c, instance);
           text = _this4.resolve(c, instance, instance);
 
           if (text == undefined) {
@@ -15927,7 +15938,8 @@ var Module = /*#__PURE__*/function () {
       lastIndex = regex.lastIndex;
       var expression = this.makeFunction(matches[1]);
       expressions.push(expression);
-    }
+    } // console.log('Module.parseTextNodeExpression', regex.source, expressions, nodeValue);
+
 
     var length = nodeValue.length;
 
@@ -15961,7 +15973,7 @@ var Module = /*#__PURE__*/function () {
         expression = null;
 
     if (node.hasAttribute("[" + key + "]")) {
-      expression = node.getAttribute("[" + key + "]");
+      expression = node.getAttribute("[" + key + "]"); // console.log('Module.makeInput.expression.1', expression);
     } else if (node.hasAttribute(key)) {
       // const attribute = node.getAttribute(key).replace(/{{/g, '"+').replace(/}}/g, '+"');
       var attribute = node.getAttribute(key).replace(/({{)|(}})|(")/g, function (substring, a, b, c) {
@@ -15979,12 +15991,25 @@ var Module = /*#__PURE__*/function () {
 
         return '';
       });
-      expression = "\"" + attribute + "\"";
+      expression = "\"" + attribute + "\""; // console.log('Module.makeInput.expression.2', expression);
     }
 
     if (expression) {
       input = this.makeFunction(expression);
     }
+    /*
+    const descriptor: PropertyDescriptor = Object.getOwnPropertyDescriptor(instance, key) as PropertyDescriptor;
+    if (!descriptor) {
+        Object.defineProperty(instance, key, {
+            value: null,
+            enumerable: true,
+            writable: true,
+            configurable: false,
+        });
+    }
+    */
+    // console.log('Module.makeInput', key, instance, descriptor);
+
 
     return input;
   };
@@ -16050,7 +16075,8 @@ var Module = /*#__PURE__*/function () {
     var inputs = context.inputs;
 
     for (var key in inputs) {
-      var inputFunction = inputs[key];
+      var inputFunction = inputs[key]; // console.log('Module.inputFunction', inputFunction);
+
       var value = this.resolve(inputFunction, parentInstance, instance);
       instance[key] = value;
     }
@@ -16323,37 +16349,34 @@ var Module = /*#__PURE__*/function () {
 
   return Module;
 }();
-function getParsableContextByNode(node) {
+function getParsableContextByElement(element) {
   var context;
-  var rxcompId = node.rxcompId;
+  var rxcompId = element.rxcompId;
 
   if (rxcompId) {
-    var nodeContexts = NODES[rxcompId];
+    var contexts = NODES[rxcompId];
 
-    if (nodeContexts) {
-      context = nodeContexts.reduce(function (previous, current) {
-        if (current.factory.prototype instanceof Component) {
-          return current;
-        } else if (current.factory.prototype instanceof Context) {
+    if (contexts) {
+      context = contexts.reduce(function (previous, current) {
+        if (current.instance instanceof Context) {
           return previous ? previous : current;
-          /*
-          } else if (current.factory.prototype instanceof Structure) {
-              return previous ? previous : current;
-          */
+        } else if (current.instance instanceof Component) {
+          return current;
         } else {
           return previous;
         }
-      }, undefined); // console.log(node.rxcompId, context);
-    }
+      }, undefined);
+    } // context = contexts ? contexts.find(x => x.instance instanceof Component) : undefined;
+
   }
 
   return context;
 }
-function getContextByNode(node) {
-  var context = getParsableContextByNode(node);
+function getContextByNode(element) {
+  var context = getParsableContextByElement(element);
 
   if (context && context.factory.prototype instanceof Structure) {
-    context = undefined;
+    return undefined;
   }
 
   return context;
@@ -16664,7 +16687,7 @@ function optionsToKey(v, s) {
   }
 
   return s;
-}var WINDOW = typeof self === 'object' && self.self === self && self || typeof global === 'object' && global.global === global && global || undefined;exports.Browser=Browser;exports.ClassDirective=ClassDirective;exports.Component=Component;exports.Context=Context;exports.CoreModule=CoreModule;exports.DefaultErrorHandler=DefaultErrorHandler;exports.Directive=Directive;exports.ErrorInterceptorHandler=ErrorInterceptorHandler;exports.ErrorInterceptors=ErrorInterceptors;exports.EventDirective=EventDirective;exports.ExpressionError=ExpressionError;exports.Factory=Factory;exports.ForItem=ForItem;exports.ForStructure=ForStructure;exports.HrefDirective=HrefDirective;exports.IfStructure=IfStructure;exports.InnerHtmlDirective=InnerHtmlDirective;exports.JsonComponent=JsonComponent;exports.JsonPipe=JsonPipe;exports.Module=Module;exports.ModuleError=ModuleError;exports.PLATFORM_BROWSER=PLATFORM_BROWSER;exports.PLATFORM_JS_DOM=PLATFORM_JS_DOM;exports.PLATFORM_NODE=PLATFORM_NODE;exports.PLATFORM_WEB_WORKER=PLATFORM_WEB_WORKER;exports.Pipe=Pipe;exports.Platform=Platform;exports.Serializer=Serializer;exports.SrcDirective=SrcDirective;exports.Structure=Structure;exports.StyleDirective=StyleDirective;exports.TransferService=TransferService;exports.WINDOW=WINDOW;exports.decodeBase64=_decodeBase;exports.decodeJson=_decodeJson;exports.encodeBase64=_encodeBase;exports.encodeJson=_encodeJson;exports.encodeJsonWithOptions=encodeJsonWithOptions;exports.errors$=errors$;exports.getContext=getContext;exports.getContextByNode=getContextByNode;exports.getHost=getHost;exports.getLocationComponents=getLocationComponents;exports.getParsableContextByNode=getParsableContextByNode;exports.isPlatformBrowser=isPlatformBrowser;exports.isPlatformServer=isPlatformServer;exports.isPlatformWorker=isPlatformWorker;exports.nextError$=nextError$;exports.optionsToKey=optionsToKey;Object.defineProperty(exports,'__esModule',{value:true});})));
+}var WINDOW = typeof self === 'object' && self.self === self && self || typeof global === 'object' && global.global === global && global || undefined;exports.Browser=Browser;exports.ClassDirective=ClassDirective;exports.Component=Component;exports.Context=Context;exports.CoreModule=CoreModule;exports.DefaultErrorHandler=DefaultErrorHandler;exports.Directive=Directive;exports.ErrorInterceptorHandler=ErrorInterceptorHandler;exports.ErrorInterceptors=ErrorInterceptors;exports.EventDirective=EventDirective;exports.ExpressionError=ExpressionError;exports.Factory=Factory;exports.ForItem=ForItem;exports.ForStructure=ForStructure;exports.HrefDirective=HrefDirective;exports.IfStructure=IfStructure;exports.InnerHtmlDirective=InnerHtmlDirective;exports.JsonComponent=JsonComponent;exports.JsonPipe=JsonPipe;exports.Module=Module;exports.ModuleError=ModuleError;exports.PLATFORM_BROWSER=PLATFORM_BROWSER;exports.PLATFORM_JS_DOM=PLATFORM_JS_DOM;exports.PLATFORM_NODE=PLATFORM_NODE;exports.PLATFORM_WEB_WORKER=PLATFORM_WEB_WORKER;exports.Pipe=Pipe;exports.Platform=Platform;exports.Serializer=Serializer;exports.SrcDirective=SrcDirective;exports.Structure=Structure;exports.StyleDirective=StyleDirective;exports.TransferService=TransferService;exports.WINDOW=WINDOW;exports.decodeBase64=_decodeBase;exports.decodeJson=_decodeJson;exports.encodeBase64=_encodeBase;exports.encodeJson=_encodeJson;exports.encodeJsonWithOptions=encodeJsonWithOptions;exports.errors$=errors$;exports.getContext=getContext;exports.getContextByNode=getContextByNode;exports.getHost=getHost;exports.getLocationComponents=getLocationComponents;exports.getParsableContextByElement=getParsableContextByElement;exports.isPlatformBrowser=isPlatformBrowser;exports.isPlatformServer=isPlatformServer;exports.isPlatformWorker=isPlatformWorker;exports.nextError$=nextError$;exports.optionsToKey=optionsToKey;Object.defineProperty(exports,'__esModule',{value:true});})));
 /**
  * @license rxcomp-http v1.0.0-beta.14
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
@@ -17073,49 +17096,6 @@ export default class HttpResponse {
 */var HttpFetchHandler = /*#__PURE__*/function () {
   function HttpFetchHandler() {
     this.response_ = null;
-    /*
-    onProgress(value: Uint8Array, done: boolean, request, reader, progress) {
-        console.log("value:", value);
-        if (value || done) {
-            console.log("upload complete, request.bodyUsed:", request.bodyUsed);
-            progress.value = progress.max;
-            return reader.closed.then(() => fileUpload);
-        };
-        console.log("upload progress:", value);
-        if (progress.value < file.size) {
-            progress.value += 1;
-        }
-        return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
-    }
-    */
-
-    /*
-    getProgress_(request) {
-        const uploadProgress = new ReadableStream({
-            start(controller) {
-                console.log("starting upload, request.bodyUsed:", request.bodyUsed);
-                controller.enqueue(request.bodyUsed);
-            },
-            pull(controller) {
-                if (request.bodyUsed) {
-                    controller.close();
-                }
-                controller.enqueue(request.bodyUsed);
-                console.log("pull, request.bodyUsed:", request.bodyUsed);
-            },
-            cancel(reason) {
-                console.log(reason);
-            }
-        });
-        const [fileUpload, reader] = [
-            upload(request).catch(e => {
-                reader.cancel();
-                console.log(e);
-                throw e
-            }), uploadProgress.getReader()
-        ];
-    }
-    */
   }
 
   var _proto = HttpFetchHandler.prototype;
@@ -17129,7 +17109,9 @@ export default class HttpResponse {
 
     var requestInfo = request.urlWithParams;
     var requestInit = request.toInitRequest(); // console.log('fetchRequest', fetchRequest);
-    // fetchRequest.headers.forEach((value, key) => console.log('HttpFetchHandler.handle', key, value));
+    // fetchRequest.headers.forEach((value, key) => {
+    // console.log('HttpFetchHandler.handle', key, value);
+    // });
     // request = request.clone({ headers: fetchRequest.headers });
     // console.log('HttpFetchHandler.handle', 'requestInfo', requestInfo, 'requestInit', requestInit);
     // hydrate
@@ -17207,7 +17189,7 @@ export default class HttpResponse {
                     if (value) {
                         chunks.push(value);
                         receivedLength += value.length || 0;
-                        console.log(`HttpFetchHandler.setProgress ${(receivedLength / contentLength * 100).toFixed(2)}% ${receivedLength} of ${contentLength}`);
+                        // console.log(`HttpFetchHandler.setProgress ${(receivedLength / contentLength * 100).toFixed(2)}% ${receivedLength} of ${contentLength}`);
                     }
                     getChunk();
                 } else {
@@ -17225,7 +17207,7 @@ export default class HttpResponse {
                         const result = new TextDecoder("utf-8").decode(chunksAll);
                         // We're done!
                         const data = JSON.parse(result);
-                        console.log('HttpFetchHandler.setProgress data', data);
+                        // console.log('HttpFetchHandler.setProgress data', data);
                         resolve(response);
                     }
                 }
@@ -17371,7 +17353,50 @@ export default class HttpResponse {
   };
 
   return HttpFetchHandler;
-}();var XSSI_PREFIX = /^\)\]\}',?\n/;
+}();
+/*
+    onProgress(value: Uint8Array, done: boolean, request, reader, progress) {
+        // console.log("value:", value);
+        if (value || done) {
+            // console.log("upload complete, request.bodyUsed:", request.bodyUsed);
+            progress.value = progress.max;
+            return reader.closed.then(() => fileUpload);
+        };
+        // console.log("upload progress:", value);
+        if (progress.value < file.size) {
+            progress.value += 1;
+        }
+        return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
+    }
+    */
+
+/*
+getProgress_(request) {
+    const uploadProgress = new ReadableStream({
+        start(controller) {
+            // console.log("starting upload, request.bodyUsed:", request.bodyUsed);
+            controller.enqueue(request.bodyUsed);
+        },
+        pull(controller) {
+            if (request.bodyUsed) {
+                controller.close();
+            }
+            controller.enqueue(request.bodyUsed);
+            // console.log("pull, request.bodyUsed:", request.bodyUsed);
+        },
+        cancel(reason) {
+            // console.log(reason);
+        }
+    });
+    const [fileUpload, reader] = [
+        upload(request).catch(e => {
+            reader.cancel();
+            // console.log(e);
+            throw e
+        }), uploadProgress.getReader()
+    ];
+}
+*/var XSSI_PREFIX = /^\)\]\}',?\n/;
 var HttpXhrHandler = /*#__PURE__*/function () {
   function HttpXhrHandler() {}
 
@@ -17384,9 +17409,9 @@ var HttpXhrHandler = /*#__PURE__*/function () {
 
     if (request.method === 'JSONP') {
       throw new Error("Attempted to construct Jsonp request without JsonpClientModule installed.");
-    }
+    } // console.log('HttpXhrHandler.request', request);
 
-    console.log('HttpXhrHandler.request', request);
+
     return new rxjs.Observable(function (observer) {
       var xhr = new XMLHttpRequest();
       var requestInfo = request.urlWithParams;
@@ -17425,9 +17450,9 @@ var HttpXhrHandler = /*#__PURE__*/function () {
           if (detectedType !== null) {
             headers.set('Content-Type', detectedType);
           }
-        }
+        } // console.log('HttpXhrHandler.contentType', headers.get('Content-Type'));
 
-        console.log('HttpXhrHandler.contentType', headers.get('Content-Type'));
+
         headers.forEach(function (value, name) {
           return xhr.setRequestHeader(name, value);
         });
@@ -17551,7 +17576,7 @@ var HttpXhrHandler = /*#__PURE__*/function () {
 
         var sentHeaders = false;
 
-        var onDownProgress = function onDownProgress(event) {
+        var onDownloadProgress = function onDownloadProgress(event) {
           if (!sentHeaders) {
             observer.next(partialFromXhr_());
             sentHeaders = true;
@@ -17568,9 +17593,9 @@ var HttpXhrHandler = /*#__PURE__*/function () {
 
           if (request.responseType === 'text' && !!xhr.responseText) {
             progressEvent.partialText = xhr.responseText;
-          }
+          } // console.log('HttpXhrHandler.onDownloadProgress', progressEvent);
 
-          console.log(progressEvent);
+
           observer.next(progressEvent);
         };
 
@@ -17591,7 +17616,7 @@ var HttpXhrHandler = /*#__PURE__*/function () {
         xhr.addEventListener('error', onError);
 
         if (request.reportProgress) {
-          xhr.addEventListener('progress', onDownProgress);
+          xhr.addEventListener('progress', onDownloadProgress);
 
           if (body !== null && xhr.upload) {
             xhr.upload.addEventListener('progress', onUpProgress);
@@ -17607,7 +17632,7 @@ var HttpXhrHandler = /*#__PURE__*/function () {
           xhr.removeEventListener('load', onLoad);
 
           if (request.reportProgress) {
-            xhr.removeEventListener('progress', onDownProgress);
+            xhr.removeEventListener('progress', onDownloadProgress);
 
             if (body !== null && xhr.upload) {
               xhr.upload.removeEventListener('progress', onUpProgress);
@@ -17754,12 +17779,12 @@ HttpModule.meta = {
     return encodeParam_(key);
   };
 
-  _proto.encodeValue = function encodeValue(value) {
-    return encodeParam_(value);
-  };
-
   _proto.decodeKey = function decodeKey(key) {
     return decodeURIComponent(key);
+  };
+
+  _proto.encodeValue = function encodeValue(value) {
+    return encodeParam_(value);
   };
 
   _proto.decodeValue = function decodeValue(value) {
@@ -17768,116 +17793,31 @@ HttpModule.meta = {
 
   return HttpUrlEncodingCodec;
 }();
-var HttpParams = /*#__PURE__*/function () {
-  function HttpParams(options, encoder) {
-    if (encoder === void 0) {
-      encoder = new HttpUrlEncodingCodec();
-    }
+var HttpSerializerCodec = /*#__PURE__*/function () {
+  function HttpSerializerCodec() {}
 
-    this.params_ = new Map();
-    this.encoder = encoder;
-    var params = this.params_;
+  var _proto2 = HttpSerializerCodec.prototype;
 
-    if (options instanceof HttpParams) {
-      options.params_.forEach(function (value, key) {
-        params.set(key, value);
-      });
-    } else if (typeof options === 'object') {
-      Object.keys(options).forEach(function (key) {
-        var value = options[key];
-        params.set(key, Array.isArray(value) ? value : [value]);
-      });
-    } else if (typeof options === 'string') {
-      parseRawParams_(params, options, this.encoder);
-    } // ?updates=null&cloneFrom=null&encoder=%5Bobject%20Object%5D&params_=%5Bobject%20Map%5D
-
-  }
-
-  var _proto2 = HttpParams.prototype;
-
-  _proto2.keys = function keys() {
-    return Array.from(this.params_.keys());
+  _proto2.encodeKey = function encodeKey(key) {
+    return encodeParam_(key);
   };
 
-  _proto2.has = function has(key) {
-    return this.params_.has(key);
+  _proto2.decodeKey = function decodeKey(key) {
+    return decodeURIComponent(key);
   };
 
-  _proto2.get = function get(key) {
-    var value = this.params_.get(key);
-    return value ? value[0] : null;
+  _proto2.encodeValue = function encodeValue(value) {
+    // console.log('encodeValue', value);
+    return rxcomp.Serializer.encode(value, [rxcomp.encodeJson, encodeURIComponent, rxcomp.encodeBase64]) || '';
   };
 
-  _proto2.getAll = function getAll(key) {
-    return this.params_.get(key) || null;
+  _proto2.decodeValue = function decodeValue(value) {
+    // console.log('decodeValue', value);
+    return rxcomp.Serializer.decode(value, [rxcomp.decodeBase64, decodeURIComponent, rxcomp.decodeJson]) || '';
   };
 
-  _proto2.set = function set(key, value) {
-    var clone = this.clone_();
-    clone.params_.set(key, [value]);
-    return clone;
-  };
-
-  _proto2.append = function append(key, value) {
-    var clone = this.clone_();
-
-    if (clone.has(key)) {
-      var values = clone.params_.get(key) || [];
-      values.push(value);
-      clone.params_.set(key, values);
-    } else {
-      clone.params_.set(key, [value]);
-    }
-
-    return clone;
-  };
-
-  _proto2.delete = function _delete(key) {
-    var clone = this.clone_();
-    clone.params_.delete(key);
-    return clone;
-  };
-
-  _proto2.toString = function toString() {
-    var _this = this;
-
-    return this.keys().map(function (key) {
-      var values = _this.params_.get(key);
-
-      return _this.encoder.encodeKey(key) + (values ? '=' + values.map(function (x) {
-        return _this.encoder.encodeValue(x);
-      }).join('&') : '');
-    }).filter(function (keyValue) {
-      return keyValue !== '';
-    }).join('&');
-  };
-
-  _proto2.toObject = function toObject() {
-    var _this2 = this;
-
-    var params = {};
-    this.keys().map(function (key) {
-      var values = _this2.params_.get(key);
-
-      if (values) {
-        params[key] = values;
-      } // return this.encoder.encodeKey(key) + (values ? '=' + values.map(x => this.encoder.encodeValue(x)).join('&') : '');
-
-    });
-    return params;
-  };
-
-  _proto2.clone_ = function clone_() {
-    var clone = new HttpParams(undefined, this.encoder);
-    this.params_.forEach(function (value, key) {
-      clone.params_.set(key, value);
-    });
-    return clone;
-  };
-
-  return HttpParams;
+  return HttpSerializerCodec;
 }();
-
 function parseRawParams_(params, queryString, encoder) {
   if (queryString.length > 0) {
     var keyValueParams = queryString.split('&');
@@ -17897,9 +17837,120 @@ function parseRawParams_(params, queryString, encoder) {
   return params;
 }
 
-function encodeParam_(v) {
-  return encodeURIComponent(v).replace(/%40/gi, '@').replace(/%3A/gi, ':').replace(/%24/gi, '$').replace(/%2C/gi, ',').replace(/%3B/gi, ';').replace(/%2B/gi, '+').replace(/%3D/gi, '=').replace(/%3F/gi, '?').replace(/%2F/gi, '/');
-}var HttpRequest = /*#__PURE__*/function () {
+function encodeParam_(value) {
+  return encodeURIComponent(value).replace(/%40/gi, '@').replace(/%3A/gi, ':').replace(/%24/gi, '$').replace(/%2C/gi, ',').replace(/%3B/gi, ';').replace(/%2B/gi, '+').replace(/%3D/gi, '=').replace(/%3F/gi, '?').replace(/%2F/gi, '/');
+}var HttpParams = /*#__PURE__*/function () {
+  function HttpParams(options, encoder) {
+    if (encoder === void 0) {
+      encoder = new HttpUrlEncodingCodec();
+    }
+
+    this.params_ = new Map(); // console.log('HttpParams', encoder);
+
+    this.encoder = encoder;
+    var params = this.params_;
+
+    if (options instanceof HttpParams) {
+      options.params_.forEach(function (value, key) {
+        params.set(key, value);
+      });
+    } else if (typeof options === 'object') {
+      Object.keys(options).forEach(function (key) {
+        var value = options[key];
+        params.set(key, Array.isArray(value) ? value : [value]);
+      });
+    } else if (typeof options === 'string') {
+      parseRawParams_(params, options, this.encoder);
+    } // ?updates=null&cloneFrom=null&encoder=%5Bobject%20Object%5D&params_=%5Bobject%20Map%5D
+
+  }
+
+  var _proto = HttpParams.prototype;
+
+  _proto.keys = function keys() {
+    return Array.from(this.params_.keys());
+  };
+
+  _proto.has = function has(key) {
+    return this.params_.has(key);
+  };
+
+  _proto.get = function get(key) {
+    var value = this.params_.get(key);
+    return value ? value[0] : null;
+  };
+
+  _proto.getAll = function getAll(key) {
+    return this.params_.get(key) || null;
+  };
+
+  _proto.set = function set(key, value) {
+    var clone = this.clone_();
+    clone.params_.set(key, [value]);
+    return clone;
+  };
+
+  _proto.append = function append(key, value) {
+    var clone = this.clone_();
+
+    if (clone.has(key)) {
+      var values = clone.params_.get(key) || [];
+      values.push(value);
+      clone.params_.set(key, values);
+    } else {
+      clone.params_.set(key, [value]);
+    }
+
+    return clone;
+  };
+
+  _proto.delete = function _delete(key) {
+    var clone = this.clone_();
+    clone.params_.delete(key);
+    return clone;
+  };
+
+  _proto.toString = function toString() {
+    var _this = this;
+
+    return this.keys().map(function (key) {
+      var values = _this.params_.get(key);
+
+      var keyValue = _this.encoder.encodeKey(key) + (values ? '=' + values.map(function (x) {
+        return _this.encoder.encodeValue(x);
+      }).join('&') : ''); // console.log(key, values, keyValue, this.encoder);
+
+      return keyValue;
+    }).filter(function (keyValue) {
+      return keyValue !== '';
+    }).join('&');
+  };
+
+  _proto.toObject = function toObject() {
+    var _this2 = this;
+
+    var params = {};
+    this.keys().map(function (key) {
+      var values = _this2.params_.get(key);
+
+      if (values) {
+        params[key] = values;
+      } // return this.encoder.encodeKey(key) + (values ? '=' + values.map(x => this.encoder.encodeValue(x)).join('&') : '');
+
+    });
+    return params;
+  };
+
+  _proto.clone_ = function clone_() {
+    var clone = new HttpParams(undefined, this.encoder);
+    this.params_.forEach(function (value, key) {
+      clone.params_.set(key, value);
+    });
+    return clone;
+  };
+
+  return HttpParams;
+}();var HttpRequest = /*#__PURE__*/function () {
   function HttpRequest(method, url, third, fourth) {
     this.url = url;
     this.reportProgress = false;
@@ -17933,7 +17984,7 @@ function encodeParam_(v) {
       }
 
       if (options.params) {
-        this.params = new HttpParams(options.params);
+        this.params = options.params instanceof HttpParams ? options.params : new HttpParams(options.params, options.paramsEncoder);
       }
     }
 
@@ -18158,7 +18209,7 @@ function isFormData_(value) {
       var params = undefined;
 
       if (options.params) {
-        params = new HttpParams(options.params);
+        params = new HttpParams(options.params, options.paramsEncoder);
       }
 
       request = new HttpRequest(first, url, options.body !== undefined ? options.body : null, {
@@ -18174,7 +18225,9 @@ function isFormData_(value) {
     HttpService.incrementPendingRequest();
     var events$ = rxjs.of(request).pipe(operators.concatMap(function (request) {
       return _this.handler.handle(request);
-    }), // tap((response: HttpEvent<any>) => console.log('HttpService.response', response)),
+    }), // tap((response: HttpEvent<any>) => {
+    // console.log('HttpService.response', response)
+    // ),
     operators.finalize(function () {
       return HttpService.decrementPendingRequest();
     }));
@@ -18371,7 +18424,7 @@ function optionsWithBody_(options, body) {
   return Object.assign({}, options, {
     body: body
   });
-}exports.HttpErrorResponse=HttpErrorResponse;exports.HttpFetchHandler=HttpFetchHandler;exports.HttpHandler=HttpHandler;exports.HttpHeaderResponse=HttpHeaderResponse;exports.HttpHeaders=HttpHeaders;exports.HttpInterceptingHandler=HttpInterceptingHandler;exports.HttpInterceptorHandler=HttpInterceptorHandler;exports.HttpInterceptors=HttpInterceptors;exports.HttpModule=HttpModule;exports.HttpParams=HttpParams;exports.HttpRequest=HttpRequest;exports.HttpResponse=HttpResponse;exports.HttpResponseBase=HttpResponseBase;exports.HttpService=HttpService;exports.HttpUrlEncodingCodec=HttpUrlEncodingCodec;exports.HttpXhrHandler=HttpXhrHandler;exports.NoopInterceptor=NoopInterceptor;exports.fetchHandler=fetchHandler;exports.interceptingHandler=interceptingHandler;exports.jsonpCallbackContext=jsonpCallbackContext;exports.xhrHandler=xhrHandler;Object.defineProperty(exports,'__esModule',{value:true});})));
+}exports.HttpErrorResponse=HttpErrorResponse;exports.HttpFetchHandler=HttpFetchHandler;exports.HttpHandler=HttpHandler;exports.HttpHeaderResponse=HttpHeaderResponse;exports.HttpHeaders=HttpHeaders;exports.HttpInterceptingHandler=HttpInterceptingHandler;exports.HttpInterceptorHandler=HttpInterceptorHandler;exports.HttpInterceptors=HttpInterceptors;exports.HttpModule=HttpModule;exports.HttpParams=HttpParams;exports.HttpRequest=HttpRequest;exports.HttpResponse=HttpResponse;exports.HttpResponseBase=HttpResponseBase;exports.HttpSerializerCodec=HttpSerializerCodec;exports.HttpService=HttpService;exports.HttpUrlEncodingCodec=HttpUrlEncodingCodec;exports.HttpXhrHandler=HttpXhrHandler;exports.NoopInterceptor=NoopInterceptor;exports.fetchHandler=fetchHandler;exports.interceptingHandler=interceptingHandler;exports.jsonpCallbackContext=jsonpCallbackContext;exports.xhrHandler=xhrHandler;Object.defineProperty(exports,'__esModule',{value:true});})));
 /**
  * @license rxcomp-router v1.0.0-beta.14
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
@@ -19559,13 +19612,17 @@ function makeCanActivateResponse$_(events$, event) {
 function makeObserve$_(routes, route$, events$, locationStrategy) {
   var currentRoute; // console.log('RouterService.WINDOW', WINDOW!!);
 
-  var stateEvents$ = rxcomp.isPlatformServer ? rxjs.EMPTY : rxjs.merge(rxjs.fromEvent(rxcomp.WINDOW, 'popstate')).pipe(operators.tap(function (event) {
-    // detect rxcomp !!!
-    // event.preventDefault();
-    // event.stopImmediatePropagation(); // !!!
-    // history.go(1);
-    console.log('RouterService.onPopState', "location: \"" + document.location.pathname + "\"", "state: \"" + event.state + "\"");
-  }), operators.map(function (event) {
+  var stateEvents$ = rxcomp.isPlatformServer ? rxjs.EMPTY : rxjs.merge(rxjs.fromEvent(rxcomp.WINDOW, 'popstate')).pipe(
+  /*
+  tap((event: PopStateEvent) => {
+      // detect rxcomp !!!
+      // event.preventDefault();
+      // event.stopImmediatePropagation(); // !!!
+      // history.go(1);
+      // console.log('RouterService.onPopState', `location: "${document.location.pathname}"`, `state: "${event.state}"`);
+  }),
+  */
+  operators.map(function (event) {
     return new NavigationStart({
       routerLink: document.location.pathname,
       trigger: 'popstate'
@@ -19969,7 +20026,7 @@ RouterLinkActiveDirective.meta = {
 
   _proto.onEnter$_ = function onEnter$_(element, instance) {
     if (element && instance && instance instanceof View) {
-      return asObservable_([element], instance.onEnter);
+      return asObservable([element], instance.onEnter);
     } else {
       return rxjs.of(true);
     }
@@ -19977,7 +20034,7 @@ RouterLinkActiveDirective.meta = {
 
   _proto.onExit$_ = function onExit$_(element, instance) {
     if (element && instance && instance instanceof View) {
-      return asObservable_([element], instance.onExit);
+      return asObservable([element], instance.onExit);
     } else {
       return rxjs.of(true);
     }
@@ -19998,8 +20055,7 @@ RouterOutletStructure.meta = {
     host: RouterOutletStructure
   }
 };
-
-function asObservable_(args, callback) {
+function asObservable(args, callback) {
   return rxjs.Observable.create(function (observer) {
     var subscription;
 
@@ -20121,4 +20177,4 @@ RouterModule.meta = {
     */
 
   });
-}exports.ActivationEnd=ActivationEnd;exports.ActivationStart=ActivationStart;exports.ChildActivationEnd=ChildActivationEnd;exports.ChildActivationStart=ChildActivationStart;exports.GuardsCheckEnd=GuardsCheckEnd;exports.GuardsCheckStart=GuardsCheckStart;exports.LocationStrategy=LocationStrategy;exports.LocationStrategyHash=LocationStrategyHash;exports.LocationStrategyPath=LocationStrategyPath;exports.NavigationCancel=NavigationCancel;exports.NavigationEnd=NavigationEnd;exports.NavigationError=NavigationError;exports.NavigationStart=NavigationStart;exports.ResolveEnd=ResolveEnd;exports.ResolveStart=ResolveStart;exports.Route=Route;exports.RouteConfigLoadEnd=RouteConfigLoadEnd;exports.RouteConfigLoadStart=RouteConfigLoadStart;exports.RoutePath=RoutePath;exports.RouteSegment=RouteSegment;exports.RouteSnapshot=RouteSnapshot;exports.RouterEvent=RouterEvent;exports.RouterLinkActiveDirective=RouterLinkActiveDirective;exports.RouterLinkDirective=RouterLinkDirective;exports.RouterModule=RouterModule;exports.RouterOutletStructure=RouterOutletStructure;exports.RoutesRecognized=RoutesRecognized;exports.View=View;exports.transition$=transition$;Object.defineProperty(exports,'__esModule',{value:true});})));
+}exports.ActivationEnd=ActivationEnd;exports.ActivationStart=ActivationStart;exports.ChildActivationEnd=ChildActivationEnd;exports.ChildActivationStart=ChildActivationStart;exports.GuardsCheckEnd=GuardsCheckEnd;exports.GuardsCheckStart=GuardsCheckStart;exports.LocationStrategy=LocationStrategy;exports.LocationStrategyHash=LocationStrategyHash;exports.LocationStrategyPath=LocationStrategyPath;exports.NavigationCancel=NavigationCancel;exports.NavigationEnd=NavigationEnd;exports.NavigationError=NavigationError;exports.NavigationStart=NavigationStart;exports.ResolveEnd=ResolveEnd;exports.ResolveStart=ResolveStart;exports.Route=Route;exports.RouteConfigLoadEnd=RouteConfigLoadEnd;exports.RouteConfigLoadStart=RouteConfigLoadStart;exports.RoutePath=RoutePath;exports.RouteSegment=RouteSegment;exports.RouteSnapshot=RouteSnapshot;exports.RouterEvent=RouterEvent;exports.RouterLinkActiveDirective=RouterLinkActiveDirective;exports.RouterLinkDirective=RouterLinkDirective;exports.RouterModule=RouterModule;exports.RouterOutletStructure=RouterOutletStructure;exports.RoutesRecognized=RoutesRecognized;exports.View=View;exports.asObservable=asObservable;exports.transition$=transition$;Object.defineProperty(exports,'__esModule',{value:true});})));
