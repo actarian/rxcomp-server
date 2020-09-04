@@ -1,5 +1,5 @@
 /**
- * @license rxcomp-server v1.0.0-beta.14
+ * @license rxcomp-server v1.0.0-beta.16
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */

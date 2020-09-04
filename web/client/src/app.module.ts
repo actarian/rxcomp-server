@@ -1,6 +1,6 @@
 import { CoreModule, IModuleMeta, Module } from 'rxcomp';
 import { HttpModule } from 'rxcomp-http';
-import { RouterModule } from '../../../../rxcomp-router/dist/cjs/rxcomp-router';
+import { RouterModule } from 'rxcomp-router';
 import AppComponent from './app.component';
 import { CustomRequestInterceptor, CustomResponseInterceptor } from './custom-interceptor/custom.interceptor';
 import NotFoundComponent from './pages/not-found.component';

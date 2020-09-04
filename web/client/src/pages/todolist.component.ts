@@ -1,7 +1,7 @@
 import { Component, errors$, IFactoryMeta } from 'rxcomp';
 import { HttpService } from 'rxcomp-http';
+import { RouterKeyValue, RouterOutletStructure } from 'rxcomp-router';
 import { first, takeUntil } from 'rxjs/operators';
-import { RouterKeyValue, RouterOutletStructure } from '../../../../../rxcomp-router/dist/cjs/rxcomp-router';
 import { IResponseData, ITodoItem } from '../todo/todo';
 import { Vars } from '../vars';
 

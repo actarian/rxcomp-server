@@ -1,8 +1,8 @@
 import 'gsap';
 import { IElement, IFactoryMeta } from 'rxcomp';
+import { RouterKeyValue, transition$, View } from 'rxcomp-router';
 import { combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { RouterKeyValue, transition$, View } from '../../../../../rxcomp-router/dist/cjs/rxcomp-router';
 
 export default class TodolistItemComponent extends View {
 	onInit() {

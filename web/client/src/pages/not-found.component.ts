@@ -1,5 +1,5 @@
 import { Component, IFactoryMeta } from 'rxcomp';
-import { RouterOutletStructure } from '../../../../../rxcomp-router/dist/cjs/rxcomp-router';
+import { RouterOutletStructure } from 'rxcomp-router';
 
 export default class NotFoundComponent extends Component {
 	host!: RouterOutletStructure;

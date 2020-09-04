@@ -14462,7 +14462,7 @@
 
 
 /**
- * @license rxcomp v1.0.0-beta.14
+ * @license rxcomp v1.0.0-beta.16
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
@@ -14629,6 +14629,23 @@ var Factory = /*#__PURE__*/function () {
     this.rxcompId = -1;
     this.unsubscribe$ = new rxjs.Subject();
     this.changes$ = new rxjs.ReplaySubject(1);
+    /*
+    // !!! PROXY
+    const store: { [key: string]: any } = {};
+    const handler: ProxyHandler<Factory> = {
+        get: function (target: Factory, prop: string, receiver: any) {
+            return target[prop];
+        },
+        set: function (target: Factory, prop: string | number | Symbol, value: any, receiver: any) {
+            store[prop as string] = value;
+            console.log('Factory updating store', prop, value, store);
+            target[prop as string] = value;
+            return true;
+        }
+    }
+    const proxy = new Proxy(this, handler);
+    console.log('proxy', proxy);
+    */
   }
 
   var _proto = Factory.prototype;
@@ -14649,6 +14666,20 @@ var Factory = /*#__PURE__*/function () {
       this.changes$.next(this);
       this.onView();
     }
+  };
+
+  _proto.onParentDidChange = function onParentDidChange(changes) {
+    var _getContext2 = getContext(this),
+        module = _getContext2.module; // console.log('Component.onParentDidChange', changes);
+
+
+    module.resolveInputsOutputs(this, changes);
+    this.onChanges(changes);
+    this.pushChanges();
+  };
+
+  Factory.getInputsTokens = function getInputsTokens(instance) {
+    return this.meta.inputs || [];
   };
 
   return Factory;
@@ -14683,8 +14714,8 @@ function getContext(instance) {
     var _getContext = getContext(this),
         node = _getContext.node;
 
-    Array.prototype.slice.call(node.classList).forEach(function (x) {
-      return _this2.keys.push(x);
+    node.classList.forEach(function (value) {
+      _this2.keys.push(value);
     });
   };
 
@@ -14762,27 +14793,12 @@ var ErrorInterceptorHandler = /*#__PURE__*/function () {
 
   return ErrorInterceptorHandler;
 }();
-/*
-export class NoopErrorInterceptor implements IErrorInterceptor {
-    intercept(error: Error, next: ErrorHandler): Observable<Error> {
-        return of(error);
-    }
-}
-
-const noopInterceptor = new NoopErrorInterceptor();
-*/
-
 var DefaultErrorHandler = /*#__PURE__*/function () {
   function DefaultErrorHandler() {}
 
   var _proto2 = DefaultErrorHandler.prototype;
 
   _proto2.handle = function handle(error) {
-    /*
-    if (error) {
-        console.error(error);
-    }
-    */
     return rxjs.of(error);
   };
 
@@ -14790,17 +14806,7 @@ var DefaultErrorHandler = /*#__PURE__*/function () {
 }();
 var ErrorInterceptors = [];
 var nextError$ = new rxjs.ReplaySubject(1);
-var errors$ = nextError$.pipe(
-/*
-switchMap(error => {
-    const chain = ErrorInterceptors.reduceRight((next: ErrorHandler, interceptor: IErrorInterceptor) => {
-        return new ErrorInterceptorHandler(next, interceptor);
-    }, new NoopErrorInterceptor());
-    return chain.handle(error);
-}),
-*/
-// switchMap(error => merge(ErrorInterceptors.map(x => x.intercept(error, next)))),
-operators.switchMap(function (error) {
+var errors$ = nextError$.pipe(operators.switchMap(function (error) {
   var chain = ErrorInterceptors.reduceRight(function (next, interceptor) {
     return new ErrorInterceptorHandler(next, interceptor);
   }, new DefaultErrorHandler());
@@ -14829,8 +14835,7 @@ var EventDirective = /*#__PURE__*/function (_Directive) {
         module = _getContext.module,
         node = _getContext.node,
         parentInstance = _getContext.parentInstance,
-        selector = _getContext.selector; // console.log('parentInstance', parentInstance);
-
+        selector = _getContext.selector;
 
     var event = this.event = selector.replace(/\[|\]|\(|\)/g, '');
     var event$ = rxjs.fromEvent(node, event).pipe(operators.shareReplay(1));
@@ -14874,12 +14879,8 @@ EventDirective.meta = {
         node = _getContext.node;
 
     if (module.instances) {
-      // console.log(new Error(`pushChanges ${instance.constructor.name}`).stack);
-      this.changes$.next(this); // console.log('Module.parse', instance.constructor.name);
-      // parse component text nodes
-
-      module.parse(node, this); // calling onView event
-
+      this.changes$.next(this);
+      module.parse(node, this);
       this.onView();
     }
   };
@@ -14919,11 +14920,17 @@ var Context = /*#__PURE__*/function (_Component) {
 
     if (context.module.instances) {
       context.keys.forEach(function (key) {
+        // console.log('Context', key, context.parentInstance);
         _this2[key] = context.parentInstance[key];
       });
     }
 
     _Component.prototype.pushChanges.call(this);
+  };
+
+  _proto.onParentDidChange = function onParentDidChange(changes) {
+    this.onChanges(changes);
+    this.pushChanges();
   };
 
   Context.mergeDescriptors = function mergeDescriptors(source, instance, descriptors) {
@@ -15036,27 +15043,22 @@ var Context = /*#__PURE__*/function (_Component) {
 
   _proto.onInit = function onInit() {
     var _getContext = getContext(this),
-        module = _getContext.module,
         node = _getContext.node;
 
-    var forbegin = document.createComment("*for begin");
+    var forbegin = this.forbegin = document.createComment("*for begin");
     forbegin.rxcompId = node.rxcompId;
     node.parentNode.replaceChild(forbegin, node);
     var forend = this.forend = document.createComment("*for end");
     forbegin.parentNode.insertBefore(forend, forbegin.nextSibling);
-    var expression = node.getAttribute('*for');
     node.removeAttribute('*for');
-    var token = this.token = this.getExpressionToken(expression);
-    this.forFunction = module.makeFunction(token.iterable);
   };
 
-  _proto.onChanges = function onChanges(changes) {
+  _proto.onChanges = function onChanges() {
     var context = getContext(this);
     var module = context.module;
-    var node = context.node; // resolve
-
-    var token = this.token;
-    var result = module.resolve(this.forFunction, changes, this) || [];
+    var node = context.node;
+    var tokens = this.tokens;
+    var result = this[tokens.iterable];
     var isArray = Array.isArray(result);
     var array = isArray ? result : Object.keys(result);
     var total = array.length;
@@ -15070,33 +15072,21 @@ var Context = /*#__PURE__*/function (_Component) {
         if (i < previous) {
           // update
           var instance = this.instances[i];
-          instance[token.key] = key;
-          instance[token.value] = value;
-          /*
-          if (!nextSibling) {
-              const context = getContext(instance);
-              const node = context.node;
-              this.forend.parentNode.insertBefore(node, this.forend);
-          } else {
-              nextSibling = nextSibling.nextSibling;
-          }
-          */
+          instance[tokens.key] = key;
+          instance[tokens.value] = value;
         } else {
           // create
           var clonedNode = node.cloneNode(true);
           delete clonedNode.rxcompId;
-          this.forend.parentNode.insertBefore(clonedNode, this.forend); // !!! todo: check context.parentInstance
+          this.forend.parentNode.insertBefore(clonedNode, this.forend);
+          var args = [tokens.key, key, tokens.value, value, i, total, context.parentInstance];
+          var skipSubscription = true;
 
-          var args = [token.key, key, token.value, value, i, total, context.parentInstance];
-
-          var _instance = module.makeInstance(clonedNode, ForItem, context.selector, context.parentInstance, args);
+          var _instance = module.makeInstance(clonedNode, ForItem, context.selector, context.parentInstance, args, undefined, skipSubscription);
 
           if (_instance) {
-            // const forItemContext = getContext(instance);
-            // console.log('ForStructure', clonedNode, forItemContext.instance.constructor.name);
-            // module.compile(clonedNode, forItemContext.instance);
-            module.compile(clonedNode, _instance); // nextSibling = clonedNode.nextSibling;
-
+            module.compile(clonedNode, _instance);
+            module.makeInstanceSubscription(_instance, context.parentInstance);
             this.instances.push(_instance);
           }
         }
@@ -15113,10 +15103,19 @@ var Context = /*#__PURE__*/function (_Component) {
       }
     }
 
-    this.instances.length = array.length; // console.log('ForStructure', this.instances, token);
+    this.instances.length = array.length;
   };
 
-  _proto.getExpressionToken = function getExpressionToken(expression) {
+  ForStructure.getInputsTokens = function getInputsTokens(instance) {
+    var _getContext3 = getContext(instance),
+        node = _getContext3.node;
+
+    var expression = node.getAttribute('*for');
+    var tokens = instance.tokens = ForStructure.getForExpressionTokens(expression);
+    return [tokens.iterable];
+  };
+
+  ForStructure.getForExpressionTokens = function getForExpressionTokens(expression) {
     if (expression === null) {
       throw new Error('invalid for');
     }
@@ -15163,7 +15162,8 @@ var Context = /*#__PURE__*/function (_Component) {
   return ForStructure;
 }(Structure);
 ForStructure.meta = {
-  selector: '[*for]'
+  selector: '[*for]',
+  inputs: ['for']
 };var HrefDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(HrefDirective, _Directive);
 
@@ -15204,7 +15204,6 @@ HrefDirective.meta = {
 
   _proto.onInit = function onInit() {
     var _getContext = getContext(this),
-        module = _getContext.module,
         node = _getContext.node;
 
     var ifbegin = this.ifbegin = document.createComment("*if begin");
@@ -15212,23 +15211,20 @@ HrefDirective.meta = {
     node.parentNode.replaceChild(ifbegin, node);
     var ifend = this.ifend = document.createComment("*if end");
     ifbegin.parentNode.insertBefore(ifend, ifbegin.nextSibling);
-    var expression = node.getAttribute('*if');
-    this.ifFunction = module.makeFunction(expression);
     var clonedNode = node.cloneNode(true);
     clonedNode.removeAttribute('*if');
     this.clonedNode = clonedNode;
-    this.element = clonedNode.cloneNode(true); // console.log('IfStructure.expression', expression);
+    this.element = clonedNode.cloneNode(true);
   };
 
-  _proto.onChanges = function onChanges(changes) {
+  _proto.onChanges = function onChanges() {
     var _getContext2 = getContext(this),
-        module = _getContext2.module; // console.log('IfStructure.onChanges', changes);
+        module = _getContext2.module;
 
-
-    var value = module.resolve(this.ifFunction, changes, this);
     var element = this.element;
 
-    if (value) {
+    if (this.if != null) {
+      // !!! keep == loose equality
       if (!element.parentNode) {
         var ifend = this.ifend;
         ifend.parentNode.insertBefore(element, ifend);
@@ -15246,7 +15242,8 @@ HrefDirective.meta = {
   return IfStructure;
 }(Structure);
 IfStructure.meta = {
-  selector: '[*if]'
+  selector: '[*if]',
+  inputs: ['if']
 };var InnerHtmlDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(InnerHtmlDirective, _Directive);
 
@@ -15299,7 +15296,9 @@ InnerHtmlDirective.meta = {
 JsonComponent.meta = {
   selector: 'json-component',
   inputs: ['item'],
-  template: "\n\t\t<div class=\"rxc-block\">\n\t\t\t<div class=\"rxc-head\">\n\t\t\t\t<span class=\"rxc-head__title\" (click)=\"onToggle()\">\n\t\t\t\t\t<span *if=\"!active\">+ json </span>\n\t\t\t\t\t<span *if=\"active\">- json </span>\n\t\t\t\t\t<span [innerHTML]=\"item\"></span>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<ul class=\"rxc-list\" *if=\"active\">\n\t\t\t\t<li class=\"rxc-list__item\">\n\t\t\t\t\t<span class=\"rxc-list__value\" [innerHTML]=\"item | json\"></span>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>"
+  template:
+  /* html */
+  "\n\t\t<div class=\"rxc-block\">\n\t\t\t<div class=\"rxc-head\">\n\t\t\t\t<span class=\"rxc-head__title\" (click)=\"onToggle()\">\n\t\t\t\t\t<span *if=\"!active\">+ json </span>\n\t\t\t\t\t<span *if=\"active\">- json </span>\n\t\t\t\t\t<span [innerHTML]=\"item\"></span>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<ul class=\"rxc-list\" *if=\"active\">\n\t\t\t\t<li class=\"rxc-list__item\">\n\t\t\t\t\t<span class=\"rxc-list__value\" [innerHTML]=\"item | json\"></span>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</div>"
 };var Pipe = /*#__PURE__*/function () {
   function Pipe() {}
 
@@ -15343,11 +15342,7 @@ var Platform = /*#__PURE__*/function () {
     module.meta = meta;
     meta.imports.forEach(function (moduleFactory) {
       moduleFactory.prototype.constructor.call(module);
-    }); // const instances = module.compile(meta.node, window);
-    // module.instances = instances;
-    // const root = instances[0];
-    // root.pushChanges();
-
+    });
     return module;
   };
 
@@ -15530,7 +15525,12 @@ var PLATFORM_NODE = typeof process !== 'undefined' && process.versions != null &
 var PLATFORM_WEB_WORKER = typeof self === 'object' && self.constructor && self.constructor.name === 'DedicatedWorkerGlobalScope';
 var isPlatformServer = PLATFORM_NODE;
 var isPlatformBrowser = !PLATFORM_NODE && PLATFORM_BROWSER;
-var isPlatformWorker = PLATFORM_WEB_WORKER;var Serializer = /*#__PURE__*/function () {
+var isPlatformWorker = PLATFORM_WEB_WORKER;/**
+ * @example Serializer.encode(value, [encodeJson, encodeUriComponent, encodeBase64]);
+ * @example Serializer.decode(value, [decodeBase64, decodeUriComponent, decodeJson]);
+ */
+
+var Serializer = /*#__PURE__*/function () {
   function Serializer() {}
 
   Serializer.encode = function encode(value, encoders) {
@@ -15653,7 +15653,7 @@ function _decodeBase(value) {
 }(Pipe);
 JsonPipe.meta = {
   name: 'json'
-};var ID = 0;
+};var WINDOW = typeof self === 'object' && self.self === self && self || typeof global === 'object' && global.global === global && global || undefined;var ID = 0;
 
 var Module = /*#__PURE__*/function () {
   function Module() {
@@ -15686,8 +15686,10 @@ var Module = /*#__PURE__*/function () {
     return instances;
   };
 
-  _proto.makeInstance = function makeInstance(node, factory, selector, parentInstance, args, inject) {
-    var _this2 = this;
+  _proto.makeInstance = function makeInstance(node, factory, selector, parentInstance, args, inject, skipSubscription) {
+    if (skipSubscription === void 0) {
+      skipSubscription = false;
+    }
 
     if (parentInstance || node.parentNode) {
       var meta = factory.meta; // collect parentInstance scope
@@ -15704,11 +15706,12 @@ var Module = /*#__PURE__*/function () {
 
       if (inject) {
         Object.keys(inject).forEach(function (key) {
+          // console.log('Module.makeInstance', key, inject[key]);
           Object.defineProperty(instance, key, {
             value: inject[key],
-            enumerable: true,
             configurable: false,
-            writable: false
+            enumerable: false,
+            writable: true
           });
         });
       } // creating instance context
@@ -15716,9 +15719,9 @@ var Module = /*#__PURE__*/function () {
 
       var context = Module.makeContext(this, instance, parentInstance, node, factory, selector); // creating component input and outputs
 
-      if (meta) {
+      if (!(instance instanceof Context)) {
         this.makeHosts(meta, instance, node);
-        context.inputs = this.makeInputs(meta, instance);
+        context.inputs = this.makeInputs(meta, instance, factory);
         context.outputs = this.makeOutputs(meta, instance);
 
         if (parentInstance instanceof Factory) {
@@ -15729,31 +15732,8 @@ var Module = /*#__PURE__*/function () {
 
       instance.onInit(); // subscribe to parent changes
 
-      if (parentInstance instanceof Factory) {
-        parentInstance.changes$.pipe( // filter(() => node.parentNode),
-        // debounceTime(1),
-
-        /*
-        distinctUntilChanged(function(prev, curr) {
-            // console.log(isComponent, context.inputs);
-            if (isComponent && meta && Object.keys(context.inputs).length === 0) {
-                return true; // same
-            } else {
-                return false;
-            }
-        }),
-        */
-        operators.takeUntil(instance.unsubscribe$)).subscribe(function (changes) {
-          // resolve component input outputs
-          if (meta) {
-            _this2.resolveInputsOutputs(instance, changes);
-          } // calling onChanges event with changes
-
-
-          instance.onChanges(changes); // push instance changes for subscribers
-
-          instance.pushChanges();
-        });
+      if (!skipSubscription) {
+        this.makeInstanceSubscription(instance, parentInstance);
       }
 
       return instance;
@@ -15762,33 +15742,41 @@ var Module = /*#__PURE__*/function () {
     }
   };
 
+  _proto.makeInstanceSubscription = function makeInstanceSubscription(instance, parentInstance) {
+    if (parentInstance instanceof Factory) {
+      parentInstance.changes$.pipe( // distinctUntilChanged(deepEqual),
+      operators.takeUntil(instance.unsubscribe$)).subscribe(function (changes) {
+        instance.onParentDidChange(changes);
+      });
+    }
+  };
+
   _proto.makeFunction = function makeFunction(expression, params) {
     if (params === void 0) {
       params = ['$instance'];
     }
 
-    if (expression) {
-      expression = Module.parseExpression(expression); // console.log(expression);
+    expression = Module.parseExpression(expression);
+    var expressionFunction = "with(this) {\n\treturn (function (" + params.join(',') + ", $$module) {\n\t\ttry {\n\t\t\tconst $$pipes = $$module.meta.pipes;\n\t\t\treturn " + expression + ";\n\t\t} catch(error) {\n\t\t\t$$module.nextError(error, this, " + JSON.stringify(expression) + ", arguments);\n\t\t}\n\t}.bind(this)).apply(this, arguments);\n}"; // console.log('Module.makeFunction.expressionFunction', expressionFunction);
 
-      var args = params.join(',');
-      var expression_func = new Function("with(this) {\n\t\t\t\treturn (function (" + args + ", $$module) {\n\t\t\t\t\ttry {\n\t\t\t\t\t\tconst $$pipes = $$module.meta.pipes;\n\t\t\t\t\t\treturn " + expression + ";\n\t\t\t\t\t} catch(error) {\n\t\t\t\t\t\t$$module.nextError(error, this, " + JSON.stringify(expression) + ", arguments);\n\t\t\t\t\t}\n\t\t\t\t}.bind(this)).apply(this, arguments);\n\t\t\t}"); // console.log(this, $$module, $$pipes, "${expression}");
-      // console.log(expression_func);
+    return new Function(expressionFunction); // return () => { return null; };
+  };
 
-      return expression_func;
-    } else {
-      return function () {
-        return null;
-      };
+  _proto.resolveInputsOutputs = function resolveInputsOutputs(instance, changes) {
+    var context = getContext(instance);
+    var parentInstance = context.parentInstance;
+    var inputs = context.inputs;
+
+    for (var key in inputs) {
+      var inputFunction = inputs[key]; // console.log('Module.inputFunction', inputFunction);
+
+      var value = this.resolve(inputFunction, parentInstance, instance);
+      instance[key] = value;
     }
   };
 
-  _proto.nextError = function nextError(error, instance, expression, params) {
-    var expressionError = new ExpressionError(error, this, instance, expression, params);
-    nextError$.next(expressionError);
-  };
-
   _proto.resolve = function resolve(expression, parentInstance, payload) {
-    // console.log(expression, parentInstance, payload);
+    // console.log('Module.resolve', expression, parentInstance, payload, getContext);
     return expression.apply(parentInstance, [payload, this]);
   };
 
@@ -15798,7 +15786,7 @@ var Module = /*#__PURE__*/function () {
 
       if (child.nodeType === 1) {
         var element = child;
-        var context = getParsableContextByNode(element);
+        var context = getParsableContextByElement(element);
 
         if (!context) {
           this.parse(element, instance);
@@ -15833,15 +15821,127 @@ var Module = /*#__PURE__*/function () {
     this.meta.node.innerHTML = this.meta.nodeInnerHTML;
   };
 
+  _proto.nextError = function nextError(error, instance, expression, params) {
+    var expressionError = new ExpressionError(error, this, instance, expression, params);
+    nextError$.next(expressionError);
+  };
+
   _proto.makeContext = function makeContext(instance, parentInstance, node, selector) {
     var context = Module.makeContext(this, instance, parentInstance, node, instance.constructor, selector); // console.log('Module.makeContext', context, context.instance, context.node);
 
     return context;
   };
 
+  _proto.makeHosts = function makeHosts(meta, instance, node) {
+    if (meta.hosts) {
+      Object.keys(meta.hosts).forEach(function (key) {
+        var factory = meta.hosts[key];
+        instance[key] = getHost(instance, factory, node);
+      });
+    }
+  };
+
+  _proto.makeInput = function makeInput(instance, key) {
+    // console.log('Module.makeInput', 'key', key, 'instance', instance);
+    var _getContext = getContext(instance),
+        node = _getContext.node;
+
+    var input = null,
+        expression = null;
+
+    if (node.hasAttribute("[" + key + "]")) {
+      expression = node.getAttribute("[" + key + "]"); // console.log('Module.makeInput.expression.1', expression);
+    } else if (node.hasAttribute("*" + key)) {
+      expression = node.getAttribute("*" + key); // console.log('Module.makeInput.expression.2', expression);
+    } else if (node.hasAttribute(key)) {
+      expression = node.getAttribute(key);
+
+      if (expression) {
+        var attribute = expression.replace(/({{)|(}})|(")/g, function (substring, a, b, c) {
+          if (a) {
+            return '"+';
+          }
+
+          if (b) {
+            return '+"';
+          }
+
+          if (c) {
+            return '\"';
+          }
+
+          return '';
+        });
+        expression = "\"" + attribute + "\""; // console.log('Module.makeInput.expression.3', expression);
+      }
+    }
+
+    expression = expression || key;
+
+    if (expression) {
+      instance[key] = instance[key] || null; // !!! avoid throError undefined key
+
+      input = this.makeFunction(expression);
+    } // console.log('Module.makeInput', key, instance, descriptor);
+
+
+    return input;
+  };
+
+  _proto.makeInputs = function makeInputs(meta, instance, factory) {
+    var _this2 = this;
+
+    var inputs = {};
+    factory.getInputsTokens(instance).forEach(function (key) {
+      var input = _this2.makeInput(instance, key);
+
+      if (input) {
+        inputs[key] = input;
+      }
+    });
+    return inputs;
+  };
+
+  _proto.makeOutput = function makeOutput(instance, key) {
+    var _this3 = this;
+
+    var context = getContext(instance);
+    var node = context.node;
+    var parentInstance = context.parentInstance;
+    var expression = node.getAttribute("(" + key + ")");
+    var outputExpression = expression ? this.makeFunction(expression, ['$event']) : null;
+    var output$ = new rxjs.Subject().pipe(operators.tap(function (event) {
+      if (outputExpression) {
+        // console.log(expression, parentInstance);
+        _this3.resolve(outputExpression, parentInstance, event);
+      }
+    }));
+    output$.pipe(operators.takeUntil(instance.unsubscribe$)).subscribe();
+    instance[key] = output$;
+    return output$;
+  };
+
+  _proto.makeOutputs = function makeOutputs(meta, instance) {
+    var _this4 = this;
+
+    var outputs = {};
+
+    if (meta.outputs) {
+      meta.outputs.forEach(function (key) {
+        var output = _this4.makeOutput(instance, key);
+
+        if (output) {
+          outputs[key] = output;
+        }
+      });
+    }
+
+    return outputs;
+  };
+
   _proto.getInstance = function getInstance(node) {
     if (node === document) {
-      return isPlatformBrowser ? window : global;
+      return WINDOW; // (isPlatformBrowser ? window : global) as Window;
     }
 
     var context = getContextByNode(node);
@@ -15854,16 +15954,15 @@ var Module = /*#__PURE__*/function () {
   };
 
   _proto.getParentInstance = function getParentInstance(node) {
-    var _this3 = this;
+    var _this5 = this;
 
     return Module.traverseUp(node, function (node) {
-      return _this3.getInstance(node);
+      return _this5.getInstance(node);
     });
-  } // reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
-  ;
+  };
 
   _proto.parseTextNode = function parseTextNode(node, instance) {
-    var _this4 = this;
+    var _this6 = this;
 
     var expressions = node.nodeExpressions;
 
@@ -15877,7 +15976,8 @@ var Module = /*#__PURE__*/function () {
 
         if (typeof c === 'function') {
           // instanceOf ExpressionFunction ?;
-          text = _this4.resolve(c, instance, instance);
+          // console.log('Module.parseTextNode', c, instance);
+          text = _this6.resolve(c, instance, instance);
 
           if (text == undefined) {
             // !!! keep == loose equality
@@ -15919,9 +16019,13 @@ var Module = /*#__PURE__*/function () {
       }
 
       lastIndex = regex.lastIndex;
-      var expression = this.makeFunction(matches[1]);
-      expressions.push(expression);
-    }
+
+      if (matches[1]) {
+        var expression = this.makeFunction(matches[1]);
+        expressions.push(expression);
+      }
+    } // console.log('Module.parseTextNodeExpression', regex.source, expressions, nodeValue);
+
 
     var length = nodeValue.length;
 
@@ -15938,116 +16042,21 @@ var Module = /*#__PURE__*/function () {
     }
   };
 
-  _proto.makeHosts = function makeHosts(meta, instance, node) {
-    if (meta.hosts) {
-      Object.keys(meta.hosts).forEach(function (key) {
-        var factory = meta.hosts[key];
-        instance[key] = getHost(instance, factory, node);
-      });
-    }
-  };
-
-  _proto.makeInput = function makeInput(instance, key) {
-    var _getContext = getContext(instance),
-        node = _getContext.node;
-
-    var input = null,
-        expression = null;
-
-    if (node.hasAttribute("[" + key + "]")) {
-      expression = node.getAttribute("[" + key + "]");
-    } else if (node.hasAttribute(key)) {
-      // const attribute = node.getAttribute(key).replace(/{{/g, '"+').replace(/}}/g, '+"');
-      var attribute = node.getAttribute(key).replace(/({{)|(}})|(")/g, function (substring, a, b, c) {
-        if (a) {
-          return '"+';
-        }
-
-        if (b) {
-          return '+"';
-        }
-
-        if (c) {
-          return '\"';
-        }
-
-        return '';
-      });
-      expression = "\"" + attribute + "\"";
-    }
-
-    if (expression) {
-      input = this.makeFunction(expression);
-    }
-
-    return input;
-  };
-
-  _proto.makeInputs = function makeInputs(meta, instance) {
-    var _this5 = this;
-
-    var inputs = {};
-
-    if (meta.inputs) {
-      meta.inputs.forEach(function (key, i) {
-        var input = _this5.makeInput(instance, key);
-
-        if (input) {
-          inputs[key] = input;
-        }
-      });
-    }
-
-    return inputs;
-  };
-
-  _proto.makeOutput = function makeOutput(instance, key) {
-    var _this6 = this;
-
-    var context = getContext(instance);
-    var node = context.node;
-    var parentInstance = context.parentInstance;
-    var expression = node.getAttribute("(" + key + ")");
-    var outputFunction = expression ? this.makeFunction(expression, ['$event']) : null;
-    var output$ = new rxjs.Subject().pipe(operators.tap(function (event) {
-      if (outputFunction) {
-        // console.log(expression, parentInstance);
-        _this6.resolve(outputFunction, parentInstance, event);
-      }
-    }));
-    output$.pipe(operators.takeUntil(instance.unsubscribe$)).subscribe();
-    instance[key] = output$;
-    return output$;
-  };
-
-  _proto.makeOutputs = function makeOutputs(meta, instance) {
-    var _this7 = this;
-
-    var outputs = {};
-
-    if (meta.outputs) {
-      meta.outputs.forEach(function (key) {
-        var output = _this7.makeOutput(instance, key);
-
-        if (output) {
-          outputs[key] = output;
-        }
-      });
-    }
-
-    return outputs;
-  };
-
-  _proto.resolveInputsOutputs = function resolveInputsOutputs(instance, changes) {
-    var context = getContext(instance);
-    var parentInstance = context.parentInstance;
-    var inputs = context.inputs;
-
-    for (var key in inputs) {
-      var inputFunction = inputs[key];
-      var value = this.resolve(inputFunction, parentInstance, instance);
-      instance[key] = value;
-    }
+  Module.makeContext = function makeContext(module, instance, parentInstance, node, factory, selector) {
+    instance.rxcompId = ++ID;
+    var context = {
+      module: module,
+      instance: instance,
+      parentInstance: parentInstance,
+      node: node,
+      factory: factory,
+      selector: selector
+    };
+    var rxcompNodeId = node.rxcompId = node.rxcompId || instance.rxcompId;
+    var nodeContexts = NODES[rxcompNodeId] || (NODES[rxcompNodeId] = []);
+    nodeContexts.push(context);
+    CONTEXTS[instance.rxcompId] = context;
+    return context;
   };
 
   Module.parseExpression = function parseExpression(expression) {
@@ -16142,23 +16151,6 @@ var Module = /*#__PURE__*/function () {
       return previous || '';
     });
     return expression;
-  };
-
-  Module.makeContext = function makeContext(module, instance, parentInstance, node, factory, selector) {
-    instance.rxcompId = ++ID;
-    var context = {
-      module: module,
-      instance: instance,
-      parentInstance: parentInstance,
-      node: node,
-      factory: factory,
-      selector: selector
-    };
-    var rxcompNodeId = node.rxcompId = node.rxcompId || instance.rxcompId;
-    var nodeContexts = NODES[rxcompNodeId] || (NODES[rxcompNodeId] = []);
-    nodeContexts.push(context);
-    CONTEXTS[instance.rxcompId] = context;
-    return context;
   };
 
   Module.deleteContext = function deleteContext(id, keepContext) {
@@ -16317,37 +16309,34 @@ var Module = /*#__PURE__*/function () {
 
   return Module;
 }();
-function getParsableContextByNode(node) {
+function getParsableContextByElement(element) {
   var context;
-  var rxcompId = node.rxcompId;
+  var rxcompId = element.rxcompId;
 
   if (rxcompId) {
-    var nodeContexts = NODES[rxcompId];
+    var contexts = NODES[rxcompId];
 
-    if (nodeContexts) {
-      context = nodeContexts.reduce(function (previous, current) {
-        if (current.factory.prototype instanceof Component) {
-          return current;
-        } else if (current.factory.prototype instanceof Context) {
+    if (contexts) {
+      context = contexts.reduce(function (previous, current) {
+        if (current.instance instanceof Context) {
           return previous ? previous : current;
-          /*
-          } else if (current.factory.prototype instanceof Structure) {
-              return previous ? previous : current;
-          */
+        } else if (current.instance instanceof Component) {
+          return current;
         } else {
           return previous;
         }
-      }, undefined); // console.log(node.rxcompId, context);
-    }
+      }, undefined);
+    } // context = contexts ? contexts.find(x => x.instance instanceof Component) : undefined;
+
   }
 
   return context;
 }
-function getContextByNode(node) {
-  var context = getParsableContextByNode(node);
+function getContextByNode(element) {
+  var context = getParsableContextByElement(element);
 
   if (context && context.factory.prototype instanceof Structure) {
-    context = undefined;
+    return undefined;
   }
 
   return context;
@@ -16380,7 +16369,44 @@ function getHost(instance, factory, node) {
   } else {
     return undefined;
   }
-}var SrcDirective = /*#__PURE__*/function (_Directive) {
+}
+/*
+export function deepEqual(prev: any, curr: any, pool: any[] = []): boolean {
+    let equal: boolean = typeof prev === typeof curr;
+    if (prev && pool.indexOf(prev) === -1 && pool.indexOf(curr) === -1) {
+        pool.push(prev, curr);
+        const type = Array.isArray(curr) ? 'array' : typeof curr;
+        switch (type) {
+            case 'array':
+                equal = prev.length === curr.length;
+                equal = equal && prev.reduce((p: boolean, a: any[], i: number) => p && deepEqual(a, curr[i], pool), true);
+                break;
+            case 'object':
+                if ('Symbol' in WINDOW && Symbol.iterator in prev) {
+                    // || prev instanceof Map
+                    equal = prev.size === curr.size;
+                    const ea = prev.entries();
+                    const eb = curr.entries();
+                    for (let item = ea.next(); item.done !== true; item = ea.next()) {
+                        const ia = item.value;
+                        const ib = eb.next().value;
+                        equal = equal && deepEqual(ia, ib, pool);
+                    }
+                } else {
+                    const prevKeys = Object.keys(prev);
+                    const currKeys = Object.keys(curr);
+                    equal = prevKeys.length === currKeys.length;
+                    equal = equal && prevKeys.reduce((p: boolean, k: string) => p && deepEqual(prev[k], curr[k], pool), true);
+                }
+                break;
+            default:
+                equal = prev === curr;
+        }
+    }
+    console.log(equal, prev, curr);
+    return equal;
+}
+*/var SrcDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(SrcDirective, _Directive);
 
   function SrcDirective() {
@@ -16490,7 +16516,7 @@ CoreModule.meta = {
    */
   Browser.bootstrap = function bootstrap(moduleFactory) {
     if (!isPlatformBrowser) {
-      throw new ModuleError('missing platform browser, window not found');
+      throw new ModuleError('missing platform browser, Window not found');
     }
 
     if (!moduleFactory) {
@@ -16520,25 +16546,23 @@ CoreModule.meta = {
       moduleFactory.prototype.constructor.call(module);
     });
 
-    if (window.rxcomp_hydrate_) {
+    if (WINDOW.rxcomp_hydrate_) {
       var _meta$node$parentNode;
 
       var clonedNode = meta.node.cloneNode();
-      clonedNode.innerHTML = meta.nodeInnerHTML = window.rxcomp_hydrate_.innerHTML;
-      var instances = module.compile(clonedNode, window);
+      clonedNode.innerHTML = meta.nodeInnerHTML = WINDOW.rxcomp_hydrate_.innerHTML;
+      var instances = module.compile(clonedNode, WINDOW);
       module.instances = instances;
-      var root = instances[0]; // if (root instanceof module.meta.bootstrap) {
-
+      var root = instances[0];
       root.pushChanges();
-      (_meta$node$parentNode = meta.node.parentNode) == null ? void 0 : _meta$node$parentNode.replaceChild(clonedNode, meta.node); // }
+      (_meta$node$parentNode = meta.node.parentNode) == null ? void 0 : _meta$node$parentNode.replaceChild(clonedNode, meta.node);
     } else {
-      var _instances = module.compile(meta.node, window);
+      var _instances = module.compile(meta.node, WINDOW);
 
       module.instances = _instances;
-      var _root = _instances[0]; // if (root instanceof module.meta.bootstrap) {
+      var _root = _instances[0];
 
-      _root.pushChanges(); // }
-
+      _root.pushChanges();
     }
 
     return module;
@@ -16658,9 +16682,9 @@ function optionsToKey(v, s) {
   }
 
   return s;
-}exports.Browser=Browser;exports.ClassDirective=ClassDirective;exports.Component=Component;exports.Context=Context;exports.CoreModule=CoreModule;exports.DefaultErrorHandler=DefaultErrorHandler;exports.Directive=Directive;exports.ErrorInterceptorHandler=ErrorInterceptorHandler;exports.ErrorInterceptors=ErrorInterceptors;exports.EventDirective=EventDirective;exports.ExpressionError=ExpressionError;exports.Factory=Factory;exports.ForItem=ForItem;exports.ForStructure=ForStructure;exports.HrefDirective=HrefDirective;exports.IfStructure=IfStructure;exports.InnerHtmlDirective=InnerHtmlDirective;exports.JsonComponent=JsonComponent;exports.JsonPipe=JsonPipe;exports.Module=Module;exports.ModuleError=ModuleError;exports.PLATFORM_BROWSER=PLATFORM_BROWSER;exports.PLATFORM_JS_DOM=PLATFORM_JS_DOM;exports.PLATFORM_NODE=PLATFORM_NODE;exports.PLATFORM_WEB_WORKER=PLATFORM_WEB_WORKER;exports.Pipe=Pipe;exports.Platform=Platform;exports.Serializer=Serializer;exports.SrcDirective=SrcDirective;exports.Structure=Structure;exports.StyleDirective=StyleDirective;exports.TransferService=TransferService;exports.decodeBase64=_decodeBase;exports.decodeJson=_decodeJson;exports.encodeBase64=_encodeBase;exports.encodeJson=_encodeJson;exports.encodeJsonWithOptions=encodeJsonWithOptions;exports.errors$=errors$;exports.getContext=getContext;exports.getContextByNode=getContextByNode;exports.getHost=getHost;exports.getLocationComponents=getLocationComponents;exports.getParsableContextByNode=getParsableContextByNode;exports.isPlatformBrowser=isPlatformBrowser;exports.isPlatformServer=isPlatformServer;exports.isPlatformWorker=isPlatformWorker;exports.nextError$=nextError$;exports.optionsToKey=optionsToKey;Object.defineProperty(exports,'__esModule',{value:true});})));
+}exports.Browser=Browser;exports.ClassDirective=ClassDirective;exports.Component=Component;exports.Context=Context;exports.CoreModule=CoreModule;exports.DefaultErrorHandler=DefaultErrorHandler;exports.Directive=Directive;exports.ErrorInterceptorHandler=ErrorInterceptorHandler;exports.ErrorInterceptors=ErrorInterceptors;exports.EventDirective=EventDirective;exports.ExpressionError=ExpressionError;exports.Factory=Factory;exports.ForItem=ForItem;exports.ForStructure=ForStructure;exports.HrefDirective=HrefDirective;exports.IfStructure=IfStructure;exports.InnerHtmlDirective=InnerHtmlDirective;exports.JsonComponent=JsonComponent;exports.JsonPipe=JsonPipe;exports.Module=Module;exports.ModuleError=ModuleError;exports.PLATFORM_BROWSER=PLATFORM_BROWSER;exports.PLATFORM_JS_DOM=PLATFORM_JS_DOM;exports.PLATFORM_NODE=PLATFORM_NODE;exports.PLATFORM_WEB_WORKER=PLATFORM_WEB_WORKER;exports.Pipe=Pipe;exports.Platform=Platform;exports.Serializer=Serializer;exports.SrcDirective=SrcDirective;exports.Structure=Structure;exports.StyleDirective=StyleDirective;exports.TransferService=TransferService;exports.WINDOW=WINDOW;exports.decodeBase64=_decodeBase;exports.decodeJson=_decodeJson;exports.encodeBase64=_encodeBase;exports.encodeJson=_encodeJson;exports.encodeJsonWithOptions=encodeJsonWithOptions;exports.errors$=errors$;exports.getContext=getContext;exports.getContextByNode=getContextByNode;exports.getHost=getHost;exports.getLocationComponents=getLocationComponents;exports.getParsableContextByElement=getParsableContextByElement;exports.isPlatformBrowser=isPlatformBrowser;exports.isPlatformServer=isPlatformServer;exports.isPlatformWorker=isPlatformWorker;exports.nextError$=nextError$;exports.optionsToKey=optionsToKey;Object.defineProperty(exports,'__esModule',{value:true});})));
 /**
- * @license rxcomp-http v1.0.0-beta.14
+ * @license rxcomp-http v1.0.0-beta.16
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
@@ -17067,49 +17091,6 @@ export default class HttpResponse {
 */var HttpFetchHandler = /*#__PURE__*/function () {
   function HttpFetchHandler() {
     this.response_ = null;
-    /*
-    onProgress(value: Uint8Array, done: boolean, request, reader, progress) {
-        console.log("value:", value);
-        if (value || done) {
-            console.log("upload complete, request.bodyUsed:", request.bodyUsed);
-            progress.value = progress.max;
-            return reader.closed.then(() => fileUpload);
-        };
-        console.log("upload progress:", value);
-        if (progress.value < file.size) {
-            progress.value += 1;
-        }
-        return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
-    }
-    */
-
-    /*
-    getProgress_(request) {
-        const uploadProgress = new ReadableStream({
-            start(controller) {
-                console.log("starting upload, request.bodyUsed:", request.bodyUsed);
-                controller.enqueue(request.bodyUsed);
-            },
-            pull(controller) {
-                if (request.bodyUsed) {
-                    controller.close();
-                }
-                controller.enqueue(request.bodyUsed);
-                console.log("pull, request.bodyUsed:", request.bodyUsed);
-            },
-            cancel(reason) {
-                console.log(reason);
-            }
-        });
-        const [fileUpload, reader] = [
-            upload(request).catch(e => {
-                reader.cancel();
-                console.log(e);
-                throw e
-            }), uploadProgress.getReader()
-        ];
-    }
-    */
   }
 
   var _proto = HttpFetchHandler.prototype;
@@ -17123,7 +17104,9 @@ export default class HttpResponse {
 
     var requestInfo = request.urlWithParams;
     var requestInit = request.toInitRequest(); // console.log('fetchRequest', fetchRequest);
-    // fetchRequest.headers.forEach((value, key) => console.log('HttpFetchHandler.handle', key, value));
+    // fetchRequest.headers.forEach((value, key) => {
+    // console.log('HttpFetchHandler.handle', key, value);
+    // });
     // request = request.clone({ headers: fetchRequest.headers });
     // console.log('HttpFetchHandler.handle', 'requestInfo', requestInfo, 'requestInit', requestInit);
     // hydrate
@@ -17201,7 +17184,7 @@ export default class HttpResponse {
                     if (value) {
                         chunks.push(value);
                         receivedLength += value.length || 0;
-                        console.log(`HttpFetchHandler.setProgress ${(receivedLength / contentLength * 100).toFixed(2)}% ${receivedLength} of ${contentLength}`);
+                        // console.log(`HttpFetchHandler.setProgress ${(receivedLength / contentLength * 100).toFixed(2)}% ${receivedLength} of ${contentLength}`);
                     }
                     getChunk();
                 } else {
@@ -17219,7 +17202,7 @@ export default class HttpResponse {
                         const result = new TextDecoder("utf-8").decode(chunksAll);
                         // We're done!
                         const data = JSON.parse(result);
-                        console.log('HttpFetchHandler.setProgress data', data);
+                        // console.log('HttpFetchHandler.setProgress data', data);
                         resolve(response);
                     }
                 }
@@ -17365,7 +17348,50 @@ export default class HttpResponse {
   };
 
   return HttpFetchHandler;
-}();var XSSI_PREFIX = /^\)\]\}',?\n/;
+}();
+/*
+    onProgress(value: Uint8Array, done: boolean, request, reader, progress) {
+        // console.log("value:", value);
+        if (value || done) {
+            // console.log("upload complete, request.bodyUsed:", request.bodyUsed);
+            progress.value = progress.max;
+            return reader.closed.then(() => fileUpload);
+        };
+        // console.log("upload progress:", value);
+        if (progress.value < file.size) {
+            progress.value += 1;
+        }
+        return reader.read().then(({ value, done }) => this.onProgress(value, done, request, reader, progress));
+    }
+    */
+
+/*
+getProgress_(request) {
+    const uploadProgress = new ReadableStream({
+        start(controller) {
+            // console.log("starting upload, request.bodyUsed:", request.bodyUsed);
+            controller.enqueue(request.bodyUsed);
+        },
+        pull(controller) {
+            if (request.bodyUsed) {
+                controller.close();
+            }
+            controller.enqueue(request.bodyUsed);
+            // console.log("pull, request.bodyUsed:", request.bodyUsed);
+        },
+        cancel(reason) {
+            // console.log(reason);
+        }
+    });
+    const [fileUpload, reader] = [
+        upload(request).catch(e => {
+            reader.cancel();
+            // console.log(e);
+            throw e
+        }), uploadProgress.getReader()
+    ];
+}
+*/var XSSI_PREFIX = /^\)\]\}',?\n/;
 var HttpXhrHandler = /*#__PURE__*/function () {
   function HttpXhrHandler() {}
 
@@ -17378,9 +17404,9 @@ var HttpXhrHandler = /*#__PURE__*/function () {
 
     if (request.method === 'JSONP') {
       throw new Error("Attempted to construct Jsonp request without JsonpClientModule installed.");
-    }
+    } // console.log('HttpXhrHandler.request', request);
 
-    console.log('HttpXhrHandler.request', request);
+
     return new rxjs.Observable(function (observer) {
       var xhr = new XMLHttpRequest();
       var requestInfo = request.urlWithParams;
@@ -17419,9 +17445,9 @@ var HttpXhrHandler = /*#__PURE__*/function () {
           if (detectedType !== null) {
             headers.set('Content-Type', detectedType);
           }
-        }
+        } // console.log('HttpXhrHandler.contentType', headers.get('Content-Type'));
 
-        console.log('HttpXhrHandler.contentType', headers.get('Content-Type'));
+
         headers.forEach(function (value, name) {
           return xhr.setRequestHeader(name, value);
         });
@@ -17545,7 +17571,7 @@ var HttpXhrHandler = /*#__PURE__*/function () {
 
         var sentHeaders = false;
 
-        var onDownProgress = function onDownProgress(event) {
+        var onDownloadProgress = function onDownloadProgress(event) {
           if (!sentHeaders) {
             observer.next(partialFromXhr_());
             sentHeaders = true;
@@ -17562,9 +17588,9 @@ var HttpXhrHandler = /*#__PURE__*/function () {
 
           if (request.responseType === 'text' && !!xhr.responseText) {
             progressEvent.partialText = xhr.responseText;
-          }
+          } // console.log('HttpXhrHandler.onDownloadProgress', progressEvent);
 
-          console.log(progressEvent);
+
           observer.next(progressEvent);
         };
 
@@ -17585,7 +17611,7 @@ var HttpXhrHandler = /*#__PURE__*/function () {
         xhr.addEventListener('error', onError);
 
         if (request.reportProgress) {
-          xhr.addEventListener('progress', onDownProgress);
+          xhr.addEventListener('progress', onDownloadProgress);
 
           if (body !== null && xhr.upload) {
             xhr.upload.addEventListener('progress', onUpProgress);
@@ -17601,7 +17627,7 @@ var HttpXhrHandler = /*#__PURE__*/function () {
           xhr.removeEventListener('load', onLoad);
 
           if (request.reportProgress) {
-            xhr.removeEventListener('progress', onDownProgress);
+            xhr.removeEventListener('progress', onDownloadProgress);
 
             if (body !== null && xhr.upload) {
               xhr.upload.removeEventListener('progress', onUpProgress);
@@ -17748,12 +17774,12 @@ HttpModule.meta = {
     return encodeParam_(key);
   };
 
-  _proto.encodeValue = function encodeValue(value) {
-    return encodeParam_(value);
-  };
-
   _proto.decodeKey = function decodeKey(key) {
     return decodeURIComponent(key);
+  };
+
+  _proto.encodeValue = function encodeValue(value) {
+    return encodeParam_(value);
   };
 
   _proto.decodeValue = function decodeValue(value) {
@@ -17762,116 +17788,31 @@ HttpModule.meta = {
 
   return HttpUrlEncodingCodec;
 }();
-var HttpParams = /*#__PURE__*/function () {
-  function HttpParams(options, encoder) {
-    if (encoder === void 0) {
-      encoder = new HttpUrlEncodingCodec();
-    }
+var HttpSerializerCodec = /*#__PURE__*/function () {
+  function HttpSerializerCodec() {}
 
-    this.params_ = new Map();
-    this.encoder = encoder;
-    var params = this.params_;
+  var _proto2 = HttpSerializerCodec.prototype;
 
-    if (options instanceof HttpParams) {
-      options.params_.forEach(function (value, key) {
-        params.set(key, value);
-      });
-    } else if (typeof options === 'object') {
-      Object.keys(options).forEach(function (key) {
-        var value = options[key];
-        params.set(key, Array.isArray(value) ? value : [value]);
-      });
-    } else if (typeof options === 'string') {
-      parseRawParams_(params, options, this.encoder);
-    } // ?updates=null&cloneFrom=null&encoder=%5Bobject%20Object%5D&params_=%5Bobject%20Map%5D
-
-  }
-
-  var _proto2 = HttpParams.prototype;
-
-  _proto2.keys = function keys() {
-    return Array.from(this.params_.keys());
+  _proto2.encodeKey = function encodeKey(key) {
+    return encodeParam_(key);
   };
 
-  _proto2.has = function has(key) {
-    return this.params_.has(key);
+  _proto2.decodeKey = function decodeKey(key) {
+    return decodeURIComponent(key);
   };
 
-  _proto2.get = function get(key) {
-    var value = this.params_.get(key);
-    return value ? value[0] : null;
+  _proto2.encodeValue = function encodeValue(value) {
+    // console.log('encodeValue', value);
+    return rxcomp.Serializer.encode(value, [rxcomp.encodeJson, encodeURIComponent, rxcomp.encodeBase64]) || '';
   };
 
-  _proto2.getAll = function getAll(key) {
-    return this.params_.get(key) || null;
+  _proto2.decodeValue = function decodeValue(value) {
+    // console.log('decodeValue', value);
+    return rxcomp.Serializer.decode(value, [rxcomp.decodeBase64, decodeURIComponent, rxcomp.decodeJson]) || '';
   };
 
-  _proto2.set = function set(key, value) {
-    var clone = this.clone_();
-    clone.params_.set(key, [value]);
-    return clone;
-  };
-
-  _proto2.append = function append(key, value) {
-    var clone = this.clone_();
-
-    if (clone.has(key)) {
-      var values = clone.params_.get(key) || [];
-      values.push(value);
-      clone.params_.set(key, values);
-    } else {
-      clone.params_.set(key, [value]);
-    }
-
-    return clone;
-  };
-
-  _proto2.delete = function _delete(key) {
-    var clone = this.clone_();
-    clone.params_.delete(key);
-    return clone;
-  };
-
-  _proto2.toString = function toString() {
-    var _this = this;
-
-    return this.keys().map(function (key) {
-      var values = _this.params_.get(key);
-
-      return _this.encoder.encodeKey(key) + (values ? '=' + values.map(function (x) {
-        return _this.encoder.encodeValue(x);
-      }).join('&') : '');
-    }).filter(function (keyValue) {
-      return keyValue !== '';
-    }).join('&');
-  };
-
-  _proto2.toObject = function toObject() {
-    var _this2 = this;
-
-    var params = {};
-    this.keys().map(function (key) {
-      var values = _this2.params_.get(key);
-
-      if (values) {
-        params[key] = values;
-      } // return this.encoder.encodeKey(key) + (values ? '=' + values.map(x => this.encoder.encodeValue(x)).join('&') : '');
-
-    });
-    return params;
-  };
-
-  _proto2.clone_ = function clone_() {
-    var clone = new HttpParams(undefined, this.encoder);
-    this.params_.forEach(function (value, key) {
-      clone.params_.set(key, value);
-    });
-    return clone;
-  };
-
-  return HttpParams;
+  return HttpSerializerCodec;
 }();
-
 function parseRawParams_(params, queryString, encoder) {
   if (queryString.length > 0) {
     var keyValueParams = queryString.split('&');
@@ -17891,9 +17832,120 @@ function parseRawParams_(params, queryString, encoder) {
   return params;
 }
 
-function encodeParam_(v) {
-  return encodeURIComponent(v).replace(/%40/gi, '@').replace(/%3A/gi, ':').replace(/%24/gi, '$').replace(/%2C/gi, ',').replace(/%3B/gi, ';').replace(/%2B/gi, '+').replace(/%3D/gi, '=').replace(/%3F/gi, '?').replace(/%2F/gi, '/');
-}var HttpRequest = /*#__PURE__*/function () {
+function encodeParam_(value) {
+  return encodeURIComponent(value).replace(/%40/gi, '@').replace(/%3A/gi, ':').replace(/%24/gi, '$').replace(/%2C/gi, ',').replace(/%3B/gi, ';').replace(/%2B/gi, '+').replace(/%3D/gi, '=').replace(/%3F/gi, '?').replace(/%2F/gi, '/');
+}var HttpParams = /*#__PURE__*/function () {
+  function HttpParams(options, encoder) {
+    if (encoder === void 0) {
+      encoder = new HttpUrlEncodingCodec();
+    }
+
+    this.params_ = new Map(); // console.log('HttpParams', encoder);
+
+    this.encoder = encoder;
+    var params = this.params_;
+
+    if (options instanceof HttpParams) {
+      options.params_.forEach(function (value, key) {
+        params.set(key, value);
+      });
+    } else if (typeof options === 'object') {
+      Object.keys(options).forEach(function (key) {
+        var value = options[key];
+        params.set(key, Array.isArray(value) ? value : [value]);
+      });
+    } else if (typeof options === 'string') {
+      parseRawParams_(params, options, this.encoder);
+    } // ?updates=null&cloneFrom=null&encoder=%5Bobject%20Object%5D&params_=%5Bobject%20Map%5D
+
+  }
+
+  var _proto = HttpParams.prototype;
+
+  _proto.keys = function keys() {
+    return Array.from(this.params_.keys());
+  };
+
+  _proto.has = function has(key) {
+    return this.params_.has(key);
+  };
+
+  _proto.get = function get(key) {
+    var value = this.params_.get(key);
+    return value ? value[0] : null;
+  };
+
+  _proto.getAll = function getAll(key) {
+    return this.params_.get(key) || null;
+  };
+
+  _proto.set = function set(key, value) {
+    var clone = this.clone_();
+    clone.params_.set(key, [value]);
+    return clone;
+  };
+
+  _proto.append = function append(key, value) {
+    var clone = this.clone_();
+
+    if (clone.has(key)) {
+      var values = clone.params_.get(key) || [];
+      values.push(value);
+      clone.params_.set(key, values);
+    } else {
+      clone.params_.set(key, [value]);
+    }
+
+    return clone;
+  };
+
+  _proto.delete = function _delete(key) {
+    var clone = this.clone_();
+    clone.params_.delete(key);
+    return clone;
+  };
+
+  _proto.toString = function toString() {
+    var _this = this;
+
+    return this.keys().map(function (key) {
+      var values = _this.params_.get(key);
+
+      var keyValue = _this.encoder.encodeKey(key) + (values ? '=' + values.map(function (x) {
+        return _this.encoder.encodeValue(x);
+      }).join('&') : ''); // console.log(key, values, keyValue, this.encoder);
+
+      return keyValue;
+    }).filter(function (keyValue) {
+      return keyValue !== '';
+    }).join('&');
+  };
+
+  _proto.toObject = function toObject() {
+    var _this2 = this;
+
+    var params = {};
+    this.keys().map(function (key) {
+      var values = _this2.params_.get(key);
+
+      if (values) {
+        params[key] = values;
+      } // return this.encoder.encodeKey(key) + (values ? '=' + values.map(x => this.encoder.encodeValue(x)).join('&') : '');
+
+    });
+    return params;
+  };
+
+  _proto.clone_ = function clone_() {
+    var clone = new HttpParams(undefined, this.encoder);
+    this.params_.forEach(function (value, key) {
+      clone.params_.set(key, value);
+    });
+    return clone;
+  };
+
+  return HttpParams;
+}();var HttpRequest = /*#__PURE__*/function () {
   function HttpRequest(method, url, third, fourth) {
     this.url = url;
     this.reportProgress = false;
@@ -17927,7 +17979,7 @@ function encodeParam_(v) {
       }
 
       if (options.params) {
-        this.params = new HttpParams(options.params);
+        this.params = options.params instanceof HttpParams ? options.params : new HttpParams(options.params, options.paramsEncoder);
       }
     }
 
@@ -18152,7 +18204,7 @@ function isFormData_(value) {
       var params = undefined;
 
       if (options.params) {
-        params = new HttpParams(options.params);
+        params = new HttpParams(options.params, options.paramsEncoder);
       }
 
       request = new HttpRequest(first, url, options.body !== undefined ? options.body : null, {
@@ -18168,7 +18220,9 @@ function isFormData_(value) {
     HttpService.incrementPendingRequest();
     var events$ = rxjs.of(request).pipe(operators.concatMap(function (request) {
       return _this.handler.handle(request);
-    }), // tap((response: HttpEvent<any>) => console.log('HttpService.response', response)),
+    }), // tap((response: HttpEvent<any>) => {
+    // console.log('HttpService.response', response)
+    // ),
     operators.finalize(function () {
       return HttpService.decrementPendingRequest();
     }));
@@ -18365,9 +18419,9 @@ function optionsWithBody_(options, body) {
   return Object.assign({}, options, {
     body: body
   });
-}exports.HttpErrorResponse=HttpErrorResponse;exports.HttpFetchHandler=HttpFetchHandler;exports.HttpHandler=HttpHandler;exports.HttpHeaderResponse=HttpHeaderResponse;exports.HttpHeaders=HttpHeaders;exports.HttpInterceptingHandler=HttpInterceptingHandler;exports.HttpInterceptorHandler=HttpInterceptorHandler;exports.HttpInterceptors=HttpInterceptors;exports.HttpModule=HttpModule;exports.HttpParams=HttpParams;exports.HttpRequest=HttpRequest;exports.HttpResponse=HttpResponse;exports.HttpResponseBase=HttpResponseBase;exports.HttpService=HttpService;exports.HttpUrlEncodingCodec=HttpUrlEncodingCodec;exports.HttpXhrHandler=HttpXhrHandler;exports.NoopInterceptor=NoopInterceptor;exports.fetchHandler=fetchHandler;exports.interceptingHandler=interceptingHandler;exports.jsonpCallbackContext=jsonpCallbackContext;exports.xhrHandler=xhrHandler;Object.defineProperty(exports,'__esModule',{value:true});})));
+}exports.HttpErrorResponse=HttpErrorResponse;exports.HttpFetchHandler=HttpFetchHandler;exports.HttpHandler=HttpHandler;exports.HttpHeaderResponse=HttpHeaderResponse;exports.HttpHeaders=HttpHeaders;exports.HttpInterceptingHandler=HttpInterceptingHandler;exports.HttpInterceptorHandler=HttpInterceptorHandler;exports.HttpInterceptors=HttpInterceptors;exports.HttpModule=HttpModule;exports.HttpParams=HttpParams;exports.HttpRequest=HttpRequest;exports.HttpResponse=HttpResponse;exports.HttpResponseBase=HttpResponseBase;exports.HttpSerializerCodec=HttpSerializerCodec;exports.HttpService=HttpService;exports.HttpUrlEncodingCodec=HttpUrlEncodingCodec;exports.HttpXhrHandler=HttpXhrHandler;exports.NoopInterceptor=NoopInterceptor;exports.fetchHandler=fetchHandler;exports.interceptingHandler=interceptingHandler;exports.jsonpCallbackContext=jsonpCallbackContext;exports.xhrHandler=xhrHandler;Object.defineProperty(exports,'__esModule',{value:true});})));
 /**
- * @license rxcomp-router v1.0.0-beta.14
+ * @license rxcomp-router v1.0.0-beta.16
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
@@ -18596,57 +18650,47 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
   };
 
   _proto.encodeParams = function encodeParams(value) {
-    var encoded = null;
+    var encoded;
 
-    try {
-      if (typeof value === 'object') {
-        encoded = ';' + rxcomp.Serializer.encode(value, [rxcomp.encodeJson, rxcomp.encodeBase64]);
-      } else if (typeof value === 'number') {
-        encoded = value.toString();
-      }
-    } catch (error) {
-      console.log('encodeParam__.error', error);
+    if (typeof value === 'object') {
+      encoded = rxcomp.Serializer.encode(value, [rxcomp.encodeJson, rxcomp.encodeBase64, encodeParam]);
+    } else if (typeof value === 'number') {
+      encoded = value.toString();
     }
 
     return encoded;
   };
 
   _proto.decodeParams = function decodeParams(value) {
-    if (value === void 0) {
-      value = null;
-    }
-
     var decoded = value;
 
-    if (value) {
-      if (value.indexOf(';') === 0) {
-        try {
-          decoded = rxcomp.Serializer.decode(value.substring(1, value.length), [rxcomp.decodeBase64, rxcomp.decodeJson]);
-        } catch (error) {
-          decoded = value;
-        }
-      } else if (Number(value).toString() === value) {
-        decoded = Number(value);
+    if (value.indexOf(';') === 0) {
+      try {
+        decoded = rxcomp.Serializer.decode(value, [decodeParam, rxcomp.decodeBase64, rxcomp.decodeJson]);
+      } catch (error) {
+        decoded = value;
       }
+    } else if (Number(value).toString() === value) {
+      decoded = Number(value);
     }
 
     return decoded;
   };
 
-  _proto.encodeSegment = function encodeSegment(s) {
-    return this.encodeString(s).replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/%26/gi, '&');
+  _proto.encodeSegment = function encodeSegment(value) {
+    return this.encodeString(value).replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/%26/gi, '&');
   };
 
-  _proto.decodeSegment = function decodeSegment(s) {
-    return this.decodeString(s.replace(/%28/g, '(').replace(/%29/g, ')').replace(/\&/gi, '%26'));
+  _proto.decodeSegment = function decodeSegment(value) {
+    return this.decodeString(value.replace(/%28/g, '(').replace(/%29/g, ')').replace(/\&/gi, '%26'));
   };
 
-  _proto.encodeString = function encodeString(s) {
-    return encodeURIComponent(s).replace(/%40/g, '@').replace(/%3A/gi, ':').replace(/%24/g, '$').replace(/%2C/gi, ',');
+  _proto.encodeString = function encodeString(value) {
+    return encodeURIComponent(value).replace(/%40/g, '@').replace(/%3A/gi, ':').replace(/%24/g, '$').replace(/%2C/gi, ',');
   };
 
-  _proto.decodeString = function decodeString(s) {
-    return decodeURIComponent(s.replace(/\@/g, '%40').replace(/\:/gi, '%3A').replace(/\$/g, '%24').replace(/\,/gi, '%2C'));
+  _proto.decodeString = function decodeString(value) {
+    return decodeURIComponent(value.replace(/\@/g, '%40').replace(/\:/gi, '%3A').replace(/\$/g, '%24').replace(/\,/gi, '%2C'));
   };
 
   _proto.getPath = function getPath(url) {
@@ -18658,22 +18702,28 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
   };
 
   _proto.setHistory = function setHistory(url, params, popped) {
-    if (rxcomp.isPlatformBrowser && window.history && window.history.pushState) {
+    if (rxcomp.isPlatformBrowser && typeof history !== 'undefined' && history.pushState) {
       var title = document.title;
       url = this.getUrl(url, params); // !!!
       // const state = params ? params.toString() : '';
       // console.log(state);
 
       if (popped) {
-        window.history.replaceState(undefined, title, url);
+        history.replaceState(undefined, title, url);
       } else {
-        window.history.pushState(undefined, title, url);
+        history.pushState(undefined, title, url);
       }
     }
   };
 
   return LocationStrategy;
 }();
+function encodeParam(value) {
+  return ";" + value;
+}
+function decodeParam(value) {
+  return value.substring(1, value.length);
+}
 var LocationStrategyPath = /*#__PURE__*/function (_LocationStrategy) {
   _inheritsLoose(LocationStrategyPath, _LocationStrategy);
 
@@ -18908,69 +18958,7 @@ function makeObserver$_(callback) {
 
   this.path = path;
   this.params = params;
-};
-/*
-export function encodeParams_(params: RouterKeyValue): string {
-    // !!! array?
-    return Object.keys(params).map(key => `;${encodeSegment_(key)}=${typeof params[key] === 'string' ? encodeSegment_(params[key] as string) : encodeParams_(params[key] as RouterKeyValue)}`).join('');
-}
-export function encodeSegment_(s: string): string {
-    return encodeString_(s).replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/%26/gi, '&');
-}
-export function encodeString_(s: string): string {
-    return encodeURIComponent(s).replace(/%40/g, '@').replace(/%3A/gi, ':').replace(/%24/g, '$').replace(/%2C/gi, ',');
-}
-export function decodeParams_(encodedParams: string): RouterKeyValue {
-    const params: RouterKeyValue = {} as RouterKeyValue;
-    const keyValues = encodedParams.split(';');
-    keyValues.forEach((x: string) => {
-        const kvs: string[] = x.split('=');
-        if (kvs.length === 2) {
-            params[kvs[0]] = kvs[1];
-        }
-    });
-    return params;
-}
-export function decodeParams__<T>(encoded: string | null = null): T | null {
-    let decoded = null;
-    if (encoded) {
-        try {
-            const json = window.atob(encoded);
-            decoded = JSON.parse(json) as T;
-        } catch (error) {
-            console.log('decodeParam_.error', error);
-        }
-    }
-    return decoded;
-}
-export function encodeParams__(value: any): string | null {
-    let encoded = null;
-    try {
-        const json = JSON.stringify(value);
-        encoded = window.btoa(json);
-    } catch (error) {
-        console.log('encodeParam__.error', error);
-    }
-    return encoded;
-}
-export function resolveParams__(url: string, routeSegments: RouteSegment[]): RouterKeyValue {
-    // console.log('resolveParams__.resolvedRoute.routeSegments', routeSegments);
-    const path: string = url.split('?')[0];
-    const query: string = url.substring(path.length, url.length);
-    const search: string = query.split('#')[0];
-    const hash: string = query.substring(search.length, query.length);
-    const segments: string[] = path.split('/').filter(x => x !== '');
-    const params: RouterKeyValue = {};
-    routeSegments.forEach((segment: RouteSegment, index: number) => {
-        // console.log('segment.params', segment.params);
-        const keys: string[] = Object.keys(segment.params);
-        if (keys.length) {
-            params[keys[0]] = decodeParams_(segments[index]);
-        }
-    });
-    return params;
-}
-*/var Route = function Route(options) {
+};var Route = function Route(options) {
   var _this = this;
 
   this.pathMatch = 'prefix';
@@ -19069,13 +19057,9 @@ export function resolveParams__(url: string, routeSegments: RouteSegment[]): Rou
       return this.url_;
     },
     set: function set(url) {
-      // console.log(this.url_, url);
       if (this.url_ !== url) {
-        this.locationStrategy.resolve(url, this); // resolvePath_(url, this, this.locationStrategy);
-
-        this.url_ = this.locationStrategy.serialize(this); // serializeUrl_(this, this.locationStrategy);
-        // this.url_ = url; // !!! serialize url;
-        // console.log('url_', this.url_);
+        this.locationStrategy.resolve(url, this);
+        this.url_ = this.locationStrategy.serialize(this);
       }
     }
   }, {
@@ -19085,9 +19069,7 @@ export function resolveParams__(url: string, routeSegments: RouteSegment[]): Rou
     },
     set: function set(routeSegments) {
       if (this.routeSegments_ !== routeSegments) {
-        this.routeSegments_ = routeSegments; // !!! const path: string = this.locationStrategy === RouteLocationStrategy.Hash ? this.hash : this.path;
-        // this.params = resolveParams_(this.path, routeSegments);
-
+        this.routeSegments_ = routeSegments;
         this.params = this.locationStrategy.resolveParams(this.path, routeSegments);
       }
     }
@@ -19099,41 +19081,7 @@ export function resolveParams__(url: string, routeSegments: RouteSegment[]): Rou
   }]);
 
   return RoutePath;
-}();
-/*
-export function encodeParams_(params: RouterKeyValue): string {
-    // !!! array?
-    return Object.keys(params).map(key => `;${encodeSegment_(key)}=${typeof params[key] === 'string' ? encodeSegment_(params[key] as string) : encodeParams_(params[key] as RouterKeyValue)}`).join('');
-}
-export function decodeParams_(encodedParams: string): RouterKeyValue {
-    const params: RouterKeyValue = {} as RouterKeyValue;
-    const keyValues = encodedParams.split(';');
-    keyValues.forEach((x: string) => {
-        const kvs: string[] = x.split('=');
-        if (kvs.length === 2) {
-            params[kvs[0]] = kvs[1];
-        }
-    });
-    return params;
-}
-export function resolvePath___(url: string, routeSegments: RouteSegment[]): { path: string, search: string, hash: string, segments: any[] } {
-    // console.log('resolvePath_.resolvedRoute.routeSegments', routeSegments);
-    const path: string = url.split('?')[0];
-    const query: string = url.substring(path.length, url.length);
-    const search: string = query.split('#')[0];
-    const hash: string = query.substring(search.length, query.length);
-    const segments: string[] = path.split('/').filter(x => x !== '');
-    const params: RouterKeyValue = {};
-    routeSegments.forEach((segment: RouteSegment, index: number) => {
-        // console.log('segment.params', segment.params);
-        const keys: string[] = Object.keys(segment.params);
-        if (keys.length) {
-            params[keys[0]] = decodeParams_(segments[index]);
-        }
-    });
-    return { path, search, hash, segments };
-}
-*/var RouteSnapshot = /*#__PURE__*/function () {
+}();var RouteSnapshot = /*#__PURE__*/function () {
   function RouteSnapshot(options) {
     this.pathMatch = 'prefix';
     this.relative = true;
@@ -19381,15 +19329,28 @@ Scroll {routerEvent: NavigationEnd, position: null, anchor: null, constructor: O
 
   RouterService.findRouteByUrl = function findRouteByUrl(initialUrl) {
     var routes = getFlatRoutes_(this.routes);
-    var resolvedRoute = routes.find(function (route) {
-      return initialUrl.match(route.matcher);
-    }) || null;
+    var resolvedRoute = null;
+    var lastMatcbesLength = Number.NEGATIVE_INFINITY;
+
+    for (var _iterator = _createForOfIteratorHelperLoose(routes), _step; !(_step = _iterator()).done;) {
+      var route = _step.value;
+      var matches = initialUrl.match(route.matcher);
+
+      if (matches && (!resolvedRoute || matches[0].length > lastMatcbesLength)) {
+        lastMatcbesLength = matches[0].length;
+        resolvedRoute = route;
+      }
+    }
+
     var urlAfterRedirects = initialUrl;
 
     if (resolvedRoute && resolvedRoute.redirectTo) {
+      // const routePath: RoutePath = RouterService.getPath(resolvedRoute.redirectTo);
+      // urlAfterRedirects = routePath.url;
       urlAfterRedirects = resolvedRoute.redirectTo;
       resolvedRoute = this.findRouteByUrl(urlAfterRedirects);
-    }
+    } // console.log('RouterService.findRouteByUrl', resolvedRoute);
+
 
     return resolvedRoute;
   };
@@ -19457,22 +19418,6 @@ Scroll {routerEvent: NavigationEnd, position: null, anchor: null, constructor: O
 RouterService.routes = [];
 RouterService.route$ = new rxjs.ReplaySubject(1);
 RouterService.events$ = new rxjs.ReplaySubject(1);
-/*
-function setHistory_(locationStrategy: ILocationStrategy, url: string, params?: URLSearchParams, popped?: boolean): void {
-    if (isPlatformBrowser && window.history && window.history.pushState) {
-        const title = document.title;
-        url = locationStrategy.getUrl(url, params);
-        // !!!
-        // const state = params ? params.toString() : '';
-        // console.log(state);
-        if (popped) {
-            window.history.replaceState(undefined, title, url);
-        } else {
-            window.history.pushState(undefined, title, url);
-        }
-    }
-}
-*/
 
 function getFlatRoutes_(routes) {
   var reduceRoutes = function reduceRoutes(routes) {
@@ -19511,12 +19456,12 @@ function clearRoutes_(routes, currentSnapshot) {
 function resolveRoutes_(routes, childRoutes, initialUrl) {
   var resolvedRoute;
 
-  for (var _iterator = _createForOfIteratorHelperLoose(childRoutes), _step; !(_step = _iterator()).done;) {
-    var route = _step.value;
-    resolvedRoute = resolveRoute_(routes, route, initialUrl);
+  for (var _iterator2 = _createForOfIteratorHelperLoose(childRoutes), _step2; !(_step2 = _iterator2()).done;) {
+    var childRoute = _step2.value;
+    var route = resolveRoute_(routes, childRoute, initialUrl);
 
-    if (resolvedRoute) {
-      return resolvedRoute;
+    if (route && (!resolvedRoute || route.remainUrl.length < resolvedRoute.remainUrl.length)) {
+      resolvedRoute = route;
     }
   }
 
@@ -19533,12 +19478,15 @@ function resolveRoute_(routes, route, initialUrl) {
   var match = initialUrl.match(route.matcher); // console.log(route.matcher, match?.length, initialUrl, '=>', route.path);
 
   if (!match) {
+    // console.log(initialUrl, '=>', route.path, initialUrl.match(route.matcher));
     return undefined;
   }
 
   if (route.redirectTo) {
     // console.log('match', initialUrl, '=>', route.redirectTo, match);
-    return resolveRoutes_(routes, routes, route.redirectTo);
+    var _routePath = RouterService.getPath(route.redirectTo);
+
+    return resolveRoutes_(routes, routes, _routePath.url);
   }
   /* else {
     // console.log('match', initialUrl, match);
@@ -19586,7 +19534,8 @@ function makeActivatorResponse$_(event, activators) {
       });
 
       if (canActivate !== false) {
-        cancelEvent.redirectTo = canActivate;
+        var routePath = RouterService.getPath(canActivate);
+        cancelEvent.redirectTo = [routePath.url];
       }
 
       return new NavigationCancel(cancelEvent);
@@ -19596,10 +19545,11 @@ function makeActivatorResponse$_(event, activators) {
 
 function makeCanDeactivateResponse$_(events$, event, currentRoute) {
   // console.log('makeCanDeactivateResponse$_', event);
-  if (event.route.canDeactivate && event.route.canDeactivate.length && (currentRoute == null ? void 0 : currentRoute.instance)) {
+  if (event.route.canDeactivate && event.route.canDeactivate.length) {
     var route = event.route;
+    var instance = rxcomp.getContextByNode(event.route.element).instance;
     return makeActivatorResponse$_(event, route.canDeactivate.map(function (x) {
-      return x(currentRoute.instance, currentRoute);
+      return x(instance, currentRoute);
     }));
   } else {
     return rxjs.of(event);
@@ -19655,11 +19605,16 @@ function makeCanActivateResponse$_(events$, event) {
 }
 
 function makeObserve$_(routes, route$, events$, locationStrategy) {
-  var currentRoute;
-  var stateEvents$ = rxjs.merge(rxjs.fromEvent(window, 'popstate')).pipe(
+  var currentRoute; // console.log('RouterService.WINDOW', WINDOW!!);
+
+  var stateEvents$ = rxcomp.isPlatformServer ? rxjs.EMPTY : rxjs.merge(rxjs.fromEvent(rxcomp.WINDOW, 'popstate')).pipe(
   /*
   tap((event: PopStateEvent) => {
-      // console.log('location', document.location.pathname, 'state', event.state);
+      // detect rxcomp !!!
+      // event.preventDefault();
+      // event.stopImmediatePropagation(); // !!!
+      // history.go(1);
+      // console.log('RouterService.onPopState', `location: "${document.location.pathname}"`, `state: "${event.state}"`);
   }),
   */
   operators.map(function (event) {
@@ -19728,7 +19683,7 @@ function makeObserve$_(routes, route$, events$, locationStrategy) {
         })));
       }
     } else if (event instanceof RoutesRecognized) {
-      // console.log('RoutesRecognized', event);
+      // console.log('RoutesRecognized', event.route.component, event.route.initialUrl, event.route.extractedUrl, event.route.urlAfterRedirects);
       events$.next(new GuardsCheckStart(_objectSpread2({}, event)));
     } else if (event instanceof GuardsCheckStart) {
       // console.log('GuardsCheckStart', event);
@@ -19786,22 +19741,23 @@ function makeObserve$_(routes, route$, events$, locationStrategy) {
       }
 
       var extractedUrl = segments.join('/').replace(/\/\//g, '/');
-      console.log('NavigationEnd', event);
+      console.log('NavigationEnd', event.route.initialUrl, event.route.extractedUrl, event.route.urlAfterRedirects);
       clearRoutes_(routes, event.route);
       locationStrategy.setHistory(extractedUrl, undefined, event.trigger === 'popstate'); // setHistory_(locationStrategy, extractedUrl, undefined, event.trigger === 'popstate');
 
       route$.next(event.route);
     } else if (event instanceof NavigationCancel) {
-      console.log('NavigationCancel', event);
+      console.log('NavigationCancel', event.reason, event.redirectTo);
 
       if (event.redirectTo) {
+        // const routePath: RoutePath = RouterService.getPath(event.redirectTo);
         events$.next(new NavigationStart({
           routerLink: event.redirectTo,
           trigger: 'imperative'
         }));
       }
     } else if (event instanceof NavigationError) {
-      console.log('NavigationError', event);
+      console.log('NavigationError', event.error);
     }
   }), operators.catchError(function (error) {
     return rxjs.of(new NavigationError(_objectSpread2(_objectSpread2({}, event), {}, {
@@ -20052,7 +20008,7 @@ RouterLinkActiveDirective.meta = {
           module.compile(element, instance);
           _this4.instance = instance;
           _this4.element = element;
-          snapshot.instance = instance;
+          snapshot.element = element;
           return _this4.onEnter$_(element, instance);
         } else {
           return rxjs.of(false);
@@ -20065,7 +20021,7 @@ RouterLinkActiveDirective.meta = {
 
   _proto.onEnter$_ = function onEnter$_(element, instance) {
     if (element && instance && instance instanceof View) {
-      return asObservable_([element], instance.onEnter);
+      return asObservable([element], instance.onEnter);
     } else {
       return rxjs.of(true);
     }
@@ -20073,7 +20029,7 @@ RouterLinkActiveDirective.meta = {
 
   _proto.onExit$_ = function onExit$_(element, instance) {
     if (element && instance && instance instanceof View) {
-      return asObservable_([element], instance.onExit);
+      return asObservable([element], instance.onExit);
     } else {
       return rxjs.of(true);
     }
@@ -20094,8 +20050,7 @@ RouterOutletStructure.meta = {
     host: RouterOutletStructure
   }
 };
-
-function asObservable_(args, callback) {
+function asObservable(args, callback) {
   return rxjs.Observable.create(function (observer) {
     var subscription;
 
@@ -20129,52 +20084,7 @@ function asObservable_(args, callback) {
       }
     };
   });
-}
-/*
-set route(route: RouteSnapshot | undefined) {
-    if (this.route_ && route && this.route_.component === route.component) {
-        this.route_.next(route);
-    } else {
-        this.route_ = route;
-        if (route) {
-            this.factory = route.component;
-            route.instance = this.instance;
-        } else {
-            this.factory = undefined;
-        }
-    }
-}
-get factory(): typeof Component | undefined {
-    return this.factory_;
-}
-set factory(factory: typeof Component | undefined) {
-    const { module, node } = getContext(this);
-    if (this.factory_ !== factory) {
-        this.factory_ = factory;
-        if (this.element) {
-            if (this.instance && this.instance instanceof View) {
-                asObservable_([this.element], this.instance.onExit);
-            }
-            this.element.parentNode!.removeChild(this.element);
-            module.remove(this.element, this);
-            this.element = undefined;
-            this.instance = undefined;
-        }
-        if (factory && factory.meta.template) {
-            let element: IElement = document.createElement('div');
-            element.innerHTML = factory.meta.template;
-            if (element.children.length === 1) {
-                element = element.firstElementChild as IElement;
-            }
-            node.appendChild(element);
-            const instance: Factory | undefined = module.makeInstance(element, factory, factory.meta.selector!, this);
-            module.compile(element, instance);
-            this.instance = instance;
-            this.element = element;
-        }
-    }
-}
-*/var factories = [RouterOutletStructure, RouterLinkDirective, RouterLinkActiveDirective];
+}var factories = [RouterOutletStructure, RouterLinkDirective, RouterLinkActiveDirective];
 var pipes = [];
 /**
  *  RouterModule Class.
@@ -20215,7 +20125,7 @@ var RouterModule = /*#__PURE__*/function (_Module) {
         }
       }
     }), operators.takeUntil(_this.unsubscribe$)).subscribe();
-    RouterService.navigate("" + window.location.pathname + window.location.search + window.location.hash);
+    RouterService.navigate("" + (location.pathname === '' ? '/' : location.pathname) + location.search + location.hash);
     return _this;
   }
 
@@ -20262,4 +20172,4 @@ RouterModule.meta = {
     */
 
   });
-}exports.ActivationEnd=ActivationEnd;exports.ActivationStart=ActivationStart;exports.ChildActivationEnd=ChildActivationEnd;exports.ChildActivationStart=ChildActivationStart;exports.GuardsCheckEnd=GuardsCheckEnd;exports.GuardsCheckStart=GuardsCheckStart;exports.LocationStrategy=LocationStrategy;exports.LocationStrategyHash=LocationStrategyHash;exports.LocationStrategyPath=LocationStrategyPath;exports.NavigationCancel=NavigationCancel;exports.NavigationEnd=NavigationEnd;exports.NavigationError=NavigationError;exports.NavigationStart=NavigationStart;exports.ResolveEnd=ResolveEnd;exports.ResolveStart=ResolveStart;exports.Route=Route;exports.RouteConfigLoadEnd=RouteConfigLoadEnd;exports.RouteConfigLoadStart=RouteConfigLoadStart;exports.RoutePath=RoutePath;exports.RouteSegment=RouteSegment;exports.RouteSnapshot=RouteSnapshot;exports.RouterEvent=RouterEvent;exports.RouterLinkActiveDirective=RouterLinkActiveDirective;exports.RouterLinkDirective=RouterLinkDirective;exports.RouterModule=RouterModule;exports.RouterOutletStructure=RouterOutletStructure;exports.RoutesRecognized=RoutesRecognized;exports.View=View;exports.transition$=transition$;Object.defineProperty(exports,'__esModule',{value:true});})));
+}exports.ActivationEnd=ActivationEnd;exports.ActivationStart=ActivationStart;exports.ChildActivationEnd=ChildActivationEnd;exports.ChildActivationStart=ChildActivationStart;exports.GuardsCheckEnd=GuardsCheckEnd;exports.GuardsCheckStart=GuardsCheckStart;exports.LocationStrategy=LocationStrategy;exports.LocationStrategyHash=LocationStrategyHash;exports.LocationStrategyPath=LocationStrategyPath;exports.NavigationCancel=NavigationCancel;exports.NavigationEnd=NavigationEnd;exports.NavigationError=NavigationError;exports.NavigationStart=NavigationStart;exports.ResolveEnd=ResolveEnd;exports.ResolveStart=ResolveStart;exports.Route=Route;exports.RouteConfigLoadEnd=RouteConfigLoadEnd;exports.RouteConfigLoadStart=RouteConfigLoadStart;exports.RoutePath=RoutePath;exports.RouteSegment=RouteSegment;exports.RouteSnapshot=RouteSnapshot;exports.RouterEvent=RouterEvent;exports.RouterLinkActiveDirective=RouterLinkActiveDirective;exports.RouterLinkDirective=RouterLinkDirective;exports.RouterModule=RouterModule;exports.RouterOutletStructure=RouterOutletStructure;exports.RoutesRecognized=RoutesRecognized;exports.View=View;exports.asObservable=asObservable;exports.transition$=transition$;Object.defineProperty(exports,'__esModule',{value:true});})));
