@@ -13,7 +13,7 @@ rxcomp.min.js        | ![](https://img.badgesize.io/https://unpkg.com/rxcomp@1.0
 rxjs.min.js          | ![](https://img.badgesize.io/https://unpkg.com/rxjs@6.6.2/bundles/rxjs.umd.min.js.svg?compression=gzip)
 rxjs.min.js          | ![](https://img.badgesize.io/https://unpkg.com/rxjs@6.6.2/bundles/rxjs.umd.min.js.svg)
  
-> [RxComp Server Demo](https://actarian.github.io/rxcomp-server/)  
+<!-- > [RxComp Server Demo](https://actarian.github.io/rxcomp-server/) -->
 > [RxComp Server Api](https://actarian.github.io/rxcomp-server/api/)  
 
 ![](https://rawcdn.githack.com/actarian/rxcomp-server/master/docs/img/rxcomp-server-demo.jpg?token=AAOBSISYZJXZNFFWAPGOLYC7DQKIO)  
