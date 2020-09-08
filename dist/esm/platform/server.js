@@ -150,7 +150,7 @@ export function render$(iRequest, renderRequest$) {
         observer.complete();
     });
     return request$.pipe(switchMap((request) => fromCache$(request)), switchMap((response) => {
-        console.log('Server.render$.fromCache', 'route', request.url, !!response);
+        console.log('NodeJs.Server.render$.fromCache', 'route', request.url, !!response);
         if (response) {
             return of(response);
         }

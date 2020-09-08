@@ -2,7 +2,7 @@
   "author": "Luca Zampetti <lzampetti@gmail.com>",
   "name": "rxcomp-server",
   "description": "Reactive StoreModule for RxComp component library",
-  "version": "1.0.0-beta.16",
+  "version": "1.0.0-beta.18",
   "browser": "dist/umd/rxcomp-server.js",
   "main": "dist/cjs/rxcomp-server.js",
   "types": "dist/cjs/rxcomp-server.d.ts",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "htmlparser2": "4.1.0",
-    "rxcomp": "1.0.0-beta.16",
+    "rxcomp": "1.0.0-beta.18",
     "rxjs": "6.6.2",
     "tslib": "2.0.1"
   },
@@ -53,8 +53,8 @@
     "gsap": "3.5.1",
     "gulpfile-config": "1.0.0-alpha.14",
     "https": "1.0.0",
-    "rxcomp-http": "1.0.0-beta.16",
-    "rxcomp-router": "1.0.0-beta.16",
+    "rxcomp-http": "1.0.0-beta.18",
+    "rxcomp-router": "1.0.0-beta.18",
     "typedoc": "0.19.0",
     "typescript": "4.0.2"
   }

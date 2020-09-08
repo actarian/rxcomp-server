@@ -9,7 +9,6 @@ export interface IDOMStringList extends DOMStringList {
 	item(index: number): string | null;
 	[index: number]: string;
 }
-
 export class RxDOMStringList extends Array<string> implements IDOMStringList {
 	/*
 	private list_: string[] = [];
@@ -32,7 +31,6 @@ export class RxDOMStringList extends Array<string> implements IDOMStringList {
 	};
 	// [index: number]: string;
 }
-
 export interface ILocation extends Location {
 	/*
 	hash: string; // Returns the Location object's URL's fragment (includes leading "#" if non-empty). Can be set, to navigate to the same URL with a changed fragment (ignores leading "#").
@@ -51,7 +49,6 @@ export interface ILocation extends Location {
 	toString(): string;
 	*/
 }
-
 export class RxLocation implements ILocation {
 	/*
 	hash: string = '';
@@ -62,35 +59,27 @@ export class RxLocation implements ILocation {
 	protocol: string = '';
 	search: string = '';
 	*/
-
 	private hash_: string = '';
 	get hash(): string { return this.hash_; }
 	set hash(hash: string) { this.hash_ = hash; this.href = this.href; }
-
 	private host_: string = '';
 	get host(): string { return this.host_; }
 	set host(host: string) { this.host_ = host; this.href = this.href; }
-
 	private hostname_: string = '';
 	get hostname(): string { return this.hostname_; }
 	set hostname(hostname: string) { this.hostname_ = hostname; this.href = this.href; }
-
 	private pathname_: string = '';
 	get pathname(): string { return this.pathname_; }
 	set pathname(pathname: string) { this.pathname_ = pathname; this.href = this.href; }
-
 	private port_: string = '';
 	get port(): string { return this.port_; }
 	set port(port: string) { this.port_ = port; this.href = this.href; }
-
 	private protocol_: string = '';
 	get protocol(): string { return this.protocol_; }
 	set protocol(protocol: string) { this.protocol_ = protocol; this.href = this.href; }
-
 	private search_: string = '';
 	get search(): string { return this.search_; }
 	set search(search: string) { this.search_ = search; this.href = this.href; }
-
 	private href_: string = '';
 	get href(): string {
 		const href: string = `${this.protocol}//${this.host}${this.port.length ? `:${this.port}` : ``}${this.pathname}${this.search}${this.hash}`;

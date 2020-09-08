@@ -1,9 +1,5 @@
 import { Parser } from 'htmlparser2';
 import { RxLocation } from '../location/location';
-// export const NO_CHILDS = ['title','base','meta','link','img','br','input',];
-// const SKIP = ['html','head','title','base','meta','script','link','body',];
-// document.createComment = nodeValue => { return new RxComment(null, nodeValue); };
-// document.createTextNode = nodeValue => { return new RxText(null, nodeValue); };
 export var RxNodeType;
 (function (RxNodeType) {
     RxNodeType[RxNodeType["ELEMENT_NODE"] = 1] = "ELEMENT_NODE";
@@ -722,7 +718,7 @@ export class RxDocument extends RxElement {
         if (!title) {
             title = new RxElement(this.head, 'title');
         }
-        title.innerText = nodeValue;
+        title.innerText = String(nodeValue);
     }
     get documentElement() {
         let element = this.firstElementChild;
@@ -913,7 +909,7 @@ export function parse(html) {
             parentNode.childNodes.push(node);
             parentNode = node;
             // if (NO_CHILDS.indexOf(nodeName) === -1) {
-            //	console.log(nodeName);
+            // console.log(nodeName);
             //	parentNode = node;
             // }
         },

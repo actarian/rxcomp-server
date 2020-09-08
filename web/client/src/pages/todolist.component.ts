@@ -13,7 +13,7 @@ export default class TodolistComponent extends Component {
 		const mode: number = 1;
 		const payload = { query: `{ getTodos { id, title, completed } }` };
 		const methodUrl: string = `${Vars.host}${Vars.api}`;
-		console.log('TodolistComponent.onInit', this);
+		// console.log('TodolistComponent.onInit', this);
 		if (mode === 1) {
 			HttpService.post$<IResponseData>(methodUrl, payload, {
 				params: { query: `{ getTodos { id, title, completed } }` },
@@ -61,12 +61,10 @@ export default class TodolistComponent extends Component {
 			this.pushChanges();
 		});
 	}
-
 	onClick(item: { title: string, completed: boolean }) {
 		item.completed = !item.completed;
 		this.pushChanges();
 	}
-
 	static meta: IFactoryMeta = {
 		selector: '[todolist-component]',
 		hosts: { host: RouterOutletStructure },

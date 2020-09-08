@@ -2,10 +2,8 @@ import { Factory, IModuleMeta, Module, Pipe } from 'rxcomp';
 
 const factories: typeof Factory[] = [
 ];
-
 const pipes: typeof Pipe[] = [
 ];
-
 /**
  *  ServerModule Class.
  * @example

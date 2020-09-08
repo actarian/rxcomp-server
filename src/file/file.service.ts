@@ -3,11 +3,9 @@ const path = require('path');
 const fs = require('fs');
 
 export default class FileService {
-
 	static exists(pathname: string): boolean {
 		return fs.existsSync(pathname);
 	}
-
 	static exists$(pathname: string): Observable<boolean> {
 		return Observable.create((observer: Observer<boolean>) => {
 			try {
@@ -24,7 +22,6 @@ export default class FileService {
 			}
 		});
 	}
-
 	static readFile(pathname: string): string | null {
 		const dirname: string = path.dirname(pathname);
 		if (!fs.existsSync(dirname)) {
@@ -32,7 +29,6 @@ export default class FileService {
 		}
 		return fs.readFileSync(pathname, 'utf8');
 	}
-
 	static readFile$(pathname: string): Observable<string | null> {
 		return Observable.create((observer: Observer<string | null>) => {
 			try {
@@ -52,7 +48,6 @@ export default class FileService {
 			}
 		});
 	}
-
 	static writeFile(pathname: string, content: string): boolean {
 		try {
 			const dirname: string = path.dirname(pathname);
@@ -66,7 +61,6 @@ export default class FileService {
 			return false;
 		}
 	}
-
 	static writeFile$(pathname: string, content: string): Observable<boolean> {
 		return Observable.create((observer: Observer<boolean>) => {
 			try {
@@ -95,7 +89,6 @@ export default class FileService {
 			}
 		});
 	}
-
 	static unlinkFile(pathname: string): boolean {
 		try {
 			if (fs.existsSync(pathname)) {
@@ -109,7 +102,6 @@ export default class FileService {
 			return false;
 		}
 	}
-
 	static unlinkFile$(pathname: string): Observable<boolean> {
 		return Observable.create((observer: Observer<boolean>) => {
 			try {

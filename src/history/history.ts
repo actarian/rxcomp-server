@@ -5,7 +5,6 @@ export interface IHistoryItem {
 	title: string;
 	url?: string | null;
 }
-
 export interface IHistory extends History {
 	/*
 	readonly length: number;
@@ -18,7 +17,6 @@ export interface IHistory extends History {
 	replaceState(data: any, title: string, url?: string | null): void;
 	*/
 }
-
 export class RxHistory implements IHistory {
 	private currentIndex_: number = 0;
 	private history_: IHistoryItem[] = [];

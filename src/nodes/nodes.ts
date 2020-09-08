@@ -1,11 +1,6 @@
 import { Parser } from 'htmlparser2';
 import { ILocation, RxLocation } from '../location/location';
 
-// export const NO_CHILDS = ['title','base','meta','link','img','br','input',];
-// const SKIP = ['html','head','title','base','meta','script','link','body',];
-// document.createComment = nodeValue => { return new RxComment(null, nodeValue); };
-// document.createTextNode = nodeValue => { return new RxText(null, nodeValue); };
-
 export enum RxNodeType {
 	ELEMENT_NODE = 1, //	Un nodo Element come <p> o <div>.
 	TEXT_NODE = 3, //	L'attuale Text dentro un Element o Attr.
@@ -16,7 +11,6 @@ export enum RxNodeType {
 	DOCUMENT_TYPE_NODE = 10, //	Un nodo DocumentType, come <!DOCTYPE html>.
 	DOCUMENT_FRAGMENT_NODE = 11, //	Un nodo DocumentFragment.
 }
-
 export enum SelectorType {
 	None = -1,
 	Id = 0,
@@ -24,7 +18,6 @@ export enum SelectorType {
 	Attribute = 2,
 	TagName = 3,
 }
-
 export class RxSelector {
 	selector: string = '';
 	type: SelectorType = SelectorType.None;
@@ -35,7 +28,6 @@ export class RxSelector {
 		}
 	}
 }
-
 export class RxQuery {
 	selector: string = '';
 	selectors: RxSelector[] = [];
@@ -46,12 +38,10 @@ export class RxQuery {
 		}
 	}
 }
-
 export class RxNode {
 	parentNode: RxElement | null;
 	nodeType: RxNodeType;
 	nodeValue: string | null = null;
-
 	constructor(parentNode: RxElement | null = null) {
 		this.parentNode = parentNode;
 		this.nodeType = -1;
@@ -63,7 +53,6 @@ export class RxNode {
 		return ``;
 	}
 }
-
 export class RxStyle {
 	[key: string]: any;
 	constructor(node: RxElement) {
@@ -120,7 +109,6 @@ export class RxStyle {
 		}).join(' ');
 	}
 }
-
 export class RxClassList extends Array<string> {
 	private node_!: RxElement;
 	get node(): RxElement {
@@ -221,7 +209,6 @@ export class RxClassList extends Array<string> {
 		this.node.setAttribute('class', this.join(' '));
 	}
 }
-
 export class RxElement extends RxNode {
 	nodeName: string;
 	childNodes: RxNode[];
@@ -528,7 +515,6 @@ export class RxElement extends RxNode {
 		return attributes;
 	}
 }
-
 export class RxText extends RxNode {
 	nodeValue: string;
 	get outerHTML(): string | null {
@@ -563,7 +549,6 @@ export class RxText extends RxNode {
 		return this.nodeValue;
 	}
 }
-
 export class RxCData extends RxNode {
 	nodeValue: string;
 	get outerHTML(): string | null {
@@ -597,7 +582,6 @@ export class RxCData extends RxNode {
 		return this.nodeValue;
 	}
 }
-
 export class RxComment extends RxNode {
 	nodeValue: string;
 	get outerHTML(): string | null {
@@ -631,7 +615,6 @@ export class RxComment extends RxNode {
 		return `<!--${this.nodeValue}-->`;
 	}
 }
-
 export class RxProcessingInstruction extends RxNode {
 	constructor(parentNode: RxElement | null = null, nodeValue: any) {
 		super(parentNode);
@@ -642,7 +625,6 @@ export class RxProcessingInstruction extends RxNode {
 		return `<${this.nodeValue}>`;
 	}
 }
-
 export class RxDocumentType extends RxNode {
 	constructor(parentNode: RxElement | null = null, nodeValue: any) {
 		super(parentNode);
@@ -653,7 +635,6 @@ export class RxDocumentType extends RxNode {
 		return `<${this.nodeValue}>`;
 	}
 }
-
 export class RxDocumentFragment extends RxElement {
 	constructor() {
 		super(null, '#document-fragment');
@@ -661,7 +642,6 @@ export class RxDocumentFragment extends RxElement {
 		this.childNodes = [];
 	}
 }
-
 // !!! TODO
 // Any web page loaded in the browser and serves as an entry point into the web page's content, which is the DOM tree.//
 // interface Document extends Node, DocumentAndElementEventHandlers, DocumentOrShadowRoot, GlobalEventHandlers, NonElementParentNode, ParentNode, XPathEvaluatorBase {
@@ -914,7 +894,6 @@ export interface IDocument extends Document {
 	// releaseEvents(): void;
 	*/
 }
-
 export class RxDocument extends RxElement {
 	private location_: ILocation = RxLocation.location;
 	get location() {
@@ -962,7 +941,7 @@ export class RxDocument extends RxElement {
 		if (!title) {
 			title = new RxElement(this.head, 'title');
 		}
-		title.innerText = nodeValue;
+		title.innerText = String(nodeValue);
 	}
 	get documentElement(): RxElement {
 		let element: RxElement | null = this.firstElementChild;
@@ -971,7 +950,6 @@ export class RxDocument extends RxElement {
 		}
 		return element;
 	}
-
 	/*
 		readonly characterSet: string; // Returns document's encoding.
 		readonly charset: string; // Gets or sets the character set used to encode the object.
@@ -1001,7 +979,6 @@ export class RxDocument extends RxElement {
 		readonly timeline: DocumentTimeline;
 		readonly visibilityState: VisibilityState;
 		*/
-
 	constructor() {
 		super(null, '#document');
 		this.nodeType = RxNodeType.DOCUMENT_NODE;
@@ -1051,7 +1028,6 @@ export class RxDocument extends RxElement {
 		return `${this.childNodes.map(x => x.serialize()).join('')}`;
 	}
 }
-
 /** A window containing a DOM document; the document property points to the DOM document loaded in that window. */
 export interface IWindow { // extends Window
 	readonly applicationCache?: ApplicationCache;
@@ -1180,7 +1156,6 @@ export interface IWindow { // extends Window
 	// @deprecated
 	// onorientationchange: ((this: Window, event: Event) => any) | null;
 }
-
 export class RxWindow {
 	readonly applicationCache!: ApplicationCache;
 	readonly clientInformation!: Navigator;
@@ -1297,7 +1272,6 @@ export class RxWindow {
 	onvrdisplaypresentchange(event: Event): any | null { }
 	/* tslint:enable:no-unused-variable */
 }
-
 /*
 global: [Circular],
 clearInterval: [Function: clearInterval],
@@ -1337,35 +1311,27 @@ Response: undefined,
 Headers: undefined,
 Request: undefined
 */
-
 export function isRxElement(x: RxNode): x is RxElement {
 	return x.nodeType === RxNodeType.ELEMENT_NODE;
 }
-
 export function isRxText(x: RxNode): x is RxText {
 	return x.nodeType === RxNodeType.TEXT_NODE;
 }
-
 export function isRxComment(x: RxNode): x is RxComment {
 	return x.nodeType === RxNodeType.COMMENT_NODE;
 }
-
 export function isRxDocument(x: RxNode): x is RxDocument {
 	return x.nodeType === RxNodeType.DOCUMENT_NODE;
 }
-
 export function isRxDocumentFragment(x: RxNode): x is RxDocumentFragment {
 	return x.nodeType === RxNodeType.DOCUMENT_FRAGMENT_NODE;
 }
-
 export function isRxDocumentType(x: RxNode): x is RxDocumentType {
 	return x.nodeType === RxNodeType.DOCUMENT_TYPE_NODE;
 }
-
 export function isRxProcessingInstruction(x: RxNode): x is RxProcessingInstruction {
 	return x.nodeType === RxNodeType.PROCESSING_INSTRUCTION_NODE;
 }
-
 export function parse(html: string) {
 	const doc = new RxDocument();
 	let parentNode: RxElement = doc,
@@ -1378,7 +1344,7 @@ export function parse(html: string) {
 				parentNode.childNodes.push(node);
 				parentNode = node;
 				// if (NO_CHILDS.indexOf(nodeName) === -1) {
-				//	console.log(nodeName);
+				// console.log(nodeName);
 				//	parentNode = node;
 				// }
 			},
@@ -1446,7 +1412,6 @@ export function parse(html: string) {
 	parser.end();
 	return doc;
 }
-
 export function getQueries(selector: string): RxQuery[] {
 	const queries: RxQuery[] = [];
 	selector
@@ -1491,7 +1456,6 @@ export function getQueries(selector: string): RxQuery[] {
 		});
 	return queries;
 }
-
 export function matchSelector(child: RxElement, selector: RxSelector): boolean {
 	switch (selector.type) {
 		case SelectorType.Id:
@@ -1506,13 +1470,11 @@ export function matchSelector(child: RxElement, selector: RxSelector): boolean {
 			return false;
 	}
 }
-
 export function matchSelectors(child: RxElement, selectors: RxSelector[]): boolean {
 	return selectors.reduce(function (p: boolean, selector: RxSelector) {
 		return p && matchSelector(child, selector);
 	}, true);
 }
-
 export function querySelectorAll(queries: RxQuery[], childNodes: RxNode[], query: RxQuery | null = null, nodes: RxElement[] = []): RxElement[] | null {
 	if (query || queries.length) {
 		query = query || queries.shift() as RxQuery;
@@ -1539,7 +1501,6 @@ export function querySelectorAll(queries: RxQuery[], childNodes: RxNode[], query
 	}
 	return nodes.length ? nodes : null;
 }
-
 export function querySelector(queries: RxQuery[], childNodes: RxNode[], query: RxQuery | null = null): RxElement | null {
 	let node = null;
 	if (query || queries.length) {
@@ -1561,7 +1522,6 @@ export function querySelector(queries: RxQuery[], childNodes: RxNode[], query: R
 	}
 	return node;
 }
-
 export function cloneNode(source: RxNode, deep: boolean = false, parentNode: RxElement | null = null): RxNode {
 	let node: RxNode;
 	if (isRxElement(source)) {

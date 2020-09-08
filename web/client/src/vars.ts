@@ -9,7 +9,6 @@ export const Vars: IServerVars = {
 	development: false,
 	production: true,
 };
-
 /*
 export const STATIC = window.location.port === '40333' || window.location.host === 'actarian.github.io';
 export const DEVELOPMENT = ['localhost', '127.0.0.1', '0.0.0.0'].indexOf(window.location.host.split(':')[0]) !== -1;

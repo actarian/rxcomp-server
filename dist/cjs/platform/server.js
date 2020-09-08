@@ -166,7 +166,7 @@ function render$(iRequest, renderRequest$) {
         observer.complete();
     });
     return request$.pipe(operators_1.switchMap(function (request) { return fromCache$(request); }), operators_1.switchMap(function (response) {
-        console.log('Server.render$.fromCache', 'route', request.url, !!response);
+        console.log('NodeJs.Server.render$.fromCache', 'route', request.url, !!response);
         if (response) {
             return rxjs_1.of(response);
         }

@@ -4,10 +4,6 @@ exports.cloneNode = exports.querySelector = exports.querySelectorAll = exports.m
 var tslib_1 = require("tslib");
 var htmlparser2_1 = require("htmlparser2");
 var location_1 = require("../location/location");
-// export const NO_CHILDS = ['title','base','meta','link','img','br','input',];
-// const SKIP = ['html','head','title','base','meta','script','link','body',];
-// document.createComment = nodeValue => { return new RxComment(null, nodeValue); };
-// document.createTextNode = nodeValue => { return new RxText(null, nodeValue); };
 var RxNodeType;
 (function (RxNodeType) {
     RxNodeType[RxNodeType["ELEMENT_NODE"] = 1] = "ELEMENT_NODE";
@@ -955,7 +951,7 @@ var RxDocument = /** @class */ (function (_super) {
             if (!title) {
                 title = new RxElement(this.head, 'title');
             }
-            title.innerText = nodeValue;
+            title.innerText = String(nodeValue);
         },
         enumerable: false,
         configurable: true
@@ -1179,7 +1175,7 @@ function parse(html) {
             parentNode.childNodes.push(node);
             parentNode = node;
             // if (NO_CHILDS.indexOf(nodeName) === -1) {
-            //	console.log(nodeName);
+            // console.log(nodeName);
             //	parentNode = node;
             // }
         },

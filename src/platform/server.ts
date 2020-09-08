@@ -23,13 +23,11 @@ export interface IServerVars {
 	production?: boolean;
 	[key: string]: any;
 }
-
 export interface IServerRequest {
 	url: string;
 	template?: string;
 	vars?: IServerVars;
 }
-
 export interface IServerResponse extends IServerRequest {
 	serialize: () => string;
 	body?: string;
@@ -38,13 +36,11 @@ export interface IServerResponse extends IServerRequest {
 	maxAge?: number;
 	cacheControl?: CacheControlType;
 }
-
 export interface IServerErrorResponse extends IServerRequest {
 	error: Error;
 	statusCode?: number;
 	statusMessage?: string;
 }
-
 export class ServerRequest implements IServerRequest {
 	url!: string;
 	template!: string;
@@ -64,7 +60,6 @@ export class ServerRequest implements IServerRequest {
 		}, this.vars || {});
 	}
 }
-
 export class ServerResponse implements IServerResponse {
 	url!: string;
 	template!: string;
@@ -81,7 +76,6 @@ export class ServerResponse implements IServerResponse {
 		}
 	}
 }
-
 export class ServerErrorResponse implements IServerErrorResponse {
 	url!: string;
 	vars!: IServerVars;
@@ -94,7 +88,6 @@ export class ServerErrorResponse implements IServerErrorResponse {
 		}
 	}
 }
-
 export default class Server extends Platform {
 
 	/**
@@ -203,7 +196,6 @@ export default class Server extends Platform {
 	static template$ = template$;
 	static bootstrap$ = bootstrap$;
 }
-
 export function render$(iRequest: IServerRequest, renderRequest$: (request: ServerRequest) => Observable<ServerResponse>): Observable<ServerResponse> {
 	let request: ServerRequest;
 	const request$: Observable<ServerRequest> = Observable.create(function (observer: Observer<ServerRequest>) {
@@ -214,7 +206,7 @@ export function render$(iRequest: IServerRequest, renderRequest$: (request: Serv
 	return request$.pipe(
 		switchMap((request: ServerRequest) => fromCache$(request)),
 		switchMap((response: ServerResponse | null) => {
-			console.log('Server.render$.fromCache', 'route', request.url, !!response);
+			console.log('NodeJs.Server.render$.fromCache', 'route', request.url, !!response);
 			if (response) {
 				return of(response);
 			} else {
@@ -223,7 +215,6 @@ export function render$(iRequest: IServerRequest, renderRequest$: (request: Serv
 		})
 	);
 }
-
 export function fromCache$(request: ServerRequest): Observable<ServerResponse | null> {
 	if (request.vars.cacheMode) {
 		CacheService.mode = request.vars.cacheMode;
@@ -233,7 +224,6 @@ export function fromCache$(request: ServerRequest): Observable<ServerResponse | 
 	}
 	return CacheService.get$<ServerResponse | null>('render', request.url);
 }
-
 export function fromRenderRequest$(request: ServerRequest, renderRequest$: (request: ServerRequest) => Observable<ServerResponse>): Observable<ServerResponse> {
 	return template$(request).pipe(
 		switchMap((template: string) => {
@@ -247,7 +237,6 @@ export function fromRenderRequest$(request: ServerRequest, renderRequest$: (requ
 		}),
 	)
 }
-
 export function template$(request: ServerRequest): Observable<string> {
 	const templateSrc$ = Observable.create(function (observer: Observer<string>) {
 		const src: string | undefined = request.vars.template;
@@ -263,7 +252,6 @@ export function template$(request: ServerRequest): Observable<string> {
 		switchMap((template: string | null) => template ? of(template) : throwError(new Error(`ServerError: missing template at path ${request.vars.template}`)))
 	);
 }
-
 export function bootstrap$(moduleFactory: typeof Module, request: ServerRequest): Observable<ServerResponse> {
 	// console.log('Server.bootstrap$', request);
 	return Observable.create(function (observer: Observer<ServerResponse>) {

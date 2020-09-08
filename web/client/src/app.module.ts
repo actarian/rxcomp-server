@@ -8,7 +8,6 @@ import TodolistItemComponent from './pages/todolist-item.component';
 import TodolistComponent from './pages/todolist.component';
 
 export default class AppModule extends Module {
-
 	static meta: IModuleMeta = {
 		imports: [
 			CoreModule,
@@ -27,5 +26,4 @@ export default class AppModule extends Module {
 		],
 		bootstrap: AppComponent,
 	};
-
 }

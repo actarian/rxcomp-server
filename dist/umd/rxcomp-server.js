@@ -1,5 +1,5 @@
 /**
- * @license rxcomp-server v1.0.0-beta.16
+ * @license rxcomp-server v1.0.0-beta.18
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
@@ -2051,7 +2051,7 @@ var RxDocument = /*#__PURE__*/function (_RxElement2) {
         title = new RxElement(this.head, 'title');
       }
 
-      title.innerText = nodeValue;
+      title.innerText = String(nodeValue);
     }
   }, {
     key: "documentElement",
@@ -2291,7 +2291,7 @@ function parse(html) {
       node = new RxElement(parentNode, nodeName, attributes);
       parentNode.childNodes.push(node);
       parentNode = node; // if (NO_CHILDS.indexOf(nodeName) === -1) {
-      //	console.log(nodeName);
+      // console.log(nodeName);
       //	parentNode = node;
       // }
     },
@@ -2725,7 +2725,7 @@ function render$(iRequest, renderRequest$) {
   return request$.pipe(operators.switchMap(function (request) {
     return fromCache$(request);
   }), operators.switchMap(function (response) {
-    console.log('Server.render$.fromCache', 'route', request.url, !!response);
+    console.log('NodeJs.Server.render$.fromCache', 'route', request.url, !!response);
 
     if (response) {
       return rxjs.of(response);

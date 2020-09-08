@@ -6,7 +6,6 @@ export default class NotFoundComponent extends Component {
 	onInit() {
 		// console.log('NotFoundComponent.onInit');
 	}
-
 	static meta: IFactoryMeta = {
 		selector: '[not-found-component]',
 		template: /* html */`

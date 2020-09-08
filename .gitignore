@@ -1,5 +1,5 @@
 docs/js/rxcomp.js
-web/__cache/*
+web/cache/*
 !.gitkeep
 
 # Ignore

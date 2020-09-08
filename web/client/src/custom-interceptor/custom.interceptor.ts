@@ -4,7 +4,6 @@ import { EMPTY, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 const cancelRequest: boolean = false;
-
 export class CustomRequestInterceptor implements IHttpInterceptor {
 	intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 		if (cancelRequest) {
@@ -13,7 +12,6 @@ export class CustomRequestInterceptor implements IHttpInterceptor {
 		return next.handle(request);
 	}
 }
-
 export class CustomResponseInterceptor implements IHttpInterceptor {
 	intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 		return next.handle(request).pipe(
@@ -26,7 +24,6 @@ export class CustomResponseInterceptor implements IHttpInterceptor {
 		);
 	}
 }
-
 export class CustomRequestCloneInterceptor implements IHttpInterceptor {
 	intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 		const clonedRequest = request.clone({
