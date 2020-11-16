@@ -14462,7 +14462,7 @@
 
 
 /**
- * @license rxcomp v1.0.0-beta.17
+ * @license rxcomp v1.0.0-beta.19
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
@@ -14678,8 +14678,46 @@ var Factory = /*#__PURE__*/function () {
     this.pushChanges();
   };
 
-  Factory.getInputsTokens = function getInputsTokens(instance) {
-    return this.meta.inputs || [];
+  Factory.getInputsTokens = function getInputsTokens(instance, node, module) {
+    var _this$meta$inputs;
+
+    var inputs = {};
+    (_this$meta$inputs = this.meta.inputs) == null ? void 0 : _this$meta$inputs.forEach(function (key) {
+      var expression = module.resolveAttribute(key, node);
+      /*
+      let expression: string | null = null;
+      if (node.hasAttribute(`[${key}]`)) {
+          expression = node.getAttribute(`[${key}]`);
+          // console.log('Factory.getInputsTokens.expression.1', expression);
+      } else if (node.hasAttribute(`*${key}`)) {
+          expression = node.getAttribute(`*${key}`);
+          // console.log('Factory.getInputsTokens.expression.2', expression);
+      } else if (node.hasAttribute(key)) {
+          expression = node.getAttribute(key);
+          if (expression) {
+              const attribute: string = expression.replace(/({{)|(}})|(")/g, function (substring: string, a, b, c) {
+                  if (a) {
+                      return '"+';
+                  }
+                  if (b) {
+                      return '+"';
+                  }
+                  if (c) {
+                      return '\"';
+                  }
+                  return '';
+              });
+              expression = `"${attribute}"`;
+              // console.log('Factory.getInputsTokens.expression.3', expression);
+          }
+      }
+      */
+
+      if (expression) {
+        inputs[key] = expression;
+      }
+    });
+    return inputs; // return this.meta.inputs || [];
   };
 
   return Factory;
@@ -15058,7 +15096,7 @@ var Context = /*#__PURE__*/function (_Component) {
     var module = context.module;
     var node = context.node;
     var tokens = this.tokens;
-    var result = this[tokens.iterable];
+    var result = this.for || [];
     var isArray = Array.isArray(result);
     var array = isArray ? result : Object.keys(result);
     var total = array.length;
@@ -15106,13 +15144,17 @@ var Context = /*#__PURE__*/function (_Component) {
     this.instances.length = array.length;
   };
 
-  ForStructure.getInputsTokens = function getInputsTokens(instance) {
-    var _getContext3 = getContext(instance),
-        node = _getContext3.node;
-
+  ForStructure.getInputsTokens = function getInputsTokens(instance, node, module) {
+    var inputs = {};
     var expression = node.getAttribute('*for');
-    var tokens = instance.tokens = ForStructure.getForExpressionTokens(expression);
-    return [tokens.iterable];
+
+    if (expression) {
+      var tokens = ForStructure.getForExpressionTokens(expression);
+      instance.tokens = tokens;
+      inputs.for = tokens.iterable;
+    }
+
+    return inputs;
   };
 
   ForStructure.getForExpressionTokens = function getForExpressionTokens(expression) {
@@ -15164,6 +15206,35 @@ var Context = /*#__PURE__*/function (_Component) {
 ForStructure.meta = {
   selector: '[*for]',
   inputs: ['for']
+};var HrefTargetDirective = /*#__PURE__*/function (_Directive) {
+  _inheritsLoose(HrefTargetDirective, _Directive);
+
+  function HrefTargetDirective() {
+    return _Directive.apply(this, arguments) || this;
+  }
+
+  _createClass(HrefTargetDirective, [{
+    key: "target",
+    set: function set(target) {
+      if (this.target_ !== target) {
+        this.target_ = target;
+
+        var _getContext = getContext(this),
+            node = _getContext.node;
+
+        target ? node.setAttribute('target', target) : node.removeAttribute('target');
+      }
+    },
+    get: function get() {
+      return this.target_;
+    }
+  }]);
+
+  return HrefTargetDirective;
+}(Directive);
+HrefTargetDirective.meta = {
+  selector: '[[target]]',
+  inputs: ['target']
 };var HrefDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(HrefDirective, _Directive);
 
@@ -15721,12 +15792,10 @@ var Module = /*#__PURE__*/function () {
 
       if (!(instance instanceof Context)) {
         this.makeHosts(meta, instance, node);
-        context.inputs = this.makeInputs(meta, instance, factory);
-        context.outputs = this.makeOutputs(meta, instance);
+        context.inputs = this.makeInputs(meta, instance, node, factory);
+        context.outputs = this.makeOutputs(meta, instance); // if (parentInstance instanceof Factory) {
 
-        if (parentInstance instanceof Factory) {
-          this.resolveInputsOutputs(instance, parentInstance);
-        }
+        this.resolveInputsOutputs(instance, parentInstance); // }
       } // calling onInit event
 
 
@@ -15759,7 +15828,10 @@ var Module = /*#__PURE__*/function () {
     expression = Module.parseExpression(expression);
     var expressionFunction = "with(this) {\n\treturn (function (" + params.join(',') + ", $$module) {\n\t\ttry {\n\t\t\tconst $$pipes = $$module.meta.pipes;\n\t\t\treturn " + expression + ";\n\t\t} catch(error) {\n\t\t\t$$module.nextError(error, this, " + JSON.stringify(expression) + ", arguments);\n\t\t}\n\t}.bind(this)).apply(this, arguments);\n}"; // console.log('Module.makeFunction.expressionFunction', expressionFunction);
 
-    return new Function(expressionFunction); // return () => { return null; };
+    var callback = new Function(expressionFunction); // return () => { return null; };
+
+    callback.expression = expression;
+    return callback;
   };
 
   _proto.resolveInputsOutputs = function resolveInputsOutputs(instance, changes) {
@@ -15769,10 +15841,44 @@ var Module = /*#__PURE__*/function () {
 
     for (var key in inputs) {
       var inputFunction = inputs[key];
-      var value = this.resolve(inputFunction, parentInstance, instance); // console.log('Module.resolveInputsOutputs', 'key', key, 'inputFunction', inputFunction, 'parentInstance', parentInstance, 'instance', instance);
+      var value = this.resolve(inputFunction, parentInstance, instance); // console.log('Module.resolveInputsOutputs', 'key', key, 'inputFunction', inputFunction, 'value', value, 'parentInstance', parentInstance, 'instance', instance);
 
       instance[key] = value;
     }
+  };
+
+  _proto.resolveAttribute = function resolveAttribute(key, node) {
+    var expression = null;
+
+    if (node.hasAttribute("[" + key + "]")) {
+      expression = node.getAttribute("[" + key + "]"); // console.log('Module.resolveAttribute.expression.1', expression);
+    } else if (node.hasAttribute("*" + key)) {
+      expression = node.getAttribute("*" + key); // console.log('Module.resolveAttribute.expression.2', expression);
+    } else if (node.hasAttribute(key)) {
+      expression = node.getAttribute(key);
+
+      if (expression) {
+        var attribute = expression.replace(/({{)|(}})|(")/g, function (substring, a, b, c) {
+          if (a) {
+            return '"+';
+          }
+
+          if (b) {
+            return '+"';
+          }
+
+          if (c) {
+            return '\"';
+          }
+
+          return '';
+        });
+        expression = "\"" + attribute + "\""; // console.log('Module.resolveAttribute.expression.3', expression);
+      }
+    } // console.log('Module.resolveAttribute.expression', expression);
+
+
+    return expression;
   };
 
   _proto.resolve = function resolve(expression, parentInstance, payload) {
@@ -15839,64 +15945,42 @@ var Module = /*#__PURE__*/function () {
         instance[key] = getHost(instance, factory, node);
       });
     }
-  };
-
-  _proto.makeInput = function makeInput(instance, key) {
-    // console.log('Module.makeInput', 'key', key, 'instance', instance);
-    var _getContext = getContext(instance),
-        node = _getContext.node;
-
-    var input = null,
-        expression = null;
-
-    if (node.hasAttribute("[" + key + "]")) {
-      expression = node.getAttribute("[" + key + "]"); // console.log('Module.makeInput.expression.1', expression);
-    } else if (node.hasAttribute("*" + key)) {
-      expression = node.getAttribute("*" + key); // console.log('Module.makeInput.expression.2', expression);
-    } else if (node.hasAttribute(key)) {
-      expression = node.getAttribute(key);
-
+  }
+  /*
+  protected makeInput(instance: Factory, key: string): ExpressionFunction | null {
+      // console.log('Module.makeInput', 'key', key, 'instance', instance);
+      const { node } = getContext(instance);
+      let input: ExpressionFunction | null = null;
+      const expression: string | null = this.resolveAttribute(key, node);
       if (expression) {
-        var attribute = expression.replace(/({{)|(}})|(")/g, function (substring, a, b, c) {
-          if (a) {
-            return '"+';
-          }
-
-          if (b) {
-            return '+"';
-          }
-
-          if (c) {
-            return '\"';
-          }
-
-          return '';
-        });
-        expression = "\"" + attribute + "\""; // console.log('Module.makeInput.expression.3', expression);
+          instance[key] = typeof instance[key] === 'undefined' ? null : instance[key]; // !!! avoid throError undefined key
+          input = this.makeFunction(expression);
       }
-    }
+      // console.log('Module.makeInput', key, expression);
+      return input;
+  }
+  */
+  ;
 
-    expression = expression || key; // if (expression) {
-
-    instance[key] = instance[key] === undefined ? null : instance[key]; // !!! avoid throError undefined key
-
-    input = this.makeFunction(expression); // }
-    // console.log('Module.makeInput', key, expression);
-
-    return input;
-  };
-
-  _proto.makeInputs = function makeInputs(meta, instance, factory) {
+  _proto.makeInputs = function makeInputs(meta, instance, node, factory) {
     var _this2 = this;
 
     var inputs = {};
-    factory.getInputsTokens(instance).forEach(function (key) {
-      var input = _this2.makeInput(instance, key);
-
-      if (input) {
-        inputs[key] = input;
-      }
+    var inputsTokens = factory.getInputsTokens(instance, node, this);
+    Object.keys(inputsTokens).forEach(function (key) {
+      // !!! removed cause it throws error on instance setters
+      // instance[key] = typeof instance[key] === 'undefined' ? null : instance[key]; // !!! avoid throError undefined key
+      inputs[key] = _this2.makeFunction(inputsTokens[key]);
     });
+    /*
+    factory.getInputsTokens(instance, node).forEach((key: string) => {
+        const input = this.makeInput(instance, key);
+        if (input) {
+            inputs[key] = input;
+        }
+    });
+    */
+
     return inputs;
   };
 
@@ -16481,7 +16565,7 @@ SrcDirective.meta = {
 StyleDirective.meta = {
   selector: "[[style]]",
   inputs: ['style']
-};var factories = [ClassDirective, EventDirective, ForStructure, HrefDirective, IfStructure, InnerHtmlDirective, JsonComponent, SrcDirective, StyleDirective];
+};var factories = [ClassDirective, EventDirective, ForStructure, HrefDirective, HrefTargetDirective, IfStructure, InnerHtmlDirective, JsonComponent, SrcDirective, StyleDirective];
 var pipes = [JsonPipe];
 
 var CoreModule = /*#__PURE__*/function (_Module) {
@@ -16680,9 +16764,9 @@ function optionsToKey(v, s) {
   }
 
   return s;
-}exports.Browser=Browser;exports.ClassDirective=ClassDirective;exports.Component=Component;exports.Context=Context;exports.CoreModule=CoreModule;exports.DefaultErrorHandler=DefaultErrorHandler;exports.Directive=Directive;exports.ErrorInterceptorHandler=ErrorInterceptorHandler;exports.ErrorInterceptors=ErrorInterceptors;exports.EventDirective=EventDirective;exports.ExpressionError=ExpressionError;exports.Factory=Factory;exports.ForItem=ForItem;exports.ForStructure=ForStructure;exports.HrefDirective=HrefDirective;exports.IfStructure=IfStructure;exports.InnerHtmlDirective=InnerHtmlDirective;exports.JsonComponent=JsonComponent;exports.JsonPipe=JsonPipe;exports.Module=Module;exports.ModuleError=ModuleError;exports.PLATFORM_BROWSER=PLATFORM_BROWSER;exports.PLATFORM_JS_DOM=PLATFORM_JS_DOM;exports.PLATFORM_NODE=PLATFORM_NODE;exports.PLATFORM_WEB_WORKER=PLATFORM_WEB_WORKER;exports.Pipe=Pipe;exports.Platform=Platform;exports.Serializer=Serializer;exports.SrcDirective=SrcDirective;exports.Structure=Structure;exports.StyleDirective=StyleDirective;exports.TransferService=TransferService;exports.WINDOW=WINDOW;exports.decodeBase64=_decodeBase;exports.decodeJson=_decodeJson;exports.encodeBase64=_encodeBase;exports.encodeJson=_encodeJson;exports.encodeJsonWithOptions=encodeJsonWithOptions;exports.errors$=errors$;exports.getContext=getContext;exports.getContextByNode=getContextByNode;exports.getHost=getHost;exports.getLocationComponents=getLocationComponents;exports.getParsableContextByElement=getParsableContextByElement;exports.isPlatformBrowser=isPlatformBrowser;exports.isPlatformServer=isPlatformServer;exports.isPlatformWorker=isPlatformWorker;exports.nextError$=nextError$;exports.optionsToKey=optionsToKey;Object.defineProperty(exports,'__esModule',{value:true});})));
+}exports.Browser=Browser;exports.ClassDirective=ClassDirective;exports.Component=Component;exports.Context=Context;exports.CoreModule=CoreModule;exports.DefaultErrorHandler=DefaultErrorHandler;exports.Directive=Directive;exports.ErrorInterceptorHandler=ErrorInterceptorHandler;exports.ErrorInterceptors=ErrorInterceptors;exports.EventDirective=EventDirective;exports.ExpressionError=ExpressionError;exports.Factory=Factory;exports.ForItem=ForItem;exports.ForStructure=ForStructure;exports.HrefDirective=HrefDirective;exports.HrefTargetDirective=HrefTargetDirective;exports.IfStructure=IfStructure;exports.InnerHtmlDirective=InnerHtmlDirective;exports.JsonComponent=JsonComponent;exports.JsonPipe=JsonPipe;exports.Module=Module;exports.ModuleError=ModuleError;exports.PLATFORM_BROWSER=PLATFORM_BROWSER;exports.PLATFORM_JS_DOM=PLATFORM_JS_DOM;exports.PLATFORM_NODE=PLATFORM_NODE;exports.PLATFORM_WEB_WORKER=PLATFORM_WEB_WORKER;exports.Pipe=Pipe;exports.Platform=Platform;exports.Serializer=Serializer;exports.SrcDirective=SrcDirective;exports.Structure=Structure;exports.StyleDirective=StyleDirective;exports.TransferService=TransferService;exports.WINDOW=WINDOW;exports.decodeBase64=_decodeBase;exports.decodeJson=_decodeJson;exports.encodeBase64=_encodeBase;exports.encodeJson=_encodeJson;exports.encodeJsonWithOptions=encodeJsonWithOptions;exports.errors$=errors$;exports.getContext=getContext;exports.getContextByNode=getContextByNode;exports.getHost=getHost;exports.getLocationComponents=getLocationComponents;exports.getParsableContextByElement=getParsableContextByElement;exports.isPlatformBrowser=isPlatformBrowser;exports.isPlatformServer=isPlatformServer;exports.isPlatformWorker=isPlatformWorker;exports.nextError$=nextError$;exports.optionsToKey=optionsToKey;Object.defineProperty(exports,'__esModule',{value:true});})));
 /**
- * @license rxcomp-http v1.0.0-beta.17
+ * @license rxcomp-http v1.0.0-beta.19
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
@@ -18419,7 +18503,7 @@ function optionsWithBody_(options, body) {
   });
 }exports.HttpErrorResponse=HttpErrorResponse;exports.HttpFetchHandler=HttpFetchHandler;exports.HttpHandler=HttpHandler;exports.HttpHeaderResponse=HttpHeaderResponse;exports.HttpHeaders=HttpHeaders;exports.HttpInterceptingHandler=HttpInterceptingHandler;exports.HttpInterceptorHandler=HttpInterceptorHandler;exports.HttpInterceptors=HttpInterceptors;exports.HttpModule=HttpModule;exports.HttpParams=HttpParams;exports.HttpRequest=HttpRequest;exports.HttpResponse=HttpResponse;exports.HttpResponseBase=HttpResponseBase;exports.HttpSerializerCodec=HttpSerializerCodec;exports.HttpService=HttpService;exports.HttpUrlEncodingCodec=HttpUrlEncodingCodec;exports.HttpXhrHandler=HttpXhrHandler;exports.NoopInterceptor=NoopInterceptor;exports.fetchHandler=fetchHandler;exports.interceptingHandler=interceptingHandler;exports.jsonpCallbackContext=jsonpCallbackContext;exports.xhrHandler=xhrHandler;Object.defineProperty(exports,'__esModule',{value:true});})));
 /**
- * @license rxcomp-router v1.0.0-beta.17
+ * @license rxcomp-router v1.0.0-beta.19
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
@@ -18535,25 +18619,134 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
 
   it = o[Symbol.iterator]();
   return it.next.bind(it);
-}var View = /*#__PURE__*/function (_Component) {
+}var Transition = /*#__PURE__*/function () {
+  function Transition(callback, path) {
+    this.callback = callback;
+    this.path = path || '**';
+  }
+
+  var _proto = Transition.prototype;
+
+  _proto.matcher = function matcher(path) {
+    return this.path === '**' ? true : this.path === path;
+  };
+
+  return Transition;
+}();
+var OnceTransition = /*#__PURE__*/function (_Transition) {
+  _inheritsLoose(OnceTransition, _Transition);
+
+  function OnceTransition() {
+    return _Transition.apply(this, arguments) || this;
+  }
+
+  return OnceTransition;
+}(Transition);
+var EnterTransition = /*#__PURE__*/function (_Transition2) {
+  _inheritsLoose(EnterTransition, _Transition2);
+
+  function EnterTransition() {
+    return _Transition2.apply(this, arguments) || this;
+  }
+
+  return EnterTransition;
+}(Transition);
+var LeaveTransition = /*#__PURE__*/function (_Transition3) {
+  _inheritsLoose(LeaveTransition, _Transition3);
+
+  function LeaveTransition() {
+    return _Transition3.apply(this, arguments) || this;
+  }
+
+  return LeaveTransition;
+}(Transition);
+
+var View = /*#__PURE__*/function (_Component) {
   _inheritsLoose(View, _Component);
 
   function View() {
     return _Component.apply(this, arguments) || this;
   }
 
-  var _proto = View.prototype;
+  _createClass(View, null, [{
+    key: "transitions",
+    get: function get() {
+      var transitions;
 
-  _proto.onEnter = function onEnter(node) {
-    return rxjs.of(true);
-  };
+      if (this.transitions_) {
+        transitions = this.transitions_;
+      } else {
+        transitions = this.transitions_ = [];
+        var source = this.meta.transitions || {};
+        Object.keys(source).forEach(function (key) {
+          var matches = /^(once|from|enter|to|leave):\s?(.+)?\s?$/.exec(key); // return /([^\s]+)\s?=>\s?([^\s]+)/.test(key);
 
-  _proto.onExit = function onExit(node) {
-    return rxjs.of(true);
-  };
+          if (matches != null && matches.length > 1) {
+            switch (matches[1]) {
+              case 'once':
+                transitions.push(new OnceTransition(source[key], matches[2]));
+                break;
+
+              case 'to':
+              case 'from':
+              case 'enter':
+                transitions.push(new EnterTransition(source[key], matches[2]));
+                break;
+
+              case 'to':
+              case 'leave':
+                transitions.push(new LeaveTransition(source[key], matches[2]));
+                break;
+            }
+          }
+        });
+      }
+
+      return transitions;
+    }
+  }]);
 
   return View;
-}(rxcomp.Component);var LocationStrategy = /*#__PURE__*/function () {
+}(rxcomp.Component);var RouteSnapshot = /*#__PURE__*/function () {
+  function RouteSnapshot(options) {
+    this.pathMatch = 'prefix';
+    this.relative = true;
+    this.data$ = new rxjs.ReplaySubject(1);
+    this.params$ = new rxjs.ReplaySubject(1);
+    this.queryParams$ = new rxjs.ReplaySubject(1);
+    this.canDeactivate = [];
+    this.canLoad = [];
+    this.canActivate = [];
+    this.canActivateChild = [];
+
+    if (options) {
+      Object.assign(this, options);
+    }
+
+    this.data$.next(this.data);
+    this.params$.next(this.params);
+    this.queryParams$.next(this.queryParams);
+  }
+
+  var _proto = RouteSnapshot.prototype;
+
+  _proto.next = function next(snapshot) {
+    this.childRoute = snapshot.childRoute;
+
+    if (snapshot.childRoute) {
+      snapshot.childRoute.parent = this;
+    }
+
+    var data = this.data = Object.assign({}, snapshot.data);
+    this.data$.next(data);
+    var params = this.params = Object.assign({}, snapshot.params);
+    this.params$.next(params);
+    var queryParams = this.queryParams = Object.assign({}, snapshot.queryParams);
+    this.queryParams$.next(queryParams);
+  };
+
+  return RouteSnapshot;
+}();var LocationStrategy = /*#__PURE__*/function () {
   function LocationStrategy() {}
 
   var _proto = LocationStrategy.prototype;
@@ -18699,95 +18892,119 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
     return "" + url + (params ? '?' + params.toString() : '');
   };
 
-  _proto.setHistory = function setHistory(url, params, popped) {
-    if (rxcomp.isPlatformBrowser && typeof history !== 'undefined' && history.pushState) {
-      var title = document.title;
-      url = this.getUrl(url, params); // !!!
+  _proto.pushState = function pushState(url, snapshot, popped) {
+    if (LocationStrategy.historySupported()) {
+      // url = this.getUrl(url, params);
+      // !!!
       // const state = params ? params.toString() : '';
       // console.log(state);
+      // if (popped) {
+      // history.replaceState(undefined, title, url);
+      // } else {
+      if (!popped) {
+        try {
+          var state = this.snapshotToState(snapshot); // console.log('LocationStrategy.snapshotToState state', state);
+          // console.log(state);
 
-      if (popped) {
-        history.replaceState(undefined, title, url);
+          var title = document.title; // you can pass null as string cause title is a DOMString!
+
+          history.pushState(state, title, url);
+        } catch (error) {
+          console.log('LocationStrategy.pushState.error', error);
+        }
+      }
+    } else if (this.historyRequired()) {
+      throw new Error('LocationStrategyError: history not supported!');
+    } else {
+      location.hash = url;
+    }
+  };
+
+  _proto.snapshotToState = function snapshotToState(snapshot, pool) {
+    if (pool === void 0) {
+      pool = [];
+    }
+
+    var state = undefined;
+
+    if (snapshot) {
+      if (pool.indexOf(snapshot) !== -1) {
+        state = snapshot.path;
       } else {
-        history.pushState(undefined, title, url);
+        pool.push(snapshot);
+        state = {};
+        state.path = snapshot.path;
+        state.initialUrl = snapshot.initialUrl;
+        state.urlAfterRedirects = snapshot.urlAfterRedirects;
+        state.extractedUrl = snapshot.extractedUrl;
+        state.remainUrl = snapshot.remainUrl;
+        state.childRoute = this.snapshotToState(snapshot.childRoute, pool);
+        state.previousRoute = this.snapshotToState(snapshot.previousRoute, pool);
+        state.data = snapshot.data;
+        state.params = snapshot.params;
+        state.queryParams = snapshot.queryParams;
       }
     }
+
+    return state;
+  };
+
+  _proto.stateToSnapshot = function stateToSnapshot(routes, state, pool) {
+    if (pool === void 0) {
+      pool = [];
+    }
+
+    var snapshot;
+
+    if (state) {
+      var route = routes.find(function (r) {
+        return r.path = state.path;
+      });
+
+      if (route) {
+        if (typeof state === 'string') {
+          snapshot = pool.find(function (x) {
+            return x.path === state;
+          });
+        } else {
+          snapshot = new RouteSnapshot(_objectSpread2(_objectSpread2({}, route), {}, {
+            initialUrl: state.initialUrl,
+            urlAfterRedirects: state.urlAfterRedirects,
+            extractedUrl: state.extractedUrl,
+            remainUrl: state.remainUrl,
+            redirectTo: '',
+            data: state.data,
+            params: state.params,
+            queryParams: state.queryParams
+          }));
+          pool.push(snapshot);
+          snapshot.childRoute = this.stateToSnapshot(routes, state.childRoute, pool);
+          snapshot.previousRoute = this.stateToSnapshot(routes, state.previousRoute, pool);
+        }
+
+        route.snapshot = snapshot;
+      }
+    }
+
+    return snapshot;
+  };
+
+  _proto.historyRequired = function historyRequired() {
+    return true;
+  };
+
+  LocationStrategy.historySupported = function historySupported() {
+    return rxcomp.isPlatformBrowser && typeof history !== 'undefined' && typeof history.pushState === 'function';
   };
 
   return LocationStrategy;
 }();
-function encodeParam(value) {
-  return ";" + value;
-}
-function decodeParam(value) {
-  return value.substring(1, value.length);
-}
 var LocationStrategyPath = /*#__PURE__*/function (_LocationStrategy) {
   _inheritsLoose(LocationStrategyPath, _LocationStrategy);
 
   function LocationStrategyPath() {
     return _LocationStrategy.apply(this, arguments) || this;
   }
-
-  var _proto2 = LocationStrategyPath.prototype;
-
-  _proto2.serialize = function serialize(routePath) {
-    return "" + routePath.prefix + routePath.path + routePath.search + routePath.hash;
-  };
-
-  _proto2.resolve = function resolve(url, target) {
-    if (target === void 0) {
-      target = {};
-    }
-
-    var prefix = '';
-    var path = '';
-    var query = '';
-    var search = '';
-    var hash = '';
-    var segments;
-    var params;
-    var regExp = /^([^\?|\#]*)?(\?[^\#]*)?(\#[^\#]*?)?$/gm;
-    var matches = url.matchAll(regExp);
-
-    for (var _iterator2 = _createForOfIteratorHelperLoose(matches), _step2; !(_step2 = _iterator2()).done;) {
-      var match = _step2.value;
-      var g1 = match[1];
-      var g2 = match[2];
-      var g3 = match[3];
-
-      if (g1) {
-        path = g1;
-      }
-
-      if (g2) {
-        query = g2;
-      }
-
-      if (g3) {
-        hash = g3;
-      }
-    }
-
-    prefix = prefix;
-    path = path;
-    query = query;
-    hash = hash.substring(1, hash.length);
-    search = query.substring(1, query.length);
-    segments = path.split('/').filter(function (x) {
-      return x !== '';
-    });
-    params = {};
-    target.prefix = prefix;
-    target.path = path;
-    target.query = query;
-    target.hash = hash;
-    target.search = search;
-    target.segments = segments;
-    target.params = params; // console.log('resolvePath_', url, prefix, path, query, search, hash, segments, params);
-
-    return target;
-  };
 
   return LocationStrategyPath;
 }(LocationStrategy);
@@ -18798,9 +19015,9 @@ var LocationStrategyHash = /*#__PURE__*/function (_LocationStrategy2) {
     return _LocationStrategy2.apply(this, arguments) || this;
   }
 
-  var _proto3 = LocationStrategyHash.prototype;
+  var _proto2 = LocationStrategyHash.prototype;
 
-  _proto3.serializeLink = function serializeLink(routerLink) {
+  _proto2.serializeLink = function serializeLink(routerLink) {
     var _this3 = this;
 
     var url = (Array.isArray(routerLink) ? routerLink : [routerLink]).map(function (x) {
@@ -18809,16 +19026,16 @@ var LocationStrategyHash = /*#__PURE__*/function (_LocationStrategy2) {
     return this.serializeUrl(url);
   };
 
-  _proto3.serializeUrl = function serializeUrl(url) {
+  _proto2.serializeUrl = function serializeUrl(url) {
     var path = this.resolve(url, {});
     return this.serialize(path);
   };
 
-  _proto3.serialize = function serialize(routePath) {
+  _proto2.serialize = function serialize(routePath) {
     return "" + routePath.prefix + routePath.search + routePath.hash + routePath.path;
   };
 
-  _proto3.resolve = function resolve(url, target) {
+  _proto2.resolve = function resolve(url, target) {
     if (target === void 0) {
       target = {};
     }
@@ -18833,8 +19050,8 @@ var LocationStrategyHash = /*#__PURE__*/function (_LocationStrategy2) {
     var regExp = /^([^\?|\#]*)?(\?[^\#]*)?(\#.*)$/gm;
     var matches = url.matchAll(regExp);
 
-    for (var _iterator3 = _createForOfIteratorHelperLoose(matches), _step3; !(_step3 = _iterator3()).done;) {
-      var match = _step3.value;
+    for (var _iterator2 = _createForOfIteratorHelperLoose(matches), _step2; !(_step2 = _iterator2()).done;) {
+      var match = _step2.value;
       var g1 = match[1];
       var g2 = match[2];
       var g3 = match[3];
@@ -18871,7 +19088,7 @@ var LocationStrategyHash = /*#__PURE__*/function (_LocationStrategy2) {
     return target;
   };
 
-  _proto3.getPath = function getPath(url) {
+  _proto2.getPath = function getPath(url) {
     if (url.indexOf("/#") === -1) {
       return "/#" + url;
     } else {
@@ -18879,12 +19096,59 @@ var LocationStrategyHash = /*#__PURE__*/function (_LocationStrategy2) {
     }
   };
 
-  _proto3.getUrl = function getUrl(url, params) {
+  _proto2.getUrl = function getUrl(url, params) {
     return "" + (params ? '?' + params.toString() : '') + this.getPath(url);
   };
 
+  _proto2.historyRequired = function historyRequired() {
+    return false;
+  };
+
   return LocationStrategyHash;
-}(LocationStrategy);function mapCanDeactivate$_(activator) {
+}(LocationStrategy);
+function encodeParam(value) {
+  return ";" + value;
+}
+function decodeParam(value) {
+  return value.substring(1, value.length);
+}function asObservable(args, callback) {
+  return rxjs.Observable.create(function (observer) {
+    var subscription;
+
+    try {
+      var result = callback.apply(void 0, args);
+
+      if (rxjs.isObservable(result)) {
+        subscription = result.subscribe(function (result) {
+          observer.next(result);
+          observer.complete();
+        });
+      } else if (isPromise(result)) {
+        result.then(function (result) {
+          observer.next(result);
+          observer.complete();
+        });
+      } else if (typeof result === 'function') {
+        observer.next(result());
+        observer.complete();
+      } else {
+        observer.next(result);
+        observer.complete();
+      }
+    } catch (error) {
+      observer.error(error);
+    }
+
+    return function () {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
+  });
+}
+function isPromise(object) {
+  return object instanceof Promise || typeof object === 'object' && 'then' in object && typeof object['then'] === 'function';
+}function mapCanDeactivate$_(activator) {
   return function canDeactivate$(component, currentRoute) {
     return makeObserver$_(function () {
       return activator.canDeactivate(component, currentRoute);
@@ -18911,9 +19175,6 @@ function mapCanActivateChild$_(activator) {
       return activator.canActivateChild(childRoute);
     });
   };
-}
-function isPromise(object) {
-  return object instanceof Promise || typeof object === 'object' && 'then' in object && typeof object['then'] === 'function';
 }
 
 function makeObserver$_(callback) {
@@ -19079,45 +19340,6 @@ function makeObserver$_(callback) {
   }]);
 
   return RoutePath;
-}();var RouteSnapshot = /*#__PURE__*/function () {
-  function RouteSnapshot(options) {
-    this.pathMatch = 'prefix';
-    this.relative = true;
-    this.data$ = new rxjs.ReplaySubject(1);
-    this.params$ = new rxjs.ReplaySubject(1);
-    this.queryParams$ = new rxjs.ReplaySubject(1);
-    this.canDeactivate = [];
-    this.canLoad = [];
-    this.canActivate = [];
-    this.canActivateChild = [];
-
-    if (options) {
-      Object.assign(this, options);
-    }
-
-    this.data$.next(this.data);
-    this.params$.next(this.params);
-    this.queryParams$.next(this.queryParams);
-  }
-
-  var _proto = RouteSnapshot.prototype;
-
-  _proto.next = function next(snapshot) {
-    this.childRoute = snapshot.childRoute;
-
-    if (snapshot.childRoute) {
-      snapshot.childRoute.parent = this;
-    }
-
-    var data = this.data = Object.assign({}, snapshot.data);
-    this.data$.next(data);
-    var params = this.params = Object.assign({}, snapshot.params);
-    this.params$.next(params);
-    var queryParams = this.queryParams = Object.assign({}, snapshot.queryParams);
-    this.queryParams$.next(queryParams);
-  };
-
-  return RouteSnapshot;
 }();var RouterEvent = function RouterEvent(options) {
   if (options) {
     Object.assign(this, options);
@@ -19296,14 +19518,189 @@ Scroll {routerEvent: NavigationEnd, position: null, anchor: null, constructor: O
   RouterService.setRoutes = function setRoutes(routes) {
     this.routes = routes.map(function (x) {
       return new Route(x);
-    });
-    this.observe$ = makeObserve$_(this.routes, this.route$, this.events$, this.locationStrategy);
+    }); // this.observe$ = makeObserve$_(this.routes, this.route$, this.events$, this.locationStrategy);
+
+    this.observe$ = this.makeObserve$();
     return this;
+  };
+
+  RouterService.makeObserve$ = function makeObserve$() {
+    var routes = this.routes;
+    var route$ = this.route$;
+    var events$ = this.events$;
+    var locationStrategy = this.locationStrategy;
+    var currentRoute;
+    var currentEvent; // console.log('RouterService.WINDOW', WINDOW!!);
+
+    var stateEvents$ = rxcomp.isPlatformServer ? rxjs.EMPTY : rxjs.fromEvent(rxcomp.WINDOW, 'popstate').pipe(operators.map(function (event) {
+      currentEvent = event;
+      var routerLink = "" + document.location.pathname + document.location.search + document.location.hash;
+      /*
+      // !!! state to snapshot
+      const flatRoutes = getFlatRoutes_(routes);
+      flatRoutes.forEach(r => r.snapshot = undefined);
+      const snapshot: RouteSnapshot = locationStrategy.stateToSnapshot(flatRoutes, event.state) as RouteSnapshot;
+      // console.log('LocationStrategy.stateToSnapshot snapshot', snapshot);
+      // console.log('RouterService PopStateEvent', 'snapshot', snapshot, 'routes', flatRoutes.map(route => route.snapshot));
+      return new NavigationEnd({ route: snapshot, routerLink, url: routerLink, trigger: 'popstate' });
+      */
+
+      return new NavigationStart({
+        routerLink: routerLink,
+        trigger: 'popstate'
+      });
+    }), operators.shareReplay(1));
+    return rxjs.merge(stateEvents$, events$).pipe(operators.switchMap(function (event) {
+      currentEvent = event;
+
+      if (event instanceof GuardsCheckStart) {
+        return makeCanDeactivateResponse$_(events$, event, currentRoute).pipe(operators.switchMap(function (nextEvent) {
+          if (nextEvent instanceof NavigationCancel) {
+            return rxjs.of(nextEvent);
+          } else {
+            return makeCanLoadResponse$_(events$, event).pipe(operators.switchMap(function (nextEvent) {
+              if (nextEvent instanceof NavigationCancel) {
+                return rxjs.of(nextEvent);
+              } else {
+                return makeCanActivateChildResponse$_(events$, event);
+              }
+            }));
+          }
+        }));
+      } else if (event instanceof ChildActivationStart) {
+        return makeCanActivateResponse$_(events$, event);
+      } else {
+        return rxjs.of(event);
+      }
+    }), operators.tap(function (event) {
+      currentEvent = event; // console.log('RouterEvent', event);
+
+      if (event instanceof NavigationStart) {
+        var _currentRoute$childre;
+
+        // console.log('NavigationStart', event.routerLink);
+        var routerLink = event.routerLink; // console.log('routerLink', routerLink);
+
+        var snapshot;
+        var initialUrl;
+        var routePath = RouterService.getPath(routerLink); // console.log(routePath, routePath.url);
+
+        initialUrl = routePath.url; // console.log('initialUrl', initialUrl);
+
+        var isRelative = initialUrl.indexOf('/') !== 0;
+
+        if (isRelative && currentRoute && ((_currentRoute$childre = currentRoute.children) == null ? void 0 : _currentRoute$childre.length)) {
+          snapshot = resolveRoutes_(routes, currentRoute.children, initialUrl, currentRoute);
+
+          if (snapshot) {
+            currentRoute.childRoute = snapshot;
+            snapshot.parent = currentRoute;
+            snapshot = currentRoute;
+          } // console.log('relative', currentRoute, snapshot, initialUrl);
+
+        } else {
+          snapshot = resolveRoutes_(routes, routes, initialUrl, currentRoute); // console.log('absolute');
+        }
+
+        if (snapshot) {
+          // console.log('RouterService.makeObserve$_', 'NavigationStart', snapshot);
+          currentRoute = snapshot;
+          events$.next(new RoutesRecognized(_objectSpread2(_objectSpread2({}, event), {}, {
+            route: snapshot
+          })));
+        } else {
+          events$.next(new NavigationError(_objectSpread2(_objectSpread2({}, event), {}, {
+            error: new Error('unknown route')
+          })));
+        }
+      } else if (event instanceof RoutesRecognized) {
+        // console.log('RoutesRecognized', event.route.component, event.route.initialUrl, event.route.extractedUrl, event.route.urlAfterRedirects);
+        events$.next(new GuardsCheckStart(_objectSpread2({}, event)));
+      } else if (event instanceof GuardsCheckStart) {
+        // console.log('GuardsCheckStart', event);
+        events$.next(new ChildActivationStart(_objectSpread2({}, event)));
+      } else if (event instanceof ChildActivationStart) {
+        // console.log('ChildActivationStart', event);
+        events$.next(new ActivationStart(_objectSpread2({}, event)));
+      } else if (event instanceof ActivationStart) {
+        // console.log('ActivationStart', event);
+        events$.next(new GuardsCheckEnd(_objectSpread2({}, event)));
+      } else if (event instanceof GuardsCheckEnd) {
+        // console.log('GuardsCheckEnd', event);
+        events$.next(new ResolveStart(_objectSpread2({}, event)));
+      } else if (event instanceof ResolveStart) {
+        // console.log('ResolveStart', event);
+        events$.next(new ResolveEnd(_objectSpread2({}, event)));
+      } else if (event instanceof ResolveEnd) {
+        // console.log('ResolveEnd', event);
+        events$.next(new ActivationEnd(_objectSpread2({}, event)));
+      } else if (event instanceof ActivationEnd) {
+        // console.log('ActivationEnd', event);
+        events$.next(new ChildActivationEnd(_objectSpread2({}, event)));
+      } else if (event instanceof ChildActivationEnd) {
+        // console.log('ChildActivationEnd', event);
+        events$.next(new RouteConfigLoadStart(_objectSpread2({}, event)));
+      } else if (event instanceof RouteConfigLoadStart) {
+        // console.log('RouteConfigLoadStart', event);
+        events$.next(new RouteConfigLoadEnd(_objectSpread2({}, event)));
+      } else if (event instanceof RouteConfigLoadEnd) {
+        // console.log('RouteConfigLoadEnd', event);
+        events$.next(new NavigationEnd(_objectSpread2({}, event)));
+      } else if (event instanceof NavigationEnd) {
+        // console.log('NavigationEnd', event);
+        var segments = [];
+        var source = event.route;
+
+        while (source != null) {
+          var _source$extractedUrl;
+
+          // console.log(source.params, source.data);
+          if ((_source$extractedUrl = source.extractedUrl) == null ? void 0 : _source$extractedUrl.length) {
+            segments.push(source.extractedUrl);
+          }
+
+          if (source.childRoute) {
+            source = source.childRoute;
+          } else {
+            var _source$remainUrl;
+
+            if ((_source$remainUrl = source.remainUrl) == null ? void 0 : _source$remainUrl.length) {
+              segments[segments.length - 1] = segments[segments.length - 1] + source.remainUrl;
+            }
+
+            source = undefined;
+          }
+        }
+
+        var extractedUrl = segments.join('/').replace(/\/\//g, '/'); // console.log('NavigationEnd', event.route.extractedUrl, event.route);
+
+        clearRoutes_(routes, event.route);
+        locationStrategy.pushState(extractedUrl, event.route, event.trigger === 'popstate'); // pushState_(locationStrategy, extractedUrl, undefined, event.trigger === 'popstate');
+
+        route$.next(event.route);
+      } else if (event instanceof NavigationCancel) {
+        // console.log('NavigationCancel', event.reason, event.redirectTo);
+        if (event.redirectTo) {
+          // const routePath: RoutePath = RouterService.getPath(event.redirectTo);
+          events$.next(new NavigationStart({
+            routerLink: event.redirectTo,
+            trigger: 'imperative'
+          }));
+        }
+      } else if (event instanceof NavigationError) {
+        console.warn('RouterService NavigationError', event.error);
+      }
+    }), operators.catchError(function (error) {
+      return rxjs.of(new NavigationError(_objectSpread2(_objectSpread2({}, currentEvent || {}), {}, {
+        error: error
+      })));
+    }), operators.shareReplay(1));
   };
 
   RouterService.setRouterLink = function setRouterLink(routerLink, extras) {
 
     // ['/hero', hero.id];
+    // console.log('RouterService.setRouterLink', routerLink);
     this.events$.next(new NavigationStart({
       routerLink: routerLink,
       trigger: 'imperative'
@@ -19314,6 +19711,7 @@ Scroll {routerEvent: NavigationEnd, position: null, anchor: null, constructor: O
 
     // navigate(['items'], { relativeTo: this.route });
     // navigate(['/heroes', { id: heroId }]);
+    // console.log('RouterService.navigate', routerLink);
     this.events$.next(new NavigationStart({
       routerLink: routerLink,
       trigger: 'imperative'
@@ -19391,8 +19789,8 @@ Scroll {routerEvent: NavigationEnd, position: null, anchor: null, constructor: O
     return routePath;
   };
 
-  RouterService.useLocationStrategy = function useLocationStrategy(locationStrategyType) {
-    this.locationStrategy_ = new locationStrategyType();
+  RouterService.useLocationStrategy = function useLocationStrategy(locationStrategyFactory) {
+    this.locationStrategy_ = new locationStrategyFactory();
   };
 
   _createClass(RouterService, null, [{
@@ -19448,15 +19846,19 @@ function clearRoutes_(routes, currentSnapshot) {
     if (route.snapshot && snapshots.indexOf(route.snapshot) === -1) {
       route.snapshot = undefined;
     }
+    /* else {
+      console.log(route);
+    }*/
+
   });
 }
 
-function resolveRoutes_(routes, childRoutes, initialUrl) {
+function resolveRoutes_(routes, childRoutes, initialUrl, previousRoute) {
   var resolvedSnapshot;
 
   for (var _iterator2 = _createForOfIteratorHelperLoose(childRoutes), _step2; !(_step2 = _iterator2()).done;) {
     var route = _step2.value;
-    var snapshot = resolveRoute_(routes, route, initialUrl);
+    var snapshot = resolveRoute_(routes, route, initialUrl, previousRoute);
 
     if (snapshot) {
       if (resolvedSnapshot) {
@@ -19475,7 +19877,7 @@ function resolveRoutes_(routes, childRoutes, initialUrl) {
   return resolvedSnapshot; // return childRoutes.reduce<RouteSnapshot | undefined>((p, route) => p || resolveRoute_(routes, route, initialUrl), undefined);
 }
 
-function resolveRoute_(routes, route, initialUrl) {
+function resolveRoute_(routes, route, initialUrl, previousRoute) {
   var _route$children;
 
   // console.log('resolveRoute_', initialUrl);
@@ -19493,7 +19895,7 @@ function resolveRoute_(routes, route, initialUrl) {
     // console.log('RouterService.resolveRoute_', 'match', initialUrl, '=>', route.redirectTo, match);
     var _routePath = RouterService.getPath(route.redirectTo);
 
-    return resolveRoutes_(routes, routes, _routePath.url);
+    return resolveRoutes_(routes, routes, _routePath.url, previousRoute);
   }
   /* else {
     // console.log('RouterService.resolveRoute_', 'match', initialUrl, '=>', route.path, match);
@@ -19511,10 +19913,11 @@ function resolveRoute_(routes, route, initialUrl) {
     remainUrl: remainUrl,
     params: params
   }));
+  snapshot.previousRoute = previousRoute;
   route.snapshot = snapshot;
 
   if (snapshot && snapshot.remainUrl.length && ((_route$children = route.children) == null ? void 0 : _route$children.length)) {
-    var childSnapshot = resolveRoutes_(routes, route.children, snapshot.remainUrl);
+    var childSnapshot = resolveRoutes_(routes, route.children, snapshot.remainUrl, previousRoute);
     snapshot.childRoute = childSnapshot;
 
     if (childSnapshot) {
@@ -19610,167 +20013,6 @@ function makeCanActivateResponse$_(events$, event) {
   } else {
     return rxjs.of(event);
   }
-}
-
-function makeObserve$_(routes, route$, events$, locationStrategy) {
-  var currentRoute; // console.log('RouterService.WINDOW', WINDOW!!);
-
-  var stateEvents$ = rxcomp.isPlatformServer ? rxjs.EMPTY : rxjs.merge(rxjs.fromEvent(rxcomp.WINDOW, 'popstate')).pipe(
-  /*
-  tap((event: PopStateEvent) => {
-      // detect rxcomp !!!
-      // event.preventDefault();
-      // event.stopImmediatePropagation(); // !!!
-      // history.go(1);
-      // console.log('RouterService.onPopState', `location: "${document.location.pathname}"`, `state: "${event.state}"`);
-  }),
-  */
-  operators.map(function (event) {
-    return new NavigationStart({
-      routerLink: document.location.pathname,
-      trigger: 'popstate'
-    });
-  }), operators.shareReplay(1));
-  return rxjs.merge(stateEvents$, events$).pipe(operators.switchMap(function (event) {
-    if (event instanceof GuardsCheckStart) {
-      return makeCanDeactivateResponse$_(events$, event, currentRoute).pipe(operators.switchMap(function (nextEvent) {
-        if (nextEvent instanceof NavigationCancel) {
-          return rxjs.of(nextEvent);
-        } else {
-          return makeCanLoadResponse$_(events$, event).pipe(operators.switchMap(function (nextEvent) {
-            if (nextEvent instanceof NavigationCancel) {
-              return rxjs.of(nextEvent);
-            } else {
-              return makeCanActivateChildResponse$_(events$, event);
-            }
-          }));
-        }
-      }));
-    } else if (event instanceof ChildActivationStart) {
-      return makeCanActivateResponse$_(events$, event);
-    } else {
-      return rxjs.of(event);
-    }
-  }), operators.tap(function (event) {
-    if (event instanceof NavigationStart) {
-      var _currentRoute$childre;
-
-      // console.log('NavigationStart', event.routerLink);
-      var routerLink = event.routerLink; // console.log('routerLink', routerLink);
-
-      var snapshot;
-      var initialUrl;
-      var routePath = RouterService.getPath(routerLink); // console.log(routePath, routePath.url);
-
-      initialUrl = routePath.url; // console.log('initialUrl', initialUrl);
-
-      var isRelative = initialUrl.indexOf('/') !== 0;
-
-      if (isRelative && currentRoute && ((_currentRoute$childre = currentRoute.children) == null ? void 0 : _currentRoute$childre.length)) {
-        snapshot = resolveRoutes_(routes, currentRoute.children, initialUrl);
-
-        if (snapshot) {
-          currentRoute.childRoute = snapshot;
-          snapshot.parent = currentRoute;
-          snapshot = currentRoute;
-        } // console.log('relative', currentRoute, snapshot, initialUrl);
-
-      } else {
-        snapshot = resolveRoutes_(routes, routes, initialUrl); // console.log('absolute');
-      }
-
-      if (snapshot) {
-        // console.log('RouterService.makeObserve$_', 'NavigationStart', snapshot);
-        currentRoute = snapshot;
-        events$.next(new RoutesRecognized(_objectSpread2(_objectSpread2({}, event), {}, {
-          route: snapshot
-        })));
-      } else {
-        events$.next(new NavigationError(_objectSpread2(_objectSpread2({}, event), {}, {
-          error: new Error('unknown route')
-        })));
-      }
-    } else if (event instanceof RoutesRecognized) {
-      // console.log('RoutesRecognized', event.route.component, event.route.initialUrl, event.route.extractedUrl, event.route.urlAfterRedirects);
-      events$.next(new GuardsCheckStart(_objectSpread2({}, event)));
-    } else if (event instanceof GuardsCheckStart) {
-      // console.log('GuardsCheckStart', event);
-      events$.next(new ChildActivationStart(_objectSpread2({}, event)));
-    } else if (event instanceof ChildActivationStart) {
-      // console.log('ChildActivationStart', event);
-      events$.next(new ActivationStart(_objectSpread2({}, event)));
-    } else if (event instanceof ActivationStart) {
-      // console.log('ActivationStart', event);
-      events$.next(new GuardsCheckEnd(_objectSpread2({}, event)));
-    } else if (event instanceof GuardsCheckEnd) {
-      // console.log('GuardsCheckEnd', event);
-      events$.next(new ResolveStart(_objectSpread2({}, event)));
-    } else if (event instanceof ResolveStart) {
-      // console.log('ResolveStart', event);
-      events$.next(new ResolveEnd(_objectSpread2({}, event)));
-    } else if (event instanceof ResolveEnd) {
-      // console.log('ResolveEnd', event);
-      events$.next(new ActivationEnd(_objectSpread2({}, event)));
-    } else if (event instanceof ActivationEnd) {
-      // console.log('ActivationEnd', event);
-      events$.next(new ChildActivationEnd(_objectSpread2({}, event)));
-    } else if (event instanceof ChildActivationEnd) {
-      // console.log('ChildActivationEnd', event);
-      events$.next(new RouteConfigLoadStart(_objectSpread2({}, event)));
-    } else if (event instanceof RouteConfigLoadStart) {
-      // console.log('RouteConfigLoadStart', event);
-      events$.next(new RouteConfigLoadEnd(_objectSpread2({}, event)));
-    } else if (event instanceof RouteConfigLoadEnd) {
-      // console.log('RouteConfigLoadEnd', event);
-      events$.next(new NavigationEnd(_objectSpread2({}, event)));
-    } else if (event instanceof NavigationEnd) {
-      var segments = [];
-      var source = event.route;
-
-      while (source != null) {
-        var _source$extractedUrl;
-
-        // console.log(source.params, source.data);
-        if ((_source$extractedUrl = source.extractedUrl) == null ? void 0 : _source$extractedUrl.length) {
-          segments.push(source.extractedUrl);
-        }
-
-        if (source.childRoute) {
-          source = source.childRoute;
-        } else {
-          var _source$remainUrl;
-
-          if ((_source$remainUrl = source.remainUrl) == null ? void 0 : _source$remainUrl.length) {
-            segments[segments.length - 1] = segments[segments.length - 1] + source.remainUrl;
-          }
-
-          source = undefined;
-        }
-      }
-
-      var extractedUrl = segments.join('/').replace(/\/\//g, '/'); // console.log('NavigationEnd', event.route.extractedUrl, event.route);
-
-      clearRoutes_(routes, event.route);
-      locationStrategy.setHistory(extractedUrl, undefined, event.trigger === 'popstate'); // setHistory_(locationStrategy, extractedUrl, undefined, event.trigger === 'popstate');
-
-      route$.next(event.route);
-    } else if (event instanceof NavigationCancel) {
-      // console.log('NavigationCancel', event.reason, event.redirectTo);
-      if (event.redirectTo) {
-        // const routePath: RoutePath = RouterService.getPath(event.redirectTo);
-        events$.next(new NavigationStart({
-          routerLink: event.redirectTo,
-          trigger: 'imperative'
-        }));
-      }
-    } else if (event instanceof NavigationError) {
-      console.log('NavigationError', event.error);
-    }
-  }), operators.catchError(function (error) {
-    return rxjs.of(new NavigationError(_objectSpread2(_objectSpread2({}, event), {}, {
-      error: error
-    })));
-  }), operators.shareReplay(1));
 }var RouterLinkDirective = /*#__PURE__*/function (_Directive) {
   _inheritsLoose(RouterLinkDirective, _Directive);
 
@@ -19810,13 +20052,18 @@ function makeObserve$_(routes, route$, events$, locationStrategy) {
   };
 
   _proto.onInit = function onInit() {
+    // const { node, module } = getContext(this);
+    // console.log('RouterLinkDirective.onInit', this.routerLink, node, module);
+    this.routerLink$().pipe(operators.takeUntil(this.unsubscribe$)).subscribe();
+  };
+
+  _proto.routerLink$ = function routerLink$() {
     var _this = this;
 
     var _getContext = rxcomp.getContext(this),
         node = _getContext.node;
 
-    var event$ = rxjs.fromEvent(node, 'click').pipe(operators.shareReplay(1));
-    event$.pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (event) {
+    return rxjs.fromEvent(node, 'click').pipe(operators.map(function (event) {
       // console.log('RouterLinkDirective', event, this.routerLink);
       // !!! skipLocationChange
       var navigationExtras = {
@@ -19827,7 +20074,7 @@ function makeObserve$_(routes, route$, events$, locationStrategy) {
       RouterService.setRouterLink(_this.routerLink, navigationExtras);
       event.preventDefault();
       return false;
-    });
+    }));
   };
 
   _proto.onChanges = function onChanges() {
@@ -19853,7 +20100,7 @@ function makeObserve$_(routes, route$, events$, locationStrategy) {
   return RouterLinkDirective;
 }(rxcomp.Directive);
 RouterLinkDirective.meta = {
-  selector: '[routerLink],[[routerLink]]',
+  selector: '[routerLink]',
   inputs: ['routerLink']
 };
 /*
@@ -19913,7 +20160,7 @@ get urlTree(): UrlTree {
     var _path$route;
 
     var path = RouterService.getPath(this.host.routerLink);
-    var isActive = ((_path$route = path.route) == null ? void 0 : _path$route.snapshot) != null; // console.log('RouterLinkActive.isActive', isActive);
+    var isActive = ((_path$route = path.route) == null ? void 0 : _path$route.snapshot) != null; // console.log('RouterLinkActive.isActive', isActive, path.route);
 
     return isActive;
   };
@@ -19926,7 +20173,62 @@ RouterLinkActiveDirective.meta = {
     host: RouterLinkDirective
   },
   inputs: ['routerLinkActive']
-};var RouterOutletStructure = /*#__PURE__*/function (_Structure) {
+};function transition$(callback) {
+  return rxjs.Observable.create(function (observer) {
+    // let subscription: Subscription;
+    try {
+      if (rxcomp.isPlatformBrowser) {
+        callback(function (result) {
+          observer.next(result);
+          observer.complete();
+        });
+      } else {
+        observer.next(true);
+        observer.complete();
+      }
+    } catch (error) {
+      observer.error(error);
+    }
+    /*
+    return () => {
+        if (subscription) {
+            subscription.unsubscribe();
+        }
+    }
+    */
+
+  });
+} // !!! should make transition specific?
+
+function transitionOnce() {
+  sessionStorageSet_('rxcomp_transition_once_', true);
+}
+function transitionOnced() {
+  return sessionStorageGet_('rxcomp_transition_once_');
+}
+var MEMORY = {};
+
+function sessionStorageGet_(key) {
+  var value;
+
+  try {
+    var storage = rxcomp.WINDOW.sessionStorage;
+    value = storage.getItem(key) || null;
+  } catch (error) {
+    value = MEMORY[key];
+  }
+
+  return value;
+}
+
+function sessionStorageSet_(key, value) {
+  try {
+    var storage = rxcomp.WINDOW.sessionStorage;
+    storage.setItem(key, value);
+  } catch (error) {
+    MEMORY[key] = value;
+  }
+}var RouterOutletStructure = /*#__PURE__*/function (_Structure) {
   _inheritsLoose(RouterOutletStructure, _Structure);
 
   function RouterOutletStructure() {
@@ -19991,7 +20293,7 @@ RouterLinkActiveDirective.meta = {
 
     if (this.factory_ !== factory) {
       this.factory_ = factory;
-      return this.onExit$_(this.element, this.instance).pipe(operators.tap(function () {
+      return this.onLeave$_(snapshot, this.element, this.instance).pipe(operators.tap(function () {
         if (_this4.element) {
           _this4.element.parentNode.removeChild(_this4.element);
 
@@ -20016,29 +20318,73 @@ RouterLinkActiveDirective.meta = {
           _this4.instance = instance;
           _this4.element = element;
           snapshot.element = element;
-          return _this4.onEnter$_(element, instance);
+          return _this4.onOnce$_(snapshot, element, instance).pipe(operators.switchMap(function () {
+            return _this4.onEnter$_(snapshot, element, instance);
+          }));
         } else {
-          return rxjs.of(false);
+          return rxjs.of(void 0);
         }
       }));
     } else {
-      return rxjs.of(false);
+      return rxjs.of(void 0);
+    }
+  }
+  /*
+  private onEnter$__(element?: IElement, instance?: Component): Observable<boolean> {
+      if (instance instanceof View && element) {
+          return asObservable([element], instance.onEnter);
+      } else {
+          return of(true);
+      }
+  }
+  private onLeave$__(element?: IElement, instance?: Component): Observable<boolean> {
+      if (instance instanceof View && element) {
+          return asObservable([element], instance.onLeave);
+      } else {
+          return of(true);
+      }
+  }
+  */
+  ;
+
+  _proto.onOnce$_ = function onOnce$_(snapshot, element, instance) {
+    if (!transitionOnced() && instance instanceof View && element) {
+      transitionOnce();
+      var factory = instance.constructor;
+      var transition = factory.transitions.find(function (x) {
+        var _snapshot$previousRou;
+
+        return x instanceof OnceTransition && x.matcher((_snapshot$previousRou = snapshot.previousRoute) == null ? void 0 : _snapshot$previousRou.path);
+      });
+      return transition ? asObservable([element, snapshot.previousRoute], transition.callback.bind(instance)) : rxjs.of(void 0);
+    } else {
+      return rxjs.of(void 0);
     }
   };
 
-  _proto.onEnter$_ = function onEnter$_(element, instance) {
-    if (element && instance && instance instanceof View) {
-      return asObservable([element], instance.onEnter);
+  _proto.onEnter$_ = function onEnter$_(snapshot, element, instance) {
+    if (instance instanceof View && element) {
+      var factory = instance.constructor;
+      var transition = factory.transitions.find(function (x) {
+        var _snapshot$previousRou2;
+
+        return x instanceof EnterTransition && x.matcher((_snapshot$previousRou2 = snapshot.previousRoute) == null ? void 0 : _snapshot$previousRou2.path);
+      });
+      return transition ? asObservable([element, snapshot.previousRoute], transition.callback.bind(instance)) : rxjs.of(void 0);
     } else {
-      return rxjs.of(true);
+      return rxjs.of(void 0);
     }
   };
 
-  _proto.onExit$_ = function onExit$_(element, instance) {
-    if (element && instance && instance instanceof View) {
-      return asObservable([element], instance.onExit);
+  _proto.onLeave$_ = function onLeave$_(snapshot, element, instance) {
+    if (instance instanceof View && element) {
+      var factory = instance.constructor;
+      var transition = factory.transitions.find(function (x) {
+        return x instanceof LeaveTransition && x.matcher(snapshot == null ? void 0 : snapshot.path);
+      });
+      return transition ? asObservable([element, snapshot], transition.callback.bind(instance)) : rxjs.of(void 0);
     } else {
-      return rxjs.of(true);
+      return rxjs.of(void 0);
     }
   };
 
@@ -20056,42 +20402,7 @@ RouterOutletStructure.meta = {
   hosts: {
     host: RouterOutletStructure
   }
-};
-function asObservable(args, callback) {
-  return rxjs.Observable.create(function (observer) {
-    var subscription;
-
-    try {
-      var result = callback.apply(void 0, args);
-
-      if (rxjs.isObservable(result)) {
-        subscription = result.subscribe(function (result) {
-          observer.next(result);
-          observer.complete();
-        });
-      } else if (isPromise(result)) {
-        result.then(function (result) {
-          observer.next(result);
-          observer.complete();
-        });
-      } else if (typeof result === 'function') {
-        observer.next(result());
-        observer.complete();
-      } else {
-        observer.next(result);
-        observer.complete();
-      }
-    } catch (error) {
-      observer.error(error);
-    }
-
-    return function () {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    };
-  });
-}var factories = [RouterOutletStructure, RouterLinkDirective, RouterLinkActiveDirective];
+};var factories = [RouterOutletStructure, RouterLinkDirective, RouterLinkActiveDirective];
 var pipes = [];
 /**
  *  RouterModule Class.
@@ -20154,29 +20465,4 @@ RouterModule.meta = {
 };(function (RouteLocationStrategy) {
   RouteLocationStrategy["Path"] = "path";
   RouteLocationStrategy["Hash"] = "hash";
-})(exports.RouteLocationStrategy || (exports.RouteLocationStrategy = {}));function transition$(callback) {
-  return rxjs.Observable.create(function (observer) {
-    // let subscription: Subscription;
-    try {
-      if (rxcomp.isPlatformBrowser) {
-        callback(function (result) {
-          observer.next(result);
-          observer.complete();
-        });
-      } else {
-        observer.next(true);
-        observer.complete();
-      }
-    } catch (error) {
-      observer.error(error);
-    }
-    /*
-    return () => {
-        if (subscription) {
-            subscription.unsubscribe();
-        }
-    }
-    */
-
-  });
-}exports.ActivationEnd=ActivationEnd;exports.ActivationStart=ActivationStart;exports.ChildActivationEnd=ChildActivationEnd;exports.ChildActivationStart=ChildActivationStart;exports.GuardsCheckEnd=GuardsCheckEnd;exports.GuardsCheckStart=GuardsCheckStart;exports.LocationStrategy=LocationStrategy;exports.LocationStrategyHash=LocationStrategyHash;exports.LocationStrategyPath=LocationStrategyPath;exports.NavigationCancel=NavigationCancel;exports.NavigationEnd=NavigationEnd;exports.NavigationError=NavigationError;exports.NavigationStart=NavigationStart;exports.ResolveEnd=ResolveEnd;exports.ResolveStart=ResolveStart;exports.Route=Route;exports.RouteConfigLoadEnd=RouteConfigLoadEnd;exports.RouteConfigLoadStart=RouteConfigLoadStart;exports.RoutePath=RoutePath;exports.RouteSegment=RouteSegment;exports.RouteSnapshot=RouteSnapshot;exports.RouterEvent=RouterEvent;exports.RouterLinkActiveDirective=RouterLinkActiveDirective;exports.RouterLinkDirective=RouterLinkDirective;exports.RouterModule=RouterModule;exports.RouterOutletStructure=RouterOutletStructure;exports.RoutesRecognized=RoutesRecognized;exports.View=View;exports.asObservable=asObservable;exports.transition$=transition$;Object.defineProperty(exports,'__esModule',{value:true});})));
+})(exports.RouteLocationStrategy || (exports.RouteLocationStrategy = {}));exports.ActivationEnd=ActivationEnd;exports.ActivationStart=ActivationStart;exports.ChildActivationEnd=ChildActivationEnd;exports.ChildActivationStart=ChildActivationStart;exports.EnterTransition=EnterTransition;exports.GuardsCheckEnd=GuardsCheckEnd;exports.GuardsCheckStart=GuardsCheckStart;exports.LeaveTransition=LeaveTransition;exports.LocationStrategy=LocationStrategy;exports.LocationStrategyHash=LocationStrategyHash;exports.LocationStrategyPath=LocationStrategyPath;exports.NavigationCancel=NavigationCancel;exports.NavigationEnd=NavigationEnd;exports.NavigationError=NavigationError;exports.NavigationStart=NavigationStart;exports.ResolveEnd=ResolveEnd;exports.ResolveStart=ResolveStart;exports.Route=Route;exports.RouteConfigLoadEnd=RouteConfigLoadEnd;exports.RouteConfigLoadStart=RouteConfigLoadStart;exports.RoutePath=RoutePath;exports.RouteSegment=RouteSegment;exports.RouteSnapshot=RouteSnapshot;exports.RouterEvent=RouterEvent;exports.RouterLinkActiveDirective=RouterLinkActiveDirective;exports.RouterLinkDirective=RouterLinkDirective;exports.RouterModule=RouterModule;exports.RouterOutletStructure=RouterOutletStructure;exports.RoutesRecognized=RoutesRecognized;exports.Transition=Transition;exports.View=View;exports.asObservable=asObservable;exports.isPromise=isPromise;exports.transition$=transition$;exports.transitionOnce=transitionOnce;exports.transitionOnced=transitionOnced;Object.defineProperty(exports,'__esModule',{value:true});})));

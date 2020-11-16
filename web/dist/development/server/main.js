@@ -1,5 +1,5 @@
 /**
- * @license rxcomp-server v1.0.0-beta.18
+ * @license rxcomp-server v1.0.0-beta.19
  * (c) 2020 Luca Zampetti <lzampetti@gmail.com>
  * License: MIT
  */
@@ -4470,7 +4470,7 @@ NotFoundComponent.meta = {
     var _this = this;
 
     // console.log('TodolistItemComponent.onInit', this.route);
-    rxjs.combineLatest(this.route.data$, this.route.params$).pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (datas) {
+    rxjs.combineLatest([this.route.data$, this.route.params$]).pipe(operators.takeUntil(this.unsubscribe$)).subscribe(function (datas) {
       _this.title = datas[0].title;
       _this.itemId = datas[1].itemId; // this.pushChanges(); // !!! not needed;
       // console.log('TodolistItemComponent', datas);
@@ -4578,18 +4578,9 @@ export function getSlug(url) {
 
   _proto.onInit = function onInit() {
     var _this2 = this;
-    var payload = {
-      query: "{ getTodos { id, title, completed } }"
-    };
-    var methodUrl = "" + Vars.host + Vars.api; // console.log('TodolistComponent.onInit', this);
 
     {
-      rxcompHttp.HttpService.post$(methodUrl, payload, {
-        params: {
-          query: "{ getTodos { id, title, completed } }"
-        },
-        reportProgress: false
-      }).pipe(operators.first()).subscribe(function (response) {
+      rxcompHttp.HttpService.get$(Vars.host + "/assets/data/todos.json").pipe(operators.first()).subscribe(function (response) {
         _this2.items = response.data.getTodos;
 
         _this2.pushChanges(); // console.log('TodolistComponent.getTodos', this.items);

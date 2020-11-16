@@ -10,7 +10,7 @@ const { spaMiddleware } = require('./spa/spa.js');
 const BASE_HREF = '/rxcomp-server/';
 const ASSETS = `assets/`;
 const ROOT = `../dist/development/browser/`;
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 46000;
 
 const Vars = {
   port: PORT,

@@ -7,7 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 export default class TodolistItemComponent extends View {
 	onInit() {
 		// console.log('TodolistItemComponent.onInit', this.route);
-		combineLatest(this.route.data$, this.route.params$).pipe(
+		combineLatest([this.route.data$, this.route.params$]).pipe(
 			takeUntil(this.unsubscribe$)
 		).subscribe((datas: RouterKeyValue[]) => {
 			this.title = datas[0].title;

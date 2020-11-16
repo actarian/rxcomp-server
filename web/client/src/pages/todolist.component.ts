@@ -10,7 +10,7 @@ export default class TodolistComponent extends Component {
 	items: ITodoItem[] = [];
 	error: any = null;
 	onInit() {
-		const mode: number = 1;
+		const mode: number = 3;
 		const payload = { query: `{ getTodos { id, title, completed } }` };
 		const methodUrl: string = `${Vars.host}${Vars.api}`;
 		// console.log('TodolistComponent.onInit', this);
@@ -35,7 +35,7 @@ export default class TodolistComponent extends Component {
 				// console.log('TodolistComponent.getTodos', this.items);
 			}, console.warn);
 		} else {
-			HttpService.get$<IResponseData>(`${Vars.host}/data/todos.json`).pipe(
+			HttpService.get$<IResponseData>(`${Vars.host}/assets/data/todos.json`).pipe(
 				first(),
 			).subscribe((response: IResponseData) => {
 				this.items = response.data.getTodos;
